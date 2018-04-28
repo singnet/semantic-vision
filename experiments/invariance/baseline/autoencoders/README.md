@@ -15,10 +15,10 @@ We conducted the following experiment. We trained the model on the MNIST dataset
 
 First, let's check reconstructed images of the test set for different digits and angles. Let's compare images for 3, 5 and 4, 9. Each odd column (enumerated from 1 left to right) corresponds to the input image rotated by the given angle, each even column shows its reconstruction. Angle vary from -180 to 180.
 
-![3](models/19_mnist_conv_rotate_sc_49test/test_plots2/rec_99999_3.png)
-![5](models/19_mnist_conv_rotate_sc_49test/test_plots2/rec_99999_5.png)
-![4](models/19_mnist_conv_rotate_sc_49test/test_plots2/rec_99999_4.png)
-![9](models/19_mnist_conv_rotate_sc_49test/test_plots2/rec_99999_9.png)
+![3](models/19_mnist_conv_rotate_sc_49test/test_plots2_wline/rec_99999_3.png)
+![5](models/19_mnist_conv_rotate_sc_49test/test_plots2_wline/rec_99999_5.png)
+![4](models/19_mnist_conv_rotate_sc_49test/test_plots2_wline/rec_99999_4.png)
+![9](models/19_mnist_conv_rotate_sc_49test/test_plots2_wline/rec_99999_9.png)
 
 (other plots can be found here [models/19_mnist_conv_rotate_sc_49test/test_plots2/](models/19_mnist_conv_rotate_sc_49test/test_plots2/))
 
@@ -45,7 +45,7 @@ First, let's check reconstruction plots for the test set for digit-4.
 Each row corresponds to the given diagonal shift (dx=dy). Shifts vary from -20 to 20. Each odd column corresponds to the input image shifted by the given dx,dy, each even column corresponds to its reconstruction. 
 
 x09_shift49n_54_moremaps_saa
-![x09_shift49n_54_moremaps_saa](models/x09_shift49n_54_moremaps_saa/test_plots2reg_diag/rec_99999_4.png)
+![x09_shift49n_54_moremaps_saa](models/x09_shift49n_54_moremaps_saa/test_plots2reg_diag_wline/rec_99999_4.png)
 
 
 ### Conclusion
