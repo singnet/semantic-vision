@@ -28,15 +28,15 @@ We also can compare reconstruction loss for the test set for different digits an
 
 ![rec_scores](models/19_mnist_conv_rotate_sc_49test/rec_scores/all_scores_99999.png)
 
-Peaks on 0 and +-90 should be ignored, because they are connected to biliear blurring of images for all angles differ from 0
+Peaks on 0 and +-90 should be ignored, because they are connected to bilinear blurring of images for all angles differ from 0
 and +-90. 
 As it can be seen, reconstruction loss for digit-4 and digit-9 increases outside the training region. 
 
 ### 4,9 test for shift (shift49 experiment)
 
-Similar to previous experiment with rotation, we took a usual autoencoder (with or without AAE-regularization) with dx and dy shifts added  to the latent code. During the training process, the model takes an original image, dx and dy which represent shifts in pixels as inputs, and the image shifted by dx and dy as target. dx and dy are concatenated wih the latent coded, just before decoder (after AAE regularization).
+Similar to previous experiment with rotation, we took a usual autoencoder (with or without AAE-regularization) with dx and dy shifts added  to the latent code. During the training process, the model takes an original image, dx and dy which represent shifts in pixels as inputs, and the image shifted by dx and dy as target. dx and dy are concatenated with the latent coded, just before decoder (after AAE regularization).
 
-We conducted the following experiment. We trained the model on the MNIST dataset. For all digits except 4 and 9 we used all possible shifts inside (-20,20), but for 4 and 9 we used only shifts from -5:5 interval. We wanted to see behavior of the models for 4 and 9 outside the training set.
+We conducted the following experiment. We trained the model on the MNIST dataset. For all digits except 4 and 9 we used all possible shifts inside (-20,20), but for 4 and 9 we used only shifts from -5:5 interval. We wanted to see behaviour of the models for 4 and 9 outside the training set.
 
 We should note that due to the shift the final image has a size 68x68 (28 + 20*2).
 
