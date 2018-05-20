@@ -1,12 +1,9 @@
-
 #!/usr/bin/env python
-
+# SingularityNet, Saint-Petersburg research laboratory
+# Corresponding Author, Sergey Rodionov, email sergey@singularitynet.io 
 
 import numpy as np
 import tensorflow as tf
-
-""" Parameters """
-
 
 # simple indexes (in index space!!!)
 def fixed_address(s):

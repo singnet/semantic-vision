@@ -1,5 +1,6 @@
-
 #!/usr/bin/env python
+# SingularityNet, Saint-Petersburg research laboratory
+# Corresponding Author, Sergey Rodionov, email sergey@singularitynet.io 
 
 import PIL
 from PIL import Image
