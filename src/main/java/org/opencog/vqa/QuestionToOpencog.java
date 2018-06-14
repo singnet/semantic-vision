@@ -44,7 +44,7 @@ public class QuestionToOpencog {
         Stream<String> linesStream = bufferedReader.lines();
 //        Stream<String> linesStream = Stream.of("0:yes/no:Is the room messy?:0");
         try {
-            linesStream.map(Record::load)
+            linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
                     .map(parsedRecord -> parsedRecord.getRecord().save())
                     .parallel()
@@ -54,13 +54,13 @@ public class QuestionToOpencog {
         }
     }
 
-    private ParsedRecord parseQuestion(Record record) {
+    private ParsedRecord parseQuestion(QuestionRecord record) {
         Sentence sentence = relationExtractor.processSentence(record.getQuestion());
         
         ParsedSentence parsedSentence = sentence.getParses().get(0);
         RelationCollectingVisitor relationsCollector = new RelationCollectingVisitor();
         parsedSentence.foreach(relationsCollector);
-        Record recordWithFormula = record.toBuilder()
+        QuestionRecord recordWithFormula = record.toBuilder()
                 .shortFormula(relationsCollector.getShortFormula())
                 .formula(relationsCollector.getFormula())
                 .build();
@@ -70,15 +70,15 @@ public class QuestionToOpencog {
 
     private static class ParsedRecord {
 
-        private final Record record;
+        private final QuestionRecord record;
         private final Sentence sentence;
 
-        public ParsedRecord(Record record, Sentence sentence) {
+        public ParsedRecord(QuestionRecord record, Sentence sentence) {
             this.record = record;
             this.sentence = sentence;
         }
 
-        public Record getRecord() {
+        public QuestionRecord getRecord() {
             return record;
         }
 

@@ -9,7 +9,7 @@ import lombok.ToString;
  */
 @ToString
 @Builder(toBuilder = true)
-class Record {
+class QuestionRecord {
 
     private static final String FIELD_DELIMITER = ":";
 
@@ -28,10 +28,10 @@ class Record {
         return question;
     }
 
-    public static Record load(String string) {
+    public static QuestionRecord load(String string) {
         String[] fields = string.split(FIELD_DELIMITER);
 
-        Record.RecordBuilder builder = Record.builder();
+        QuestionRecordBuilder builder = QuestionRecord.builder();
         
         builder
             .questionId(fields[0])

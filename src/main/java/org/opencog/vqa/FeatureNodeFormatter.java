@@ -15,6 +15,7 @@ public class FeatureNodeFormatter {
     /**
      * Format full content of FeatureNode as text tree. Assigns unique id to each node and doesn't print repeated 
      * nodes, prints their id instead.  
+     * 
      * @param featureNode node to start printing from
      * @return text tree as string
      */
