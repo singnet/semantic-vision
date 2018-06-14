@@ -4,19 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import relex.ParsedSentence;
 import relex.RelationExtractor;
 import relex.Sentence;
-import relex.feature.FeatureNode;
-import relex.feature.RelationCallback;
 
 public class QuestionToOpencog {
 
@@ -54,26 +46,28 @@ public class QuestionToOpencog {
         }
     }
 
-    private ParsedRecord parseQuestion(QuestionRecord record) {
+    private ParsedQuestion parseQuestion(QuestionRecord record) {
         Sentence sentence = relationExtractor.processSentence(record.getQuestion());
-        
         ParsedSentence parsedSentence = sentence.getParses().get(0);
-        RelationCollectingVisitor relationsCollector = new RelationCollectingVisitor();
-        parsedSentence.foreach(relationsCollector);
+        
+        RelexFormulaBuildingVisitor relexVisitor = new RelexFormulaBuildingVisitor();
+        parsedSentence.foreach(relexVisitor);
+        RelexFormula relexFormula = relexVisitor.getRelexFormula();
+        
         QuestionRecord recordWithFormula = record.toBuilder()
-                .shortFormula(relationsCollector.getShortFormula())
-                .formula(relationsCollector.getFormula())
+                .shortFormula(relexFormula.getShortFormula())
+                .fullFormula(relexFormula.getFullFormula())
                 .build();
         
-        return new ParsedRecord(recordWithFormula, sentence);
+        return new ParsedQuestion(recordWithFormula, sentence);
     }
 
-    private static class ParsedRecord {
+    private static class ParsedQuestion {
 
         private final QuestionRecord record;
         private final Sentence sentence;
 
-        public ParsedRecord(QuestionRecord record, Sentence sentence) {
+        public ParsedQuestion(QuestionRecord record, Sentence sentence) {
             this.record = record;
             this.sentence = sentence;
         }
@@ -86,122 +80,6 @@ public class QuestionToOpencog {
             return sentence;
         }
     }
-
-    private static class RelationCollectingVisitor implements RelationCallback {
-
-        private final Map<FeatureNode, RelationArgument> argumentCache = new HashMap<>();
-        private char nextVariableName = 'A';
-        
-        private final List<Relation> relations = new ArrayList<>();
-
-        @Override
-        public Boolean BinaryHeadCB(FeatureNode arg0) {
-            return false;
-        }
-
-        @Override
-        public Boolean BinaryRelationCB(String relation, FeatureNode first, FeatureNode second) {
-            RelationArgument firstArg = toArgument(first);
-            RelationArgument secondArg = toArgument(second);
-            relations.add(new Relation(relation, firstArg, secondArg));
-            return false;
-        }
-
-        private RelationArgument toArgument(FeatureNode featureNode) {
-            return argumentCache.computeIfAbsent(featureNode,
-                    fn -> new RelationArgument(fn, getNextVariableName()));
-        }
-
-        private String getNextVariableName() {
-            return String.valueOf(nextVariableName++);
-        }
-
-        @Override
-        public Boolean UnaryRelationCB(FeatureNode arg0, String arg1) {
-            return false;
-        }
-
-        public String getFormula() {
-            relations.sort(Comparator.naturalOrder());
-            return relations.stream().map(fn -> fn.toFormula()).collect(Collectors.joining(";"));
-        }
-
-        public String getShortFormula() {
-            relations.sort(Comparator.naturalOrder());
-            return relations.stream().map(fn -> fn.toShortFormula()).collect(Collectors.joining(";"));
-        }
-    }
-
-    private static class RelationArgument {
-        private final FeatureNode featureNode;
-        private final List<Relation> relations;
-        private final String variableName;
-
-        public RelationArgument(FeatureNode featureNode, String variableName) {
-            this.featureNode = featureNode;
-            this.relations = new ArrayList<>();
-            this.variableName = variableName;
-        }
-
-        int getNumberOfUsages() {
-            return relations.size();
-        }
-
-        @Override
-        public String toString() {
-            if (featureNode.get("name") == null) {
-                return "XXXX";
-            }
-            return featureNode.get("name").getValue();
-        }
-
-        void addRelation(Relation relation) {
-            relations.add(relation);
-        }
-
-        public String getVariableName() {
-            return variableName;
-        }
-    }
-
-    private static class Relation implements Comparable<Relation> {
-        private final String name;
-        private final List<RelationArgument> arguments;
-
-        public Relation(String name, RelationArgument firstArg, RelationArgument secondArg) {
-            this.name = name;
-            this.arguments = List.of(firstArg, secondArg);
-            firstArg.addRelation(this);
-            secondArg.addRelation(this);
-        }
-
-        @Override
-        public int compareTo(Relation other) {
-            if (getNumberOfArgumentUsages() != other.getNumberOfArgumentUsages()) {
-                return getNumberOfArgumentUsages() - other.getNumberOfArgumentUsages();
-            }
-            return name.compareTo(other.name);
-        }
-
-        private int getNumberOfArgumentUsages() {
-            return arguments.stream().collect(Collectors.summingInt(RelationArgument::getNumberOfUsages));
-        }
-
-        public String toFormula() {
-            return name + "(" + arguments.stream().map(fn -> fn.getVariableName()).collect(Collectors.joining(", "))
-                    + ")";
-        }
-
-        public String toShortFormula() {
-            return name + "()";
-        }
-
-        @Override
-        public String toString() {
-            return name + "(" + arguments.stream().map(fn -> fn.toString()).collect(Collectors.joining(", ")) + ")";
-        }
-    }
-
 
     private static void handleException(Exception e) {
         e.printStackTrace();

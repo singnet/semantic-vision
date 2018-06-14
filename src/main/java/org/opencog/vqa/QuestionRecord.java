@@ -18,7 +18,7 @@ class QuestionRecord {
     private final String question;
     private final String imageId;
     private final String shortFormula;
-    private final String formula;
+    private final String fullFormula;
 
     public String getQuestionType() {
         return questionType;
@@ -39,7 +39,7 @@ class QuestionRecord {
             .question(fields[2])
             .imageId(fields[3])
             .shortFormula(fields.length > 4 ? fields[4] : "")
-            .formula(fields.length > 5 ? fields[5] : "");
+            .fullFormula(fields.length > 5 ? fields[5] : "");
             
         return builder.build();
     }
@@ -50,7 +50,7 @@ class QuestionRecord {
                 + FIELD_DELIMITER + question 
                 + FIELD_DELIMITER + imageId
                 + FIELD_DELIMITER + shortFormula
-                + FIELD_DELIMITER + formula;
+                + FIELD_DELIMITER + fullFormula;
     }
 
 }
