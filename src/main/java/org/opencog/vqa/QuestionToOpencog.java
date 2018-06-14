@@ -20,8 +20,6 @@ import relex.feature.RelationCallback;
 
 public class QuestionToOpencog {
 
-    private static final String YES_NO_QUESION_TYPE = "yes/no";
-
     private final BufferedReader bufferedReader;
     private final RelationExtractor relationExtractor;
 
@@ -47,9 +45,7 @@ public class QuestionToOpencog {
 //        Stream<String> linesStream = Stream.of("0:yes/no:Is the room messy?:0");
         try {
             linesStream.map(Record::load)
-                    // .filter(record -> record.getQuestionType().equals(YES_NO_QUESION_TYPE))
                     .map(this::parseQuestion)
-                    // .filter(this::predAdjFilter)
                     .map(parsedRecord -> parsedRecord.getRecord().save())
                     .parallel()
                     .forEach(System.out::println);
@@ -70,13 +66,6 @@ public class QuestionToOpencog {
                 .build();
         
         return new ParsedRecord(recordWithFormula, sentence);
-    }
-
-    private boolean predAdjFilter(ParsedRecord parsedRecord) {
-        ParsedSentence parsedSentence = parsedRecord.getSentence().getParses().get(0);
-        PredAdjSearchVisitor callback = new PredAdjSearchVisitor();
-        parsedSentence.foreach(callback);
-        return callback.isPredAdjSentence();
     }
 
     private static class ParsedRecord {
@@ -251,38 +240,6 @@ public class QuestionToOpencog {
             visited.put(featureNode, id);
             return id;
         }
-    }
-
-    private static class PredAdjSearchVisitor implements RelationCallback {
-
-        private int relationsCounter = 0;
-        private boolean hasPredAdj = false;
-
-        @Override
-        public Boolean BinaryHeadCB(FeatureNode arg0) {
-            return false;
-        }
-
-        @Override
-        public Boolean BinaryRelationCB(String relation, FeatureNode first, FeatureNode second) {
-            if (relation.equals("_predadj")) {
-                hasPredAdj = true;
-            }
-            relationsCounter++;
-            return false;
-        }
-
-        @Override
-        public Boolean UnaryRelationCB(FeatureNode arg0, String arg1) {
-            // TODO: this method is called not for relations only
-            // relationsCounter++;
-            return false;
-        }
-
-        public boolean isPredAdjSentence() {
-            return relationsCounter == 1 && hasPredAdj;
-        }
-
     }
 
     private static void handleException(Exception e) {
