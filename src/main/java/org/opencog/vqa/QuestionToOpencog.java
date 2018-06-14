@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +17,6 @@ import relex.RelationExtractor;
 import relex.Sentence;
 import relex.feature.FeatureNode;
 import relex.feature.RelationCallback;
-import relex.output.SimpleView;
 
 public class QuestionToOpencog {
 
@@ -46,20 +44,32 @@ public class QuestionToOpencog {
 
     private void run() {
         Stream<String> linesStream = bufferedReader.lines();
-        // Stream<String> linesStream = Stream.of("0:yes/no:Is the room messy?");
+//        Stream<String> linesStream = Stream.of("0:yes/no:Is the room messy?:0");
         try {
-            linesStream.map(Record::parseRecord)
+            linesStream.map(Record::load)
                     // .filter(record -> record.getQuestionType().equals(YES_NO_QUESION_TYPE))
                     .map(this::parseQuestion)
                     // .filter(this::predAdjFilter)
-                    .map(parsedRecord -> parsedRecord.printRecord()).parallel().forEach(System.out::println);
+                    .map(parsedRecord -> parsedRecord.getRecord().save())
+                    .parallel()
+                    .forEach(System.out::println);
         } finally {
             linesStream.close();
         }
     }
 
     private ParsedRecord parseQuestion(Record record) {
-        return new ParsedRecord(record, relationExtractor.processSentence(record.getQuestion()));
+        Sentence sentence = relationExtractor.processSentence(record.getQuestion());
+        
+        ParsedSentence parsedSentence = sentence.getParses().get(0);
+        RelationCollectingVisitor relationsCollector = new RelationCollectingVisitor();
+        parsedSentence.foreach(relationsCollector);
+        Record recordWithFormula = record.toBuilder()
+                .shortFormula(relationsCollector.getShortFormula())
+                .formula(relationsCollector.getFormula())
+                .build();
+        
+        return new ParsedRecord(recordWithFormula, sentence);
     }
 
     private boolean predAdjFilter(ParsedRecord parsedRecord) {
@@ -71,8 +81,8 @@ public class QuestionToOpencog {
 
     private static class ParsedRecord {
 
-        private Record record;
-        private Sentence sentence;
+        private final Record record;
+        private final Sentence sentence;
 
         public ParsedRecord(Record record, Sentence sentence) {
             this.record = record;
@@ -86,22 +96,14 @@ public class QuestionToOpencog {
         public Sentence getSentence() {
             return sentence;
         }
-
-        public String printRecord() {
-            ParsedSentence parsedSentence = sentence.getParses().get(0);
-            RelationCollectingVisitor relationsCollector = new RelationCollectingVisitor();
-            parsedSentence.foreach(relationsCollector);
-            return record.printRecord() + ':' + relationsCollector.printShortFormula() + ':'
-                    + relationsCollector.printFormula() + ':' + relationsCollector.printRelations();
-        }
     }
 
     private static class RelationCollectingVisitor implements RelationCallback {
 
-        private final Map<FeatureNode, RelationArgument> argumentByFeatureNode = new HashMap<>();
-        private final List<Relation> relations = new ArrayList<>();
-
+        private final Map<FeatureNode, RelationArgument> argumentCache = new HashMap<>();
         private char nextVariableName = 'A';
+        
+        private final List<Relation> relations = new ArrayList<>();
 
         @Override
         public Boolean BinaryHeadCB(FeatureNode arg0) {
@@ -110,14 +112,14 @@ public class QuestionToOpencog {
 
         @Override
         public Boolean BinaryRelationCB(String relation, FeatureNode first, FeatureNode second) {
-            RelationArgument firstArg = addArgument(first);
-            RelationArgument secondArg = addArgument(second);
+            RelationArgument firstArg = toArgument(first);
+            RelationArgument secondArg = toArgument(second);
             relations.add(new Relation(relation, firstArg, secondArg));
             return false;
         }
 
-        private RelationArgument addArgument(FeatureNode featureNode) {
-            return argumentByFeatureNode.computeIfAbsent(featureNode,
+        private RelationArgument toArgument(FeatureNode featureNode) {
+            return argumentCache.computeIfAbsent(featureNode,
                     fn -> new RelationArgument(fn, getNextVariableName()));
         }
 
@@ -130,17 +132,12 @@ public class QuestionToOpencog {
             return false;
         }
 
-        public String printRelations() {
-            relations.sort(Comparator.naturalOrder());
-            return relations.stream().map(fn -> fn.toString()).collect(Collectors.joining(";"));
-        }
-
-        public String printFormula() {
+        public String getFormula() {
             relations.sort(Comparator.naturalOrder());
             return relations.stream().map(fn -> fn.toFormula()).collect(Collectors.joining(";"));
         }
 
-        public String printShortFormula() {
+        public String getShortFormula() {
             relations.sort(Comparator.naturalOrder());
             return relations.stream().map(fn -> fn.toShortFormula()).collect(Collectors.joining(";"));
         }

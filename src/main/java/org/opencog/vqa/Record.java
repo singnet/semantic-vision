@@ -1,5 +1,14 @@
 package org.opencog.vqa;
 
+import lombok.Builder;
+import lombok.ToString;
+
+/**
+ * Record class keeps information about one question and able to serialize/deserialize it as 
+ * delimited list of fields. It is as simple as POJO with builder and serialization logic.
+ */
+@ToString
+@Builder(toBuilder = true)
 class Record {
 
     private static final String FIELD_DELIMITER = ":";
@@ -8,13 +17,8 @@ class Record {
     private final String questionType;
     private final String question;
     private final String imageId;
-
-    private Record(String questionId, String questionType, String question, String imageId) {
-        this.questionId = questionId;
-        this.questionType = questionType;
-        this.question = question;
-        this.imageId = imageId;
-    }
+    private final String shortFormula;
+    private final String formula;
 
     public String getQuestionType() {
         return questionType;
@@ -24,25 +28,29 @@ class Record {
         return question;
     }
 
-    public static Record parseRecord(String string) {
+    public static Record load(String string) {
         String[] fields = string.split(FIELD_DELIMITER);
 
-        String questionId = fields[0];
-        String questionType = fields[1];
-        String question = fields[2];
-        String imageId = fields[3];
-
-        return new Record(questionId, questionType, question, imageId);
+        Record.RecordBuilder builder = Record.builder();
+        
+        builder
+            .questionId(fields[0])
+            .questionType(fields[1])
+            .question(fields[2])
+            .imageId(fields[3])
+            .shortFormula(fields.length > 4 ? fields[4] : "")
+            .formula(fields.length > 5 ? fields[5] : "");
+            
+        return builder.build();
     }
 
-    public String printRecord() {
-        return questionId + FIELD_DELIMITER + questionType + FIELD_DELIMITER + question + FIELD_DELIMITER + imageId;
-    }
-
-    @Override
-    public String toString() {
-        return "Record [questionId=" + questionId + ", questionType=" + questionType + ", question=" + question
-                + ", imageId=" + imageId + "]";
+    public String save() {
+        return questionId 
+                + FIELD_DELIMITER + questionType 
+                + FIELD_DELIMITER + question 
+                + FIELD_DELIMITER + imageId
+                + FIELD_DELIMITER + shortFormula
+                + FIELD_DELIMITER + formula;
     }
 
 }
