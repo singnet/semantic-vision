@@ -31,6 +31,10 @@ public class QuestionToOpencog {
             handleException(e);
         }
     }
+    
+    private static void handleException(Exception e) {
+        e.printStackTrace();
+    }
 
     private void run() {
         Stream<String> linesStream = bufferedReader.lines();
@@ -39,6 +43,7 @@ public class QuestionToOpencog {
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
                     .map(parsedRecord -> parsedRecord.getRecord().save())
+//                    .map(this::convertToOpencogSchema)
                     .parallel()
                     .forEach(System.out::println);
         } finally {
@@ -59,30 +64,36 @@ public class QuestionToOpencog {
                 .fullFormula(relexFormula.getFullFormula())
                 .build();
         
-        return new ParsedQuestion(recordWithFormula, sentence);
+        return new ParsedQuestion(recordWithFormula, relexFormula);
     }
 
     private static class ParsedQuestion {
 
         private final QuestionRecord record;
-        private final Sentence sentence;
+        private final RelexFormula relexFormula;
 
-        public ParsedQuestion(QuestionRecord record, Sentence sentence) {
+        public ParsedQuestion(QuestionRecord record, RelexFormula relexFormula) {
             this.record = record;
-            this.sentence = sentence;
+            this.relexFormula = relexFormula;
         }
 
         public QuestionRecord getRecord() {
             return record;
         }
 
-        public Sentence getSentence() {
-            return sentence;
+        public RelexFormula getRelexFormula() {
+            return relexFormula;
         }
     }
-
-    private static void handleException(Exception e) {
-        e.printStackTrace();
+    
+    private String convertToOpencogSchema(ParsedQuestion parsedQuestion) {
+        RelexFormula formula = parsedQuestion.getRelexFormula();
+        
+        if (formula.getShortFormula().equals("_predadj(A, B)")) {
+            
+        }
+        
+        return "<not supported>";
     }
 
 }

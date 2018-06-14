@@ -27,6 +27,11 @@ public class RelexFormula {
         return predicates.stream().map(fn -> fn.toShortFormula()).collect(Collectors.joining(";"));
     }
 
+    @Override
+    public String toString() {
+        return getFullFormula();
+    }
+    
     private List<RelexPredicate> sortRelexPredicates(List<RelexPredicate> predicates) {
         List<RelexPredicate> sorted = new ArrayList<>();
         sorted.addAll(predicates);
