@@ -31,7 +31,7 @@ mvn install:install-file \
 
 Build using maven:
 ```
-mvn compile
+mvn package
 ```
 
 # Prepare questions dataset
@@ -49,5 +49,5 @@ unzip v2_Annotations_Train_mscoco.zip
 
 Run question2atomeese app:
 ```
-RELEX=<path-to-relex-src-dir> ./question2atomeese.sh questions.txt
+RELEX=<path-to-relex-src-dir> ./question2atomeese.sh questions.txt > parsed_questions.txt
 ```
