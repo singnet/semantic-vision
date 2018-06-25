@@ -1,6 +1,7 @@
 # Prerequisites
 
-Build Link Grammar with Java bindings (see [link-grammar repo](https://github.com/opencog/link-grammar))
+Build Link Grammar with Java bindings (see 
+[link-grammar repo](https://github.com/opencog/link-grammar))
 
 Build RelEx (see [relex repo](https://github.com/opencog/relex))
 
@@ -36,7 +37,8 @@ mvn package
 
 # Prepare questions dataset
 
-Download question and annotations from [download section](http://www.visualqa.org/download.html) of VQA site.
+Download question and annotations from 
+[download section](http://www.visualqa.org/download.html) of VQA site.
 ```
 wget http://visualqa.org/data/mscoco/vqa/v2_Questions_Train_mscoco.zip
 wget http://visualqa.org/data/mscoco/vqa/v2_Annotations_Train_mscoco.zip
@@ -49,5 +51,6 @@ unzip v2_Annotations_Train_mscoco.zip
 
 Run question2atomeese app:
 ```
-RELEX=<path-to-relex-src-dir> ./question2atomeese.sh questions.txt > parsed_questions.txt
+RELEX=<path-to-relex-src-dir> ./question2atomeese.sh questions.txt \
+	> parsed_questions.txt
 ```
