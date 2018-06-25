@@ -6,12 +6,12 @@ class Record:
 
     def __init__(self):
         self.question = None
-        self.answerType = None
+        self.questionType = None
         self.questionId = None
         self.imageId = None
 
     def toString(self):
-        return '{}:{}:{}:{}'.format(self.questionId, self.answerType, self.question, self.imageId);
+        return '{}:{}:{}:{}'.format(self.questionId, self.questionType, self.question, self.imageId);
 
 test = False
 
@@ -57,7 +57,7 @@ for prefix, event, value in parser:
         answerType = value
 
     if (prefix == 'annotations.item.question_id'):
-        records[value].answerType = answerType
+        records[value].questionType = answerType
         i += 1
 
 for questionId, record in records.items():
