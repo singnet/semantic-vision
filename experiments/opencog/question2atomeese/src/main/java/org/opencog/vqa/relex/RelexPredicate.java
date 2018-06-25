@@ -41,9 +41,9 @@ public class RelexPredicate implements Comparable<RelexPredicate> {
             String firstPredicate = arguments.get(0).getName();
             String secondPredicate = arguments.get(1).getName();
             return String.format("(AndLink " +
-                    "(InheritanceNode (VariableNode \"$%1$s\") (ConceptNode \"BoundingBox\"))" +
-                    "(GroundedPredicateNode \"py: %2$s\" (VariableNode \"$%1$s\"))" +
-                    "(GroundedPredicateNode \"py: %3$s\" (VariableNode \"$%1$s\"))" +
+                    "(InheritanceLink (VariableNode \"$%1$s\") (ConceptNode \"BoundingBox\"))" +
+                    "(EvaluationLink (GroundedPredicateNode \"py:%2$s\") (ListLink (VariableNode \"$%1$s\")) )" +
+                    "(EvaluationLink (GroundedPredicateNode \"py:%3$s\") (ListLink (VariableNode \"$%1$s\")) )" +
                     ")", object, firstPredicate, secondPredicate);
         }
         return "";   
