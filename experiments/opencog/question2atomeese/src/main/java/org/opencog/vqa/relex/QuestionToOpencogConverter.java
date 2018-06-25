@@ -1,4 +1,4 @@
-package org.opencog.vqa;
+package org.opencog.vqa.relex;
 
 import relex.ParsedSentence;
 import relex.RelationExtractor;

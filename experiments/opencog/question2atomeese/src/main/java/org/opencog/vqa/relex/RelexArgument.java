@@ -1,11 +1,11 @@
-package org.opencog.vqa;
+package org.opencog.vqa.relex;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import relex.feature.FeatureNode;
 
-class RelexArgument {
+public class RelexArgument {
     
     private final FeatureNode featureNode;
     private final List<RelexPredicate> relations;

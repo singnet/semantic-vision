@@ -1,4 +1,4 @@
-package org.opencog.vqa;
+package org.opencog.vqa.relex;
 
 import java.util.HashMap;
 import java.util.Map;

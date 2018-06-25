@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Stream;
 
+import org.opencog.vqa.relex.QuestionToOpencogConverter;
+import org.opencog.vqa.relex.RelexFormula;
+
 public class QuestionToOpencogApp {
 
     private final BufferedReader bufferedReader;

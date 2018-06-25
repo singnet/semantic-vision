@@ -1,9 +1,9 @@
-package org.opencog.vqa;
+package org.opencog.vqa.relex;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-class RelexPredicate implements Comparable<RelexPredicate> {
+public class RelexPredicate implements Comparable<RelexPredicate> {
     private final String name;
     private final List<RelexArgument> arguments;
 
