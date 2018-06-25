@@ -78,7 +78,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                org.opencog.vqa.QuestionToOpencog
+                                org.opencog.vqa.QuestionToOpencogApp
                             </mainClass>
                         </manifest>
                     </archive>

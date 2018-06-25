@@ -6,26 +6,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Stream;
 
-import relex.ParsedSentence;
-import relex.RelationExtractor;
-import relex.Sentence;
-
-public class QuestionToOpencog {
+public class QuestionToOpencogApp {
 
     private final BufferedReader bufferedReader;
-    private final RelationExtractor relationExtractor;
+    private final QuestionToOpencogConverter questionToOpencogConverter;
 
-    private QuestionToOpencog(InputStream inputStream) {
+    private QuestionToOpencogApp(InputStream inputStream) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        this.relationExtractor = new RelationExtractor();
-        this.relationExtractor.setMaxParses(1);
+        this.questionToOpencogConverter = new QuestionToOpencogConverter();
     }
 
     public static void main(String args[]) {
         try {
 
             String filename = args[0];
-            new QuestionToOpencog(new FileInputStream(filename)).run();
+            new QuestionToOpencogApp(new FileInputStream(filename)).run();
 
         } catch (Exception e) {
             handleException(e);
@@ -42,8 +37,10 @@ public class QuestionToOpencog {
         try {
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
-                    .map(parsedRecord -> parsedRecord.getRecord().save())
-//                    .map(this::convertToOpencogSchema)
+//                    .map(parsedRecord -> parsedRecord.getRecord().save())
+                    .filter(parsedRecord -> parsedRecord.getRecord().getQuestionType().equals("yes/no"))
+                    .filter(parsedRecord -> parsedRecord.getRelexFormula().getFullFormula().equals("_predadj(A, B)"))
+                    .map(this::convertToOpencogSchema)
                     .parallel()
                     .forEach(System.out::println);
         } finally {
@@ -52,12 +49,7 @@ public class QuestionToOpencog {
     }
 
     private ParsedQuestion parseQuestion(QuestionRecord record) {
-        Sentence sentence = relationExtractor.processSentence(record.getQuestion());
-        ParsedSentence parsedSentence = sentence.getParses().get(0);
-        
-        RelexFormulaBuildingVisitor relexVisitor = new RelexFormulaBuildingVisitor();
-        parsedSentence.foreach(relexVisitor);
-        RelexFormula relexFormula = relexVisitor.getRelexFormula();
+        RelexFormula relexFormula = questionToOpencogConverter.parseQuestion(record.getQuestion());
         
         QuestionRecord recordWithFormula = record.toBuilder()
                 .shortFormula(relexFormula.getShortFormula())
@@ -66,7 +58,7 @@ public class QuestionToOpencog {
         
         return new ParsedQuestion(recordWithFormula, relexFormula);
     }
-
+    
     private static class ParsedQuestion {
 
         private final QuestionRecord record;
@@ -87,13 +79,7 @@ public class QuestionToOpencog {
     }
     
     private String convertToOpencogSchema(ParsedQuestion parsedQuestion) {
-        RelexFormula formula = parsedQuestion.getRelexFormula();
-        
-        if (formula.getShortFormula().equals("_predadj(A, B)")) {
-            
-        }
-        
-        return "<not supported>";
+        return questionToOpencogConverter.convertToOpencogSchema(parsedQuestion.getRelexFormula());
     }
 
 }

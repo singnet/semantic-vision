@@ -20,13 +20,17 @@ class RelexArgument {
     public String getVariableName() {
         return variableName;
     }
-
-    @Override
-    public String toString() {
+    
+    public String getName() {
         if (featureNode.get("name") == null) {
             return "XXXX";
         }
         return featureNode.get("name").getValue();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     int getNumberOfUsages() {

@@ -9,9 +9,8 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
 
-
 public class RelexFormula {
-    
+
     private final List<RelexPredicate> predicates;
 
     @Builder
@@ -27,11 +26,16 @@ public class RelexFormula {
         return predicates.stream().map(fn -> fn.toShortFormula()).collect(Collectors.joining(";"));
     }
 
+    public String getAtomeeseFormula() {
+        return "(AndLink " + predicates.stream().map(fn -> fn.toAtomeeseFormula()).collect(Collectors.joining(" "))
+                + ")";
+    }
+
     @Override
     public String toString() {
         return getFullFormula();
     }
-    
+
     private List<RelexPredicate> sortRelexPredicates(List<RelexPredicate> predicates) {
         List<RelexPredicate> sorted = new ArrayList<>();
         sorted.addAll(predicates);
