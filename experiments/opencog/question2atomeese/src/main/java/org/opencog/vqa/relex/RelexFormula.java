@@ -27,7 +27,7 @@ public class RelexFormula {
     }
 
     public String getAtomeeseFormula() {
-        return "(SatisfactionLink (AndLink " + predicates.stream().map(fn -> fn.toAtomeeseFormula()).collect(Collectors.joining(" "))
+        return "(SatisfactionLink (TypedVariableLink (VariableNode \"$A\") (TypeNode \"ConceptNode\")) (AndLink " + predicates.stream().map(fn -> fn.toAtomeeseFormula()).collect(Collectors.joining(" "))
                 + "))";
     }
 
