@@ -31,6 +31,11 @@ public class RelexPredicate implements Comparable<RelexPredicate> {
                 + ")";
     }
 
+    public String toGroundedFormula() {
+        return name + "(" + arguments.stream().map(fn -> fn.getName()).collect(Collectors.joining(", "))
+                + ")";
+    }
+
     public String toShortFormula() {
         return name + "()";
     }

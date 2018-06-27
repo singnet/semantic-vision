@@ -26,6 +26,10 @@ public class RelexFormula {
         return predicates.stream().map(fn -> fn.toShortFormula()).collect(Collectors.joining(";"));
     }
 
+    public String getGroundedFormula() {
+        return predicates.stream().map(fn -> fn.toGroundedFormula()).collect(Collectors.joining(";"));
+    }
+    
     public String getAtomeeseFormula() {
         return "(SatisfactionLink (TypedVariableLink (VariableNode \"$A\") (TypeNode \"ConceptNode\")) (AndLink " + predicates.stream().map(fn -> fn.toAtomeeseFormula()).collect(Collectors.joining(" "))
                 + "))";

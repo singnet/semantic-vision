@@ -11,12 +11,13 @@ import lombok.ToString;
 @Builder(toBuilder = true)
 class QuestionRecord {
 
-    private static final String FIELD_DELIMITER = ":";
+    private static final String FIELD_DELIMITER = "::";
 
     private final String questionId;
     private final String questionType;
     private final String question;
     private final String imageId;
+    private final String answer;
     private final String shortFormula;
     private final String fullFormula;
 
@@ -38,8 +39,9 @@ class QuestionRecord {
             .questionType(fields[1])
             .question(fields[2])
             .imageId(fields[3])
-            .shortFormula(fields.length > 4 ? fields[4] : "")
-            .fullFormula(fields.length > 5 ? fields[5] : "");
+            .answer(fields[4])
+            .shortFormula(fields.length > 5 ? fields[5] : "")
+            .fullFormula(fields.length > 6 ? fields[6] : "");
             
         return builder.build();
     }
@@ -49,6 +51,7 @@ class QuestionRecord {
                 + FIELD_DELIMITER + questionType 
                 + FIELD_DELIMITER + question 
                 + FIELD_DELIMITER + imageId
+                + FIELD_DELIMITER + answer
                 + FIELD_DELIMITER + shortFormula
                 + FIELD_DELIMITER + fullFormula;
     }

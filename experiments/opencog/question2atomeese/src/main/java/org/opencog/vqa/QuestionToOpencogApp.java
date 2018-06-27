@@ -40,10 +40,10 @@ public class QuestionToOpencogApp {
         try {
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
-//                    .map(parsedRecord -> parsedRecord.getRecord().save())
-                    .filter(parsedRecord -> parsedRecord.getRecord().getQuestionType().equals("yes/no"))
-                    .filter(parsedRecord -> parsedRecord.getRelexFormula().getFullFormula().equals("_predadj(A, B)"))
-                    .map(this::convertToOpencogSchema)
+                    .map(parsedRecord -> parsedRecord.getRecord().save())
+//                    .filter(parsedRecord -> parsedRecord.getRecord().getQuestionType().equals("yes/no"))
+//                    .filter(parsedRecord -> parsedRecord.getRelexFormula().getFullFormula().equals("_predadj(A, B)"))
+//                    .map(this::convertToOpencogSchema)
                     .parallel()
                     .forEach(System.out::println);
         } finally {
@@ -55,8 +55,8 @@ public class QuestionToOpencogApp {
         RelexFormula relexFormula = questionToOpencogConverter.parseQuestion(record.getQuestion());
         
         QuestionRecord recordWithFormula = record.toBuilder()
-                .shortFormula(relexFormula.getShortFormula())
-                .fullFormula(relexFormula.getFullFormula())
+                .shortFormula(relexFormula.getFullFormula())
+                .fullFormula(relexFormula.getGroundedFormula())
                 .build();
         
         return new ParsedQuestion(recordWithFormula, relexFormula);
