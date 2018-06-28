@@ -30,7 +30,7 @@ parser.add_argument('--questions', '-q', dest='questionsFileName',
                     action='store', type=str, required=True,
                     help='questions json filename')
 parser.add_argument('--annotations', '-a', dest='annotationsFileName',
-                    action='store', type=str, required=True,
+                    action='store', type=str, default=None,
                     help='annotations json filename')
 parser.add_argument('--test', dest='test', action='store_true',
                     help='test mode, process only 10 first questions')
@@ -68,29 +68,30 @@ for prefix, event, value in parser:
         records[record.questionId] = record
         i += 1
 
-parser = ijson.parse(open(args.annotationsFileName))
-
-i = 0
-answerType = None
-answers = {}
-for prefix, event, value in parser:
-    if args.test and i > 10:
-        break
-
-    log.debug('%s, %s, %s', prefix, event, value)
-
-    if (prefix == 'annotations.item.answers.item.answer'):
-        count = answers.setdefault(value, 0) + 1
-        answers[value] = count
-
-    if (prefix == 'annotations.item.answer_type'):
-        answerType = value
-
-    if (prefix == 'annotations.item.question_id'):
-        records[value].questionType = answerType
-        records[value].answer = getMostFrequentAnswer(answers)
-        answers = {}
-        i += 1
+if args.annotationsFileName != None:
+    parser = ijson.parse(open(args.annotationsFileName))
+    
+    i = 0
+    answerType = None
+    answers = {}
+    for prefix, event, value in parser:
+        if args.test and i > 10:
+            break
+    
+        log.debug('%s, %s, %s', prefix, event, value)
+    
+        if (prefix == 'annotations.item.answers.item.answer'):
+            count = answers.setdefault(value, 0) + 1
+            answers[value] = count
+    
+        if (prefix == 'annotations.item.answer_type'):
+            answerType = value
+    
+        if (prefix == 'annotations.item.question_id'):
+            records[value].questionType = answerType
+            records[value].answer = getMostFrequentAnswer(answers)
+            answers = {}
+            i += 1
 
 for questionId, record in records.items():
         print(record.toString())

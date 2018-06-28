@@ -50,8 +50,8 @@ unzip v2_Annotations_Train_mscoco.zip
 
 get_questions.py usage:
 ```
-usage: get_questions.py [-h] --questions QUESTIONSFILENAME --annotations
-                        ANNOTATIONSFILENAME [--test]
+usage: get_questions.py [-h] --questions QUESTIONSFILENAME
+                        [--annotations ANNOTATIONSFILENAME] [--test]
                         [--loglevel {INFO,DEBUG,ERROR}]
 
 Convert set of questions and annotations to plain file with delimiters.
