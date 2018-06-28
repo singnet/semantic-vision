@@ -1,19 +1,9 @@
 #!/usr/bin/python3
+
 import ijson
 import logging
 import argparse
-
-class Record:
-
-    def __init__(self):
-        self.question = None
-        self.questionType = None
-        self.questionId = None
-        self.imageId = None
-        self.answer = None
-
-    def toString(self):
-        return '{}::{}::{}::{}::{}'.format(self.questionId, self.questionType, self.question, self.imageId, self.answer);
+from record import Record
 
 def getMostFrequentAnswer(answers):
     maxCount = 0
