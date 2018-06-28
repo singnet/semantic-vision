@@ -44,20 +44,27 @@ wget http://visualqa.org/data/mscoco/vqa/v2_Questions_Train_mscoco.zip
 wget http://visualqa.org/data/mscoco/vqa/v2_Annotations_Train_mscoco.zip
 unzip v2_Questions_Train_mscoco.zip
 unzip v2_Annotations_Train_mscoco.zip
-./get_questions.py > questions.txt
+./get_questions.py -q v2_OpenEnded_mscoco_train2014_questions.json 
+	-a v2_mscoco_train2014_annotations.json > questions.txt
 ```
 
 get_questions.py usage:
 ```
-usage: get_questions.py [-h] [--test] [--loglevel LOGGINGLEVEL]
+usage: get_questions.py [-h] --questions QUESTIONSFILENAME --annotations
+                        ANNOTATIONSFILENAME [--test]
+                        [--loglevel {INFO,DEBUG,ERROR}]
 
 Convert set of questions and annotations to plain file with delimiters.
 
 optional arguments:
   -h, --help            show this help message and exit
+  --questions QUESTIONSFILENAME, -q QUESTIONSFILENAME
+                        questions json filename
+  --annotations ANNOTATIONSFILENAME, -a ANNOTATIONSFILENAME
+                        annotations json filename
   --test                test mode, process only 10 first questions
-  --loglevel LOGGINGLEVEL
-                        logging level: DEBUG, INFO, ERROR
+  --loglevel {INFO,DEBUG,ERROR}
+                        logging level
 ```
 
 # Running

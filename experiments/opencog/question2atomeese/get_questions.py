@@ -26,18 +26,25 @@ def getMostFrequentAnswer(answers):
 
 parser = argparse.ArgumentParser(description='Convert set of questions and '
                                  'annotations to plain file with delimiters.')
+parser.add_argument('--questions', '-q', dest='questionsFileName',
+                    action='store', type=str, required=True,
+                    help='questions json filename')
+parser.add_argument('--annotations', '-a', dest='annotationsFileName',
+                    action='store', type=str, required=True,
+                    help='annotations json filename')
 parser.add_argument('--test', dest='test', action='store_true',
                     help='test mode, process only 10 first questions')
 parser.add_argument('--loglevel', dest='loggingLevel', action='store',
-                    type = str, default = 'INFO',
-                    help='logging level: DEBUG, INFO, ERROR')
+                    type = str, default='INFO',
+                    choices=['INFO', 'DEBUG', 'ERROR'], 
+                    help='logging level')
 args = parser.parse_args()
 
 log = logging.getLogger("get_questions")
 log.setLevel(args.loggingLevel)
 log.addHandler(logging.StreamHandler())
 
-parser = ijson.parse(open('v2_OpenEnded_mscoco_train2014_questions.json'))
+parser = ijson.parse(open(args.questionsFileName))
 
 records = {}
 record = None
@@ -61,7 +68,7 @@ for prefix, event, value in parser:
         records[record.questionId] = record
         i += 1
 
-parser = ijson.parse(open('v2_mscoco_train2014_annotations.json'))
+parser = ijson.parse(open(args.annotationsFileName))
 
 i = 0
 answerType = None
