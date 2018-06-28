@@ -47,6 +47,19 @@ unzip v2_Annotations_Train_mscoco.zip
 ./get_questions.py > questions.txt
 ```
 
+get_questions.py usage:
+```
+usage: get_questions.py [-h] [--test] [--loglevel LOGGINGLEVEL]
+
+Convert set of questions and annotations to plain file with delimiters.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --test                test mode, process only 10 first questions
+  --loglevel LOGGINGLEVEL
+                        logging level: DEBUG, INFO, ERROR
+```
+
 # Running
 
 Run question2atomeese app:

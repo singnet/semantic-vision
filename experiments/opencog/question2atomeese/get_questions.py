@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import ijson
 import logging
+import argparse
 
 class Record:
 
@@ -23,14 +24,17 @@ def getMostFrequentAnswer(answers):
             maxAnswer = answer
     return maxAnswer
 
-test = False
+parser = argparse.ArgumentParser(description='Convert set of questions and '
+                                 'annotations to plain file with delimiters.')
+parser.add_argument('--test', dest='test', action='store_true',
+                    help='test mode, process only 10 first questions')
+parser.add_argument('--loglevel', dest='loggingLevel', action='store',
+                    type = str, default = 'INFO',
+                    help='logging level: DEBUG, INFO, ERROR')
+args = parser.parse_args()
 
 log = logging.getLogger("get_questions")
-if test:
-    log.setLevel(logging.DEBUG)
-else:
-    log.setLevel(logging.INFO)
-
+log.setLevel(args.loggingLevel)
 log.addHandler(logging.StreamHandler())
 
 parser = ijson.parse(open('v2_OpenEnded_mscoco_train2014_questions.json'))
@@ -40,7 +44,7 @@ record = None
 
 i = 0
 for prefix, event, value in parser:
-    if test and i > 10:
+    if args.test and i > 10:
         break
 
     log.debug('%s, %s, %s', prefix, event, value)
@@ -63,7 +67,7 @@ i = 0
 answerType = None
 answers = {}
 for prefix, event, value in parser:
-    if test and i > 10:
+    if args.test and i > 10:
         break
 
     log.debug('%s, %s, %s', prefix, event, value)
