@@ -74,4 +74,4 @@ This model was used for comparison with our HyperNets. It's a regular autoencode
 
     x = tf.concat((x, angles), axis=1)
 
-see * [./../baseline/autoencoders/](baseline autoencoders) for more info
+see * [baseline autoencoders](./../baseline/autoencoders/) for more info
