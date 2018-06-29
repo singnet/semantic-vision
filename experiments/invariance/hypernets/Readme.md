@@ -73,3 +73,5 @@ This model is learning via slightly different way than pther 2nd order models. I
 This model was used for comparison with our HyperNets. It's a regular autoencoder in which angles or affine parameters are applied to latent code using concatenation:
 
     x = tf.concat((x, angles), axis=1)
+
+see * [./../baseline/autoencoders/](baseline autoencoders) for more info
