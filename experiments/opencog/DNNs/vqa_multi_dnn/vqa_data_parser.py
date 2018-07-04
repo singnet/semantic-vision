@@ -43,7 +43,7 @@ def load_parsed_features(pathFeatures, imgIDList, filePrefix = 'COCO_train2014_'
     nImg = len(imgIDSet)
 
     # !! FOR DEBUG LOAD ONLY 1% OF DATA
-    nImg = int(nImg / 100)
+    # nImg = int(nImg / 100)
 
     # Read parsed files and accumulate data
     for i in range(nImg):
