@@ -8,24 +8,33 @@ from torch.autograd import Variable
 import os, sys, time, re
 
 
-pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-pathFeaturesTrainParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_parsed_features'
-pathFeaturesValParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
-IMAGE_ID_FIELD_NAME = 'imageId'
+# FOR RUNNING ON K4
+pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
+pathFeaturesTrainParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/train2014_parsed_features'
+pathFeaturesValParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
+pathDataTrainFile = '/home/shared/datasets/train2014_questions_parsed.txt'
 
 
-pathDataTrainFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_questions_parsed.txt'
-FILE_PREFIX = 'COCO_train2014_'
-
-pathDataValFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
-# FILE_PREFIX = 'COCO_val2014_'
+# pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
+# pathFeaturesTrainParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_parsed_features'
+# pathFeaturesValParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
+# pathDataTrainFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_questions_parsed.txt'
 
 pathSaveModel = './saved_models'
+
+FILE_PREFIX = 'COCO_train2014_'
+IMAGE_ID_FIELD_NAME = 'imageId'
+
+# pathDataValFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
+# FILE_PREFIX = 'COCO_val2014_'
+
+
+
 
 input_size = 2048
 nBBox = 36
 featOffset = 10
-nEpoch = 100
+nEpoch = 500
 learning_rate = 1e-3
 
 # Load vocabulary
@@ -72,7 +81,6 @@ class NetsVocab(nn.Module):
 
 nets = NetsVocab()
 
-
 # pathQuestFile_tab = '~/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/parsed_questions_tab.txt'
 # df_tab = pd.read_csv(pathQuestFile_tab, header=0, sep='\t',  low_memory=False)
 # df_quest = df_tab.loc[(df_tab['questionType'] == 'yes/no') & (df_tab['relexFormula'] == '_predadj(A, B)')]
@@ -85,28 +93,38 @@ df_quest = df_quest.sort_values(['imageId'], ascending=[True])
 df_quest = df_quest.reset_index(drop=True)
 
 imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
-
+# Drop duplicates and sort
+imgIdSet = sorted(set(imgIdList))
 
 # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdList, filePrefix=FILE_PREFIX)
-# data_feat =  vqp.load_parsed_features(pathFeaturesValParsed, imgIdList, filePrefix=FILE_PREFIX)
+data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX)
 
-# df.to_csv('parsed_yes_no_predadj.tsv', sep='\t', header=True, index=None)
 
 # Get list with binary answers yes = 1, no = 0
 nQuest = df_quest.shape[0]
 ansList = df_quest['answer'].tolist()
+num_yes_gt = 0
 for i in range(nQuest):
     if ansList[i] == 'yes':
         ansList[i] = 1
+        num_yes_gt += 1
     else:
         ansList[i] = 0
+
+
+fileLog = open('log_train.txt', 'w')
+fileLog.write("Number of training questions: {}\n".format(nQuest))
+fileLog.write("Number of training images: {}\n".format(len(imgIdSet)))
+fileLog.write("GT answers stat:\tyes: {0}%\tno: {1}%\n".format( 100*float(num_yes_gt)/float(nQuest),
+                                                      100*(1-float(num_yes_gt)/float(nQuest))))
 
 # !! FOR DEBUG LOAD ONLY 1% OF DATA !!!
 nQuest = len(data_feat)
 min_loss = 1e8
+
 for e in range(nEpoch):
     mean_loss = 0.
+    score = 0
     for i in range(nQuest):
         idx = []
         words = getWords(df_quest.loc[i, 'groundedFormula'])
@@ -128,6 +146,7 @@ for e in range(nEpoch):
         output = nets.feed_forward(inputs, idx)
 
         ans = torch.from_numpy(np.asarray(ansList[i], dtype=np.float32)).to(device)
+
         if (ans > 0):
             output = torch.max(output).to(device)
         else:
@@ -142,21 +161,30 @@ for e in range(nEpoch):
         loss.backward()
         optimizer.step()
 
-        rez_loss = loss.data.cpu().numpy()
-        mean_loss += rez_loss
+        res_loss = loss.data.cpu().numpy()
+        mean_loss += res_loss
 
-        sys.stdout.write("\r \r Training:\tepoch: {0}/{1}\tquestion: {2}/{3}\tloss: {4}".format( e, nEpoch, i, nQuest, rez_loss) )
+        res_predict = np.max( output.data.cpu().numpy() )
+        if (np.fabs(ansList[i] - res_predict) < 0.5):
+            score += 1
+
+        sys.stdout.write("\r \r Training:\tepoch: {0}/{1}\tquestion: {2}/{3}\tloss: {4}".format( e, nEpoch, i, nQuest, res_loss) )
         sys.stdout.flush()
         time.sleep(0.01)
 
     mean_loss /= float(nQuest)
-    print("Epoch {0}\tMean loss {1}\n".format( e, mean_loss))
+    score = score/float(nQuest)
+    print("\nEpoch: {0}/{1}\tMean loss: {2}\tScore: {3}%\n".format( e, nEpoch, mean_loss, 100*score))
+    fileLog.write("Epoch: {0}/{1}\tMean loss: {2}\tScore: {3}%\n".format(e, nEpoch, mean_loss, 100 * score))
 
     if (mean_loss < min_loss):
         state = {'epoch': e, 'state_dict': nets.state_dict(), 'optimizer' : optimizer.state_dict(), 'mean_loss' : mean_loss }
         filename = pathSaveModel + '/model.pth.tar'
         torch.save(state, filename)
 
+        fileLog.write("\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss, 100 * score))
+
+fileLog.close()
 print("Training is done!")
 
 

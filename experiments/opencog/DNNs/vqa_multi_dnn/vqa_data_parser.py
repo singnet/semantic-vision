@@ -35,15 +35,14 @@ num_fixed_boxes = 36
 num_spatial_features = 6
 
 # FEATURESNAMES = ['roi_x', 'roi_y' 'roi_width' 'roi_height' 'spatial_feature_6d' 'img_feature_d2048']
-def load_parsed_features(pathFeatures, imgIDList, filePrefix = 'COCO_train2014_', id_len = 12):
+def load_parsed_features(pathFeatures, imgIDSet, filePrefix = 'COCO_train2014_', id_len = 12, reduce_set=False):
     data=[]
 
-    # Drop duplicates and sort
-    imgIDSet = sorted(set(imgIDList))
     nImg = len(imgIDSet)
 
     # !! FOR DEBUG LOAD ONLY 1% OF DATA
-    # nImg = int(nImg / 100)
+    if(reduce_set is True):
+        nImg = int(nImg / 100)
 
     # Read parsed files and accumulate data
     for i in range(nImg):
