@@ -4,7 +4,7 @@ from attention import Att_0, Att_1, Att_2, Att_3, Att_P, Att_PD, Att_3S
 from language_model import WordEmbedding, QuestionEmbedding
 from classifier import SimpleClassifier, PaperClassifier
 from fc import FCNet, GTH
-from HyperNet import *
+from HyperNet import HNet
 import math
 
 
@@ -119,7 +119,7 @@ class Model_3(nn.Module):
         return logits
 
 class Model_h(nn.Module):
-    def __init__(self, w_emb, q_emb, v_att_1, v_att_2, q_net, v_net, h_net, h_m_net, classifier):
+    def __init__(self, w_emb, q_emb, v_att_1, v_att_2, q_net, v_net, h_net, classifier):
         super(Model_h, self).__init__()
         self.w_emb = w_emb
         self.q_emb = q_emb
@@ -128,7 +128,6 @@ class Model_h(nn.Module):
         self.q_net = q_net
         self.v_net = v_net
         self.h_net = h_net
-        self.h_m_net = h_m_net
         self.classifier = classifier
 
     def forward(self, v, b, q, labels):
@@ -150,11 +149,7 @@ class Model_h(nn.Module):
 
         q_repr = self.q_net(q_emb)
         v_repr = self.v_net(v_emb)
-	q_repr = self.h_net(q_repr)
-	q_size = list(q_repr.size())
-	q_repr = q_repr.reshape((-1, int(math.sqrt(q_size[1])), int(math.sqrt(q_size[1]))))
-	joint_repr = torch.einsum('bj,bjk->bk', (v_repr, q_repr))
-	joint_repr = self.h_m_net(joint_repr)
+	joint_repr = self.h_net(q_repr, v_repr)
         logits = self.classifier(joint_repr)
         return logits
 
@@ -402,9 +397,8 @@ def build_model_A3x2_h(dataset, num_hid, dropout, norm, activation, dropL , drop
                     act=activation)
     q_net = FCNet([q_emb.num_hid, num_hid], dropout= dropL, norm= norm, act= activation)
     v_net = FCNet([dataset.v_dim, num_hid], dropout= dropL, norm= norm, act= activation)
-    h_net = HNetControl([1280, 2, 1280])
-    h_m_net = HNetMain()
+    h_net = HNet([1280, 100, 100], [1280, 1280])
 
     classifier = SimpleClassifier(
         in_dim=num_hid, hid_dim=2 * num_hid, out_dim=dataset.num_ans_candidates, dropout=dropC, norm= norm, act= activation)
-    return Model_h(w_emb, q_emb, v_att_1, v_att_2, q_net, v_net, h_net, h_m_net, classifier)
+    return Model_h(w_emb, q_emb, v_att_1, v_att_2, q_net, v_net, h_net, classifier)
