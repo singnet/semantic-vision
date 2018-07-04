@@ -1,26 +1,26 @@
-import torch
+import torch.nn as nn
 
-device = torch.device("cpu:0")
-device2 = torch.device("cuda:0")
+class HNetControl(nn.Module):
+    def __init__(self, dims):
+        super(HNetControl, self).__init__()
+        q_in_dim = dims[0]
+        inter_dim = dims[1]
+        out_dim = dims[2]
+        hyper_control_layers = []
+        hyper_control_layers.append(nn.Linear(q_in_dim, inter_dim))
+        hyper_control_layers.append(nn.ReLU())
+        hyper_control_layers.append(nn.Linear(inter_dim, out_dim*out_dim))
+        self.main = nn.Sequential(*hyper_control_layers)
 
-def HyperNet(q_arr, v_arr):
-    q_size = list(q_arr.size())
-    v_size = list(v_arr.size())
-    
-    hyper_model = torch.nn.Sequential(
-        torch.nn.Linear(q_size[1], 100),
-        torch.nn.ReLU(),
-        torch.nn.Linear(100, v_size[1] * v_size[1])
-    )
-    
-    q_arr = q_arr.new_tensor(q_arr.data, dtype=torch.float32, device=device)
-    qv_mat = hyper_model(q_arr)
-    
-    qv_mat = qv_mat.reshape((-1, v_size[1], v_size[1]))
-    
-    qv_mat = qv_mat.new_tensor(qv_mat.data, dtype=torch.float32, device=device2)
-    
-    result = torch.einsum('bj,bjk->bk', (v_arr, qv_mat))
-    output_relu_layer = torch.nn.ReLU()
-    result = output_relu_layer(result)
-    return result
+    def forward(self, x):
+        return self.main(x)
+
+class HNetMain(nn.Module):
+    def __init__(self):
+        super(HNetMain, self).__init__()
+        hyper_main_layers = []
+        hyper_main_layers.append(nn.ReLU())
+        self.main = nn.Sequential(*hyper_main_layers)
+
+    def forward(self, x):
+        return self.main(x)

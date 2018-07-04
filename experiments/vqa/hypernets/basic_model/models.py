@@ -4,8 +4,8 @@ from attention import Att_0, Att_1, Att_2, Att_3, Att_P, Att_PD, Att_3S
 from language_model import WordEmbedding, QuestionEmbedding
 from classifier import SimpleClassifier, PaperClassifier
 from fc import FCNet, GTH
-
 from HyperNet import *
+import math
 
 
 # Dropout p: probability of an element to be zeroed. Default: 0.5
@@ -77,8 +77,7 @@ class Model_2(nn.Module):
 
         q_repr = self.q_net(q_emb)
         v_repr = self.v_net(v_emb)
-        #joint_repr = q_repr * v_repr
-        joint_repr = HyperNet(q_repr, v_repr)
+        joint_repr = q_repr * v_repr
         logits = self.classifier(joint_repr)
         return logits
 
@@ -116,6 +115,46 @@ class Model_3(nn.Module):
         q_repr = self.q_net(q_emb)
         v_repr = self.v_net(v_emb)
         joint_repr = q_repr * v_repr
+        logits = self.classifier(joint_repr)
+        return logits
+
+class Model_h(nn.Module):
+    def __init__(self, w_emb, q_emb, v_att_1, v_att_2, q_net, v_net, h_net, h_m_net, classifier):
+        super(Model_h, self).__init__()
+        self.w_emb = w_emb
+        self.q_emb = q_emb
+        self.v_att_1 = v_att_1
+        self.v_att_2 = v_att_2
+        self.q_net = q_net
+        self.v_net = v_net
+        self.h_net = h_net
+        self.h_m_net = h_m_net
+        self.classifier = classifier
+
+    def forward(self, v, b, q, labels):
+        """Forward
+
+        v: [batch, num_objs, obj_dim]
+        b: [batch, num_objs, b_dim]
+        q: [batch_size, seq_length]
+
+        return: logits, not probs
+        """
+        w_emb = self.w_emb(q)       # get word embeddings
+        q_emb = self.q_emb(w_emb)   # run GRU on word embeddings [batch, q_dim]
+
+        att_1 = self.v_att_1(v, q_emb) # [batch, 1, v_dim]
+        att_2 = self.v_att_2(v, q_emb)  # [batch, 1, v_dim]
+        att = att_1 + att_2
+        v_emb = (att * v).sum(1) # [batch, v_dim]
+
+        q_repr = self.q_net(q_emb)
+        v_repr = self.v_net(v_emb)
+	q_repr = self.h_net(q_repr)
+	q_size = list(q_repr.size())
+	q_repr = q_repr.reshape((-1, int(math.sqrt(q_size[1])), int(math.sqrt(q_size[1]))))
+	joint_repr = torch.einsum('bj,bjk->bk', (v_repr, q_repr))
+	joint_repr = self.h_m_net(joint_repr)
         logits = self.classifier(joint_repr)
         return logits
 
@@ -349,3 +388,23 @@ def build_model_P_mod(dataset, num_hid, dropout, norm, activation, dropL , dropG
     classifier = PaperClassifier(
         in_dim=num_hid, hid_dim_1= 300, hid_dim_2= 2048, out_dim=dataset.num_ans_candidates, dropout=dropC, norm=norm, act=activation)
     return Model(w_emb, q_emb, v_att, q_net, v_net, classifier)
+
+
+# 2*Attn: 1 layer seperate, element-wise *, 1 layer, output layer, softmax, hyper_net
+def build_model_A3x2_h(dataset, num_hid, dropout, norm, activation, dropL , dropG, dropW, dropC):
+    w_emb = WordEmbedding(dataset.dictionary.ntoken, emb_dim=300, dropout=dropW)
+    q_emb = QuestionEmbedding(in_dim=300, num_hid=num_hid, nlayers=1, bidirect=False, dropout=dropG, rnn_type='GRU')
+
+    print('v_dim: %d\tq_dim: %d\tnum_hid: %d\t num ans candidates: %d'%(dataset.v_dim, q_emb.num_hid, num_hid, dataset.num_ans_candidates))
+    v_att_1 = Att_3(v_dim=dataset.v_dim, q_dim=q_emb.num_hid, num_hid=num_hid, dropout=dropout, norm=norm,
+                    act=activation)
+    v_att_2 = Att_3(v_dim=dataset.v_dim, q_dim=q_emb.num_hid, num_hid=num_hid, dropout=dropout, norm=norm,
+                    act=activation)
+    q_net = FCNet([q_emb.num_hid, num_hid], dropout= dropL, norm= norm, act= activation)
+    v_net = FCNet([dataset.v_dim, num_hid], dropout= dropL, norm= norm, act= activation)
+    h_net = HNetControl([1280, 2, 1280])
+    h_m_net = HNetMain()
+
+    classifier = SimpleClassifier(
+        in_dim=num_hid, hid_dim=2 * num_hid, out_dim=dataset.num_ans_candidates, dropout=dropC, norm= norm, act= activation)
+    return Model_h(w_emb, q_emb, v_att_1, v_att_2, q_net, v_net, h_net, h_m_net, classifier)

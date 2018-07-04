@@ -10,7 +10,7 @@ import numpy as np
 from dataset import Dictionary, VQAFeatureDataset
 from models import build_baseline, build_model_A1, build_model_A2, build_model_A3,build_model_AP,\
     build_model_APD, build_model_APx2, build_model_AP_PC, build_model_P_exact,build_model_P_mod,\
-    build_model_A3x2, build_model_A2x2, build_model_A23P, build_model_A3x3, build_model_A2x3, build_model_A3S
+    build_model_A3x2, build_model_A2x2, build_model_A23P, build_model_A3x3, build_model_A2x3, build_model_A3S, build_model_A3x2_h
 from train import train
 from plot import plot_charts
 import utils
@@ -28,9 +28,9 @@ def parse_args():
     parser.add_argument('--dropout_C', type=float, default=0.5)
     parser.add_argument('--activation', type=str, default='LeakyReLU', help='PReLU, ReLU, LeakyReLU, Tanh, Hardtanh, Sigmoid, RReLU, ELU, SELU')
     parser.add_argument('--norm', type=str, default='weight', help='weight, batch, layer, none')
-    parser.add_argument('--model', type=str, default='A3x2')
+    parser.add_argument('--model', type=str, default='A3x2_h')
     parser.add_argument('--output', type=str, default='saved_models/')
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--weight_decay', type=float, default=0)
     parser.add_argument('--optimizer', type=str, default='Adamax', help='Adam, Adamax, Adadelta, RMSprop')
     parser.add_argument('--initializer', type=str, default='kaiming_normal')
@@ -135,6 +135,10 @@ if __name__ == '__main__':
                                dropW=args.dropout_W, dropC=args.dropout_C)
     elif args.model == 'AP_PC':
         model = build_model_AP_PC(train_dset, num_hid=args.num_hid, dropout= args.dropout, norm=args.norm,\
+                               activation=args.activation, dropL=args.dropout_L, dropG=args.dropout_G,\
+                               dropW=args.dropout_W, dropC=args.dropout_C)
+    elif args.model == 'A3x2_h':
+        model = build_model_A3x2_h(train_dset, num_hid=args.num_hid, dropout= args.dropout, norm=args.norm,\
                                activation=args.activation, dropL=args.dropout_L, dropG=args.dropout_G,\
                                dropW=args.dropout_W, dropC=args.dropout_C)
     elif args.model == 'PAPER_Exact':
