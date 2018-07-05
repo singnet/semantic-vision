@@ -14,9 +14,17 @@ Nbatch = 128
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# we will make Xavier initializaion like in tensorflow
+# Default initialization works worser than Xavier
+def init_weights(m):
+    if type(m) == nn.Linear:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0)
+                            
+
 # we create N networks and N mask
 # the target for the network will be to sum inputs at position defined by masks
-                            
+
 def create_networks():
     nets = []  
     for i in range(Nnets):
@@ -28,7 +36,8 @@ def create_networks():
         nn.Linear(32, 1)
         ).to(device)
         index = i % input_size
-        nets.append((model,index))
+        model.apply(init_weights)                
+        nets.append((model,index))        
     return nets
 
 def create_batch(Nbatch, index):
@@ -51,10 +60,16 @@ def create_batch(Nbatch, index):
 
 nets = create_networks()
 
-# optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0)
 
 for it in range(Nit):
     
+    
+    all_batch = []
+    # we exclude batch generation from time
+    for i in range(Nnets):
+        model,sel = nets[i]
+        all_batch.append(create_batch(Nbatch, sel))
+                                
     sum_loss  = 0
     sum_score = 0
     
@@ -62,7 +77,7 @@ for it in range(Nit):
     for i in range(Nnets):
         model,sel = nets[i]
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0)
-        inputs,labels = create_batch(Nbatch, sel)        
+        (inputs,labels) = all_batch[i]                
         inputs = Variable( torch.Tensor(inputs)).to(device)
         labels = Variable( torch.Tensor(labels)).to(device)
         logits = model(inputs).view(-1)

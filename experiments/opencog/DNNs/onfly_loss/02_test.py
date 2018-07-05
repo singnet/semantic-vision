@@ -53,6 +53,13 @@ sess.run(tf.global_variables_initializer())
     
 for it in range(Nit):
     
+    all_batch = []
+        
+    # we exclude batch generation from time
+    for i in range(Nnets):
+        _,_,sel = net[i]
+        all_batch.append(create_batch(Nbatch, sel))
+                                    
     sum_loss = 0
     sum_score = 0
     
@@ -70,7 +77,7 @@ for it in range(Nit):
         train_op = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss)
 
         input,output,sel = net[i]
-        (batch_x, batch_y) = create_batch(Nbatch, sel)
+        (batch_x, batch_y) = all_batch[i]
         rez_loss,score, _ = sess.run( [loss, score_tf, train_op], feed_dict={input: batch_x, ys[i]: batch_y})
                 
         

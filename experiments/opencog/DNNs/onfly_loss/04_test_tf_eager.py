@@ -49,6 +49,12 @@ nets = create_network()
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
     
 for it in range(Nit):
+
+    all_batch = []
+    # we exclude batch generation from time
+    for i in range(Nnets):        
+        model,sel = nets[i]
+        all_batch.append(create_batch(Nbatch, sel))
     
     sum_loss = 0
     sum_score = 0
@@ -58,7 +64,8 @@ for it in range(Nit):
     for i in range(Nnets):
         
         model, sel = nets[i]
-        (batch_x, batch_y) = create_batch(Nbatch, sel)
+        (batch_x, batch_y) = all_batch[i]
+        
         batch_y_tf = tf.constant(batch_y, dtype=tf.float32)
         
         with tf.GradientTape() as tape:

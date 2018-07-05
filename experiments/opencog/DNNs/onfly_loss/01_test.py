@@ -42,12 +42,11 @@ def create_batch(Nbatch, index):
 
 net = create_network()
 
-ys        = []
+y = tf.placeholder(tf.float32, shape=(None,))
 train_ops = []        
 losses    = []
 scores    = []
 for i in range(Nnets):
-    y = tf.placeholder(tf.float32, shape=(None,))
     output = net[i][1]
     loss   = tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=output)
     loss   = tf.reduce_mean(loss)
@@ -55,7 +54,6 @@ for i in range(Nnets):
     score  = tf.reduce_mean(tf.cast(tf.equal(rez_y, y),dtype=tf.float32))
     train_op = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss)    
 #    train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
-    ys.append(y)
     train_ops.append(train_op)
     losses.append(loss)
     scores.append(score)
@@ -64,14 +62,21 @@ sess.run(tf.global_variables_initializer())
     
 for it in range(Nit):
     
+    all_batch = []
+    
+    # we exclude batch generation from time
+    for i in range(Nnets):
+        _,_,sel = net[i]
+        all_batch.append(create_batch(Nbatch, sel))
+        
     sum_loss = 0
     sum_score = 0
     start = time.time()
     
     for i in range(Nnets):
         input,output,sel = net[i]
-        (batch_x, batch_y) = create_batch(Nbatch, sel)
-        rez_loss,score, _ = sess.run( [losses[i], scores[i], train_ops[i]], feed_dict={input: batch_x, ys[i]: batch_y})
+        (batch_x, batch_y) = all_batch[i]
+        rez_loss,score, _ = sess.run( [losses[i], scores[i], train_ops[i]], feed_dict={input: batch_x, y: batch_y})
         sum_loss  += rez_loss
         sum_score += score
         
