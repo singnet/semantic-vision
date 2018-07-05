@@ -8,6 +8,15 @@ from torch.autograd import Variable
 import os, sys, time, re
 import math
 
+
+# FOR RUNNING ON K4
+# pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
+# pathFeaturesParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
+# pathQuestFile = '/home/shared/datasets/val2014_questions_parsed.txt'
+# pathImgs = '/home/shared/datasets/val2014'
+
+
+#
 pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
 
 pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/val2014'
@@ -25,7 +34,7 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 id_len = 12
 
 
-pathSaveModel = './saved_models_00'
+pathSaveModel = './saved_models'
 
 
 input_size = 2048
@@ -75,7 +84,7 @@ class NetsVocab(nn.Module):
             params.append({'params': self.models[i].parameters()})
         return params
 
-
+print('Loading model...')
 nets = NetsVocab()
 checkpoint = torch.load(pathSaveModel + '/model.pth.tar')
 mean_loss = checkpoint['mean_loss']
@@ -97,10 +106,10 @@ df_quest = df_quest.reset_index(drop=True)
 
 imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
-imgIDSet = sorted(set(imgIdList))
+imgIdSet = sorted(set(imgIdList))
 
 # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdList, filePrefix=FILE_PREFIX, reduce_set=True)
+data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=True)
 
 # df.to_csv('parsed_yes_no_predadj.tsv', sep='\t', header=True, index=None)
 
@@ -156,7 +165,7 @@ for i in range(nQuest):
     filePath = filePath + str(img_id) + '.jpg'
 
 
-    ind = imgIdList.index(img_id)
+    ind = imgIdSet.index(img_id)
     bboxes = data_feat[ind][1][:, 0:4]
     f_input = data_feat[ind][1][:, featOffset:]
     inputs = Variable(torch.Tensor(f_input)).to(device)
@@ -170,7 +179,8 @@ for i in range(nQuest):
     output_max, idx_max = torch.max(output, 0)
     imax = idx_max.data.cpu().numpy()
 
-    output_max = np.round(output_max.data.cpu().numpy())[0]
+    # output_max = output_max.data.cpu().numpy()[0]
+    output_max = np.max(output.data.cpu().numpy())
 
     file.write('\t<tr><td><div class="one"><div class="two"><img src="' + filePath + '"/></div>')
     file.write('')
@@ -194,8 +204,8 @@ for i in range(nQuest):
     file.write('<td><p> Prediction: ' + str(output_max) + '</p></td>\n')
     file.write('\t</tr>\n')
 
-
-    if ( np.fabs(ans-output_max) <  0.5):
+    abs_diff = math.fabs(ansListBin[i]-output_max)
+    if ( abs_diff <  0.5):
         score += 1
 
     ans_stat.append((ans, output_max))
@@ -208,7 +218,7 @@ for i in range(nQuest):
 
     nQuestValid += 1
 
-    sys.stdout.write("\r \r Evaluation:\t{0}/{1}\tAccumulated score: {2}".format( i, nQuest, score ) )
+    sys.stdout.write("\r \r Evaluation:\t{0}/{1}\t\tAccumulated score: {2}".format( i, nQuest, score ) )
     sys.stdout.flush()
     time.sleep(0.01)
 
