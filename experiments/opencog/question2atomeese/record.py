@@ -1,3 +1,5 @@
+import re
+
 class Record:
 
     def __init__(self):
@@ -23,3 +25,9 @@ class Record:
          record.question, record.imageId, record.answer,
          record.formula, record.groundedFormula) = string.split('::')
         return record
+    
+    def getWords(self):
+        # parse '_test(A, B);next(B, A)'
+        words = re.split('\)[^\(]+\(|, |^[^\(]+\(|\)[^\(]+$', 
+                         self.groundedFormula)
+        return map(str.strip, words)

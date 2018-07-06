@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import argparse
-import re
 
 from record import Record
 
@@ -11,7 +10,7 @@ def loadWordsFromFile(fileName):
     file = open(fileName, 'r')
     for line in file:
         record = Record.fromString(line)
-        for word in getWords(record.groundedFormula):
+        for word in record.getWords():
             words.add(word)
     return words
 
@@ -25,11 +24,6 @@ parser.add_argument('--test', '-a', dest='testFileName',
                     help='test questions filename')
 args = parser.parse_args()
 
-def getWords(groundedFormula):
-    # parse '_test(A, B);next(B, A)'
-    words = re.split('\)[^\(]+\(|, |^[^\(]+\(|\)[^\(]+$', groundedFormula)
-    return map(str.strip, words)
-
 trainWords = loadWordsFromFile(args.trainFileName)
 testWords = loadWordsFromFile(args.testFileName)
 uniqueWords = testWords - trainWords
@@ -42,7 +36,7 @@ print('unique words in test set - ', len(uniqueWords))
 file = open(args.testFileName, 'r')
 for line in file:
     record = Record.fromString(line)
-    for word in getWords(record.groundedFormula):
+    for word in record.getWords():
         if word in uniqueWords:
             print('{} (unique word: {})'.format(record.question, word))
             break
