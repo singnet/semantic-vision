@@ -57,8 +57,8 @@ def load_parsed_features(pathFeatures, imgIDSet, filePrefix = 'COCO_train2014_',
         df = np.genfromtxt(filePath, delimiter='\t', skip_header=1)
         data.append([image_id, df])
 
-        sys.stdout.write("\r \r Loading"
-                         " parsed features: {0}%\ti = {1}/{2}".format( (str(int(100 * float(i) / float(nImg)))), i, nImg ))
+        sys.stdout.write("\r \r Loading {0}"
+                         " parsed features: {1}%\ti = {2}/{3}".format( filePrefix, (str(int(100 * float(i) / float(nImg)))), i, nImg ))
         sys.stdout.flush()
         time.sleep(0.01)
 

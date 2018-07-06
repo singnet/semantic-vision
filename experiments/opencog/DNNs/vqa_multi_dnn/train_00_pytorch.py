@@ -6,23 +6,25 @@ import torch.nn.functional as F
 import numpy as np
 from torch.autograd import Variable
 import os, sys, time, re
-
+import math
 
 # FOR RUNNING ON K4
 # pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
 # pathFeaturesTrainParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/train2014_parsed_features'
 # pathFeaturesValParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
 # pathDataTrainFile = '/home/shared/datasets/train2014_questions_parsed.txt'
+# pathDataValFile = '/home/shared/datasets/val2014_questions_parsed.txt'
 
 
 pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
 pathFeaturesTrainParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_parsed_features'
 pathFeaturesValParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
 pathDataTrainFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_questions_parsed.txt'
+pathDataValFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
 
 pathSaveModel = './saved_models'
-
-FILE_PREFIX = 'COCO_train2014_'
+FILE_PREFIX_TRAIN = 'COCO_train2014_'
+FILE_PREFIX_VAL = 'COCO_val2014_'
 IMAGE_ID_FIELD_NAME = 'imageId'
 
 
@@ -30,13 +32,13 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 # pathDataTrainFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
 # FILE_PREFIX = 'COCO_val2014_'
 
-
-
 input_size = 2048
 nBBox = 36
 featOffset = 10
-nEpoch = 10
+nEpoch = 100
 learning_rate = 1e-3
+
+isReduceSet = True
 
 # Load vocabulary
 vocab = []
@@ -88,6 +90,9 @@ nets = NetsVocab()
 # ep = checkpoint['epoch']
 # nets.load_state_dict(checkpoint['state_dict'])
 
+
+# Prepare training data
+
 # pathQuestFile_tab = '~/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/parsed_questions_tab.txt'
 # df_tab = pd.read_csv(pathQuestFile_tab, header=0, sep='\t',  low_memory=False)
 # df_quest = df_tab.loc[(df_tab['questionType'] == 'yes/no') & (df_tab['relexFormula'] == '_predadj(A, B)')]
@@ -104,7 +109,7 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 imgIdSet = sorted(set(imgIdList))
 
 # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=True)
+data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX_TRAIN, reduce_set=isReduceSet)
 
 
 # Get list with binary answers yes = 1, no = 0
@@ -117,17 +122,54 @@ for i in range(nQuest):
         num_yes_gt += 1
     else:
         ansList[i] = 0
+#########################################################################
+
+# Prepare validation data
+
+# Load bbox features
+#df = pd.read_csv(pathDataTrainFile, header=0, sep='\s*\::',  engine='python')
+df_val = pd.read_csv(pathDataValFile, header=0, sep='\s*\::',  engine='python')
+df_quest_val = df_val.loc[(df_val['questionType'] == 'yes/no') & (df_val['relexFormula'] == '_predadj(A, B)')]
+df_quest_val = df_quest_val.sort_values(['imageId'], ascending=[True])
+df_quest_val = df_quest_val.reset_index(drop=True)
+
+imgIdList_val = df_quest_val[IMAGE_ID_FIELD_NAME].tolist()
+# Drop duplicates and sort
+imgIdSet_val = sorted(set(imgIdList_val))
+
+# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+data_feat_val =  vqp.load_parsed_features(pathFeaturesValParsed, imgIdSet_val, filePrefix=FILE_PREFIX_VAL, reduce_set=isReduceSet)
+
+nQuest_val = df_quest_val.shape[0]
+questList_val = df_quest_val['question'].tolist()
+ansList_val = df_quest_val['answer'].tolist()
+ansListBin_val = []
+for i in range(nQuest_val):
+    if ansList_val[i] == 'yes':
+        ansListBin_val.append(1)
+    else:
+        ansListBin_val.append(0)
+
+# !! FOR DEBUG LOAD ONLY 1% OF DATA !!!
+nQuest_val = len(data_feat_val)
+
+##########################################################################
 
 
-fileLog = open('log_train.txt', 'w')
+
+fileLog = open('log_train_00.txt', 'w')
 fileLog.write("Number of training questions: {}\n".format(nQuest))
 fileLog.write("Number of training images: {}\n".format(len(imgIdSet)))
 fileLog.write("GT answers stat:\tyes: {0}%\tno: {1}%\n".format( 100*float(num_yes_gt)/float(nQuest),
                                                       100*(1-float(num_yes_gt)/float(nQuest))))
 
+fileLogNumbers = open('log_train_00_nums.txt', 'w')
+fileLogNumbers.write("# epoch\tmean_loss\ttrain_score\tval_score\n")
+
 # !! FOR DEBUG LOAD ONLY 1% OF DATA !!!
 nQuest = len(data_feat)
 min_loss = 1e8
+max_score_val = 0
 
 for e in range(nEpoch):
     mean_loss = 0.
@@ -189,7 +231,66 @@ for e in range(nEpoch):
     print("\nEpoch: {0}/{1}\tMean loss: {2}\tScore: {3}%\n".format( e, nEpoch, mean_loss, 100*score))
     fileLog.write("Epoch: {0}/{1}\tMean loss: {2}\tScore: {3}%\n".format(e, nEpoch, mean_loss, 100 * score))
 
+    # Validation
+    if (e % 10) == 0:
+        score_val = 0.
+        nQuestValid_val = 0
 
+        for i in range(nQuest_val):
+            idx_val = []
+            words_val = getWords(df_quest_val.loc[i, 'groundedFormula'])
+            nWords_val = len(words_val)
+            for w in words_val:
+                try:
+                    idx_val.append(vocab.index(w))
+                except ValueError:
+                    continue
+
+            # get img bbox features
+            img_id = df_quest_val.loc[i, 'imageId']
+
+            ind_val = imgIdSet_val.index(img_id)
+            bboxes = data_feat_val[ind_val][1][:, 0:4]
+            f_input_val = data_feat_val[ind_val][1][:, featOffset:]
+            inputs_val = Variable(torch.Tensor(f_input_val)).to(device)
+
+            # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
+            output_val = nets.feed_forward(inputs_val, idx_val)
+            ans_val = np.asarray(ansListBin_val[i], dtype=np.float32)
+            output_max_val, idx_max_val = torch.max(output_val, 0)
+            imax_val = idx_max_val.data.cpu().numpy()
+
+            output_max_val = np.max(output_val.data.cpu().numpy())
+            abs_diff = math.fabs(ansListBin_val[i] - output_max_val)
+            if (abs_diff < 0.5):
+                score_val += 1
+
+            nQuestValid_val += 1
+
+            sys.stdout.write("\r \r Evaluation:\t{0}/{1}\t\tAccumulated score: {2}".format(i, nQuest_val, score_val))
+            sys.stdout.flush()
+            time.sleep(0.01)
+
+        score_val = score_val / float(nQuestValid_val)
+
+        print("\nEvaluation is done!")
+        print("Mean score is: {}%\n".format(100*score_val))
+
+        fileLog.write(
+            "\n Evaluation at {0}/{1} epoch gives score:\t{2}%\n\n".format(e, nEpoch, 100 * score_val))
+
+        fileLogNumbers.write("{0}\t{1}\t{2}\t{3}\n".format(e, mean_loss, 100*score, 100*score_val))
+
+        if (max_score_val < score_val):
+            state = {'epoch': e, 'state_dict': nets.state_dict(), 'optimizer': optimizer.state_dict(),
+                     'mean_loss': mean_loss}
+            filename = pathSaveModel + '/model_max_score_val.pth.tar'
+            torch.save(state, filename)
+
+            fileLog.write(
+                "\n Saving model at {0}/{1} epoch with val_score: {2}%\n\n".format(e, nEpoch, 100 * score_val))
+
+            max_score_val = score_val
 
     if (mean_loss < min_loss):
         state = {'epoch': e, 'state_dict': nets.state_dict(), 'optimizer' : optimizer.state_dict(), 'mean_loss' : mean_loss }
@@ -198,6 +299,7 @@ for e in range(nEpoch):
 
         fileLog.write("\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss, 100 * score))
 
+fileLogNumbers.close()
 fileLog.close()
 print("Training is done!")
 

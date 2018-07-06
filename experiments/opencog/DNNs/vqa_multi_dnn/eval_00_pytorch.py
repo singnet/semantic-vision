@@ -109,7 +109,7 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 imgIdSet = sorted(set(imgIdList))
 
 # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=True)
+data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=False)
 
 # df.to_csv('parsed_yes_no_predadj.tsv', sep='\t', header=True, index=None)
 
