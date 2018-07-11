@@ -7,6 +7,7 @@ import numpy as np
 from torch.autograd import Variable
 import os, sys, time, re
 import math
+from netsvocabulary import NetsVocab
 
 # FOR RUNNING ON K4
 # pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
@@ -46,8 +47,6 @@ vocab = []
 with open(pathVocabFile, 'r') as filehandle:
     vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
 
-Nnets = len(vocab)
-
 def getWords(groundedFormula):
     words = re.split(r', ', groundedFormula[groundedFormula.find("(") + 1:groundedFormula.find(")")])
     return words
@@ -55,35 +54,7 @@ def getWords(groundedFormula):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-class NetsVocab(nn.Module):
-    def __init__(self):
-        super(NetsVocab, self).__init__()
-        self.models = nn.ModuleList([nn.Sequential(
-            nn.Linear(input_size, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-            ).to(device) for i in range(Nnets)])
-
-    def feed_forward(self, x, idx):
-        output = torch.ones(size=(nBBox,1)).to(device)
-        for k in idx:
-            logits = self.models[k](x)
-            # logits = model(x).view(-1)
-            predict = F.sigmoid(logits)
-            output = torch.mul(output, predict)
-        return output
-
-    def getParams(self, idx):
-        params=[]
-        for i in idx:
-            params.append({'params': self.models[i].parameters()})
-        return params
-
-
-nets = NetsVocab()
+nets = NetsVocab(vocab, input_size, device)
 
 # Continue training from saved checkpoint
 # checkpoint = torch.load(pathSaveModel + '/model_bkp.pth.tar')
@@ -178,14 +149,7 @@ for e in range(nEpoch):
     nQuestValid = 0
 
     for i in range(nQuest):
-        idx = []
         words = getWords(df_quest.loc[i, 'groundedFormula'])
-        nWords = len(words)
-        for w in words:
-            try:
-                idx.append( vocab.index(w) )
-            except ValueError:
-                continue
 
         # get img bbox features
         img_id = df_quest.loc[i, 'imageId']
@@ -196,7 +160,7 @@ for e in range(nEpoch):
 
 
         # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
-        output = nets.feed_forward(inputs, idx)
+        output = nets.feed_forward(nBBox, inputs, words)
 
         ans = torch.from_numpy(np.asarray(ansList[i], dtype=np.float32)).to(device)
 
@@ -207,7 +171,7 @@ for e in range(nEpoch):
 
         loss = F.binary_cross_entropy(output, ans)
 
-        params = nets.getParams(idx)
+        params = nets.getParams(words)
 
         # adjust learning rate
         if e % lr_decay_iter == 0:
@@ -244,14 +208,7 @@ for e in range(nEpoch):
         nQuestValid_val = 0
 
         for i in range(nQuest_val):
-            idx_val = []
             words_val = getWords(df_quest_val.loc[i, 'groundedFormula'])
-            nWords_val = len(words_val)
-            for w in words_val:
-                try:
-                    idx_val.append(vocab.index(w))
-                except ValueError:
-                    continue
 
             # get img bbox features
             img_id = df_quest_val.loc[i, 'imageId']
@@ -262,7 +219,7 @@ for e in range(nEpoch):
             inputs_val = Variable(torch.Tensor(f_input_val)).to(device)
 
             # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
-            output_val = nets.feed_forward(inputs_val, idx_val)
+            output_val = nets.feed_forward(nBBox, inputs_val, words_val)
 
             sum_val = torch.sum(output_val)
             s_val = torch.div(output, sum_val)

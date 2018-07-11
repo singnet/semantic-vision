@@ -7,6 +7,7 @@ import numpy as np
 from torch.autograd import Variable
 import os, sys, time, re
 import math
+from netsvocabulary import NetsVocab
 
 
 # FOR RUNNING ON K4
@@ -43,13 +44,6 @@ nBBox = 36
 featOffset = 10
 
 
-# Load vocabulary
-vocab = []
-with open(pathVocabFile, 'r') as filehandle:
-    vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-
-Nnets = len(vocab)
-
 def getWords(groundedFormula):
     words = re.split(r', ', groundedFormula[groundedFormula.find("(") + 1:groundedFormula.find(")")])
     return words
@@ -58,38 +52,20 @@ def getWords(groundedFormula):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class NetsVocab(nn.Module):
-    def __init__(self):
-        super(NetsVocab, self).__init__()
-        self.models = nn.ModuleList([nn.Sequential(
-            nn.Linear(input_size, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-            ).to(device) for i in range(Nnets)])
-
-    def feed_forward(self, x, idx):
-        output = torch.ones(size=(nBBox,1)).to(device)
-        for k in idx:
-            logits = self.models[k](x)
-            # logits = model(x).view(-1)
-            predict = F.sigmoid(logits)
-            output = torch.mul(output, predict)
-        return output
-
-    def getParams(self, idx):
-        params=[]
-        for i in idx:
-            params.append({'params': self.models[i].parameters()})
-        return params
-
 print('Loading model...')
-nets = NetsVocab()
 checkpoint = torch.load(pathSaveModel + '/model_01_max_score_val.pth.tar')
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
-nets.load_state_dict(checkpoint['state_dict'])
+if ('version' in checkpoint['state_dict']):
+    nets = NetsVocab(device)
+    nets.load_state_dict(checkpoint['state_dict'])
+else:
+    # Load vocabulary
+    vocab = []
+    with open(pathVocabFile, 'r') as filehandle:
+        vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
+    nets = NetsVocab(vocab, input_size, device)
+    nets.load_state_dict_deprecated(checkpoint['state_dict'])
 print("Mean loss value: {} (epoch {})" .format(mean_loss, checkpoint['epoch']))
 
 
@@ -146,14 +122,7 @@ ans_stat = []
 num_yes_gt = 0
 num_yes_pred = 0
 for i in range(nQuest):
-    idx = []
     words = getWords(df_quest.loc[i, 'groundedFormula'])
-    nWords = len(words)
-    for w in words:
-        try:
-            idx.append( vocab.index(w) )
-        except ValueError:
-            continue
 
     # get img bbox features
     img_id = df_quest.loc[i, 'imageId']
@@ -172,7 +141,7 @@ for i in range(nQuest):
 
 
     # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
-    output = nets.feed_forward(inputs, idx)
+    output = nets.feed_forward(nBBox, inputs, words)
 
     ans = np.asarray(ansListBin[i], dtype=np.float32)
     _, idx_max = torch.max(output, 0)
