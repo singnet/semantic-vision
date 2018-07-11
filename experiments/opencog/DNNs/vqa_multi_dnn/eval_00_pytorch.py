@@ -56,7 +56,7 @@ print('Loading model...')
 checkpoint = torch.load(pathSaveModel + '/model.pth.tar')
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
-if ('version' in checkpoint):
+if ('version' in checkpoint['state_dict']):
     nets = NetsVocab(device)
     nets.load_state_dict(checkpoint['state_dict'])
 else:
