@@ -149,7 +149,7 @@ class Model_h(nn.Module):
 
         q_repr = self.q_net(q_emb)
         v_repr = self.v_net(v_emb)
-	joint_repr = self.h_net(q_repr, v_repr)
+        joint_repr = self.h_net(q_repr, v_repr)
         logits = self.classifier(joint_repr)
         return logits
 

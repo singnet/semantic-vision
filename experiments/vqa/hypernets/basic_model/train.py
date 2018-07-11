@@ -46,10 +46,10 @@ def train(model, train_loader, eval_loader, num_epochs, output, opt, wd):
         correct = 0
 
         for i, (v, b, q, a) in enumerate(train_loader):
-            v = Variable(v).cuda()
-            b = Variable(b).cuda() # boxes not used
-            q = Variable(q).cuda()
-            a = Variable(a).cuda() # true labels
+            #v = Variable(v).cuda()
+            #b = Variable(b).cuda() # boxes not used
+            #q = Variable(q).cuda()
+            #a = Variable(a).cuda() # true labels
 
             pred = model(v, b, q, a)
             loss = instance_bce_with_logits(pred, a)
