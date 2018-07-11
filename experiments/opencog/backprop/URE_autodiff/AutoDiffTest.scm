@@ -24,9 +24,10 @@
 (ListLink (ConceptNode "Gradient") (ConceptNode "*") (ListLink (ConceptNode "+") (NumberNode 3) (NumberNode 3))
           (ListLink (ConceptNode "*") (NumberNode 3) (NumberNode 3)))
 
-(Inheritance
-    (Concept "my-rule-base")
-    (Concept "URE"))
-(Member
-    (DefinedSchema "GradientMul" (stv 0.4 1))
-    (Concept "my-rule-base"))
+(Inheritance (Concept "my-rule-base") (Concept "URE"))
+
+(Member (DefinedSchema "GradientMul" (stv 0.4 1)) (Concept "my-rule-base"))
+
+(define (my-forward-chainer SRC) (cog-fc (Concept "my-rule-base") SRC))
+
+(GetLink (VariableNode "$X"))
