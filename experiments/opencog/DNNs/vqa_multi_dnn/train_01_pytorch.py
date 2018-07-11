@@ -165,7 +165,7 @@ for e in range(nEpoch):
         ans = torch.from_numpy(np.asarray(ansList[i], dtype=np.float32)).to(device)
 
         sum = torch.sum(output)
-        s = torch.div(output, sum)
+        #s = torch.div(output, sum)
         sum_sq = torch.sum(torch.mul(output, output))
         output = sum_sq / sum
 
@@ -222,7 +222,7 @@ for e in range(nEpoch):
             output_val = nets.feed_forward(nBBox, inputs_val, words_val)
 
             sum_val = torch.sum(output_val)
-            s_val = torch.div(output_val, sum_val)
+            #s_val = torch.div(output_val, sum_val)
             sum_sq_val = torch.sum(torch.mul(output_val, output_val))
             output_val = sum_sq_val / sum_val
 
