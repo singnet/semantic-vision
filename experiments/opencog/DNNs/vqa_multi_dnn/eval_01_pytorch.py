@@ -44,11 +44,6 @@ nBBox = 36
 featOffset = 10
 
 
-# Load vocabulary
-vocab = []
-with open(pathVocabFile, 'r') as filehandle:
-    vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-
 def getWords(groundedFormula):
     words = re.split(r', ', groundedFormula[groundedFormula.find("(") + 1:groundedFormula.find(")")])
     return words
@@ -58,11 +53,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 print('Loading model...')
-nets = NetsVocab(vocab, input_size, device)
 checkpoint = torch.load(pathSaveModel + '/model_01_max_score_val.pth.tar')
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
-nets.load_state_dict(checkpoint['state_dict'])
+if ('version' in checkpoint):
+    nets = NetsVocab(device)
+    nets.load_state_dict(checkpoint['state_dict'])
+else:
+    # Load vocabulary
+    vocab = []
+    with open(pathVocabFile, 'r') as filehandle:
+        vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
+    nets = NetsVocab(vocab, input_size, device)
+    nets.load_state_dict_deprecated(checkpoint['state_dict'])
 print("Mean loss value: {} (epoch {})" .format(mean_loss, checkpoint['epoch']))
 
 

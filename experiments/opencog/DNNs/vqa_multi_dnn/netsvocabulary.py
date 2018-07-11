@@ -4,20 +4,43 @@ import torch.nn.functional as F
 
 class NetsVocab(nn.Module):
     
-    def __init__(self):
+    def __init__(self, device):
         super(NetsVocab, self).__init__()
         
+        self.device = device
         self.models = nn.ModuleList()
         self.modelIndexByWord = {}
     
     def __init__(self, vocabulary, featureVectorSize, device):
-        self.__init__()
-        self.device = device
+        self.__init__(device)
         
+        self.vocabulary = vocabulary
+        self.featureVectorSize = featureVectorSize
+        
+        self.initializeModels()
+    
+    def state_dict(self):
+        return {
+            'version' : 1,
+            'vocabulary': vocabulary,
+            'featureVectorSize': featureVectorSize,
+            'pytorch_state_dict': super().state_dict()
+            }
+    
+    def load_state_dict(self, stateDict):
+        self.vocabulary = stateDict['vocabulary']
+        self.featureVectorSize = stateDict['featureVectorSize']
+        self.initializeModels()
+        super().load_state_dict(stateDict['pytorch_state_dict'])
+    
+    def load_state_dict_deprecated(self, stateDict):
+        super().load_state_dict(stateDict)
+    
+    def initializeModels(self):
         modelIndex = 0
-        for word in vocabulary:
+        for word in self.vocabulary:
             self.models.append(nn.Sequential(
-                nn.Linear(featureVectorSize, 64),
+                nn.Linear(self.featureVectorSize, 64),
                 nn.ReLU(),
                 nn.Linear(64, 32),
                 nn.ReLU(),
