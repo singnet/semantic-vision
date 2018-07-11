@@ -26,8 +26,8 @@ class NetsVocab(nn.Module):
     def state_dict(self):
         return {
             'version' : 1,
-            'vocabulary': vocabulary,
-            'featureVectorSize': featureVectorSize,
+            'vocabulary': self.vocabulary,
+            'featureVectorSize': self.featureVectorSize,
             'pytorch_state_dict': super().state_dict()
             }
     
@@ -64,7 +64,7 @@ class NetsVocab(nn.Module):
         for word in words:
             try:
                 models.append(self.getModelByWord(word))
-            except ValueError:
+            except KeyError:
                 continue
         return models
     

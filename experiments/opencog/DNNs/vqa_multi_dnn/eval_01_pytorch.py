@@ -11,18 +11,20 @@ from netsvocabulary import NetsVocab
 
 
 # FOR RUNNING ON K4
-# pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
-# pathFeaturesParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
-# pathQuestFile = '/home/shared/datasets/val2014_questions_parsed.txt'
-# pathImgs = '/home/shared/datasets/val2014'
+#pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
+#pathFeaturesParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
+#pathQuestFile = '/home/shared/datasets/val2014_questions_parsed.txt'
+#pathImgs = '/home/shared/datasets/val2014'
+#pathSaveModel = '/mnt/fileserver/shared/models/vqa_multi_dnn/saved_models_01/99.16_67.65'
 
 
 #
 pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-
 pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/val2014'
 pathFeaturesParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
 pathQuestFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
+pathSaveModel = './saved_models_01/99.16_67.65'
+
 FILE_PREFIX = 'COCO_val2014_'
 
 # pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/train2014'
@@ -34,8 +36,6 @@ FILE_PREFIX = 'COCO_val2014_'
 IMAGE_ID_FIELD_NAME = 'imageId'
 id_len = 12
 
-
-pathSaveModel = './saved_models_01/99.16_67.65'
 
 isReduceSet = False
 
