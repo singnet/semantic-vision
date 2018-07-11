@@ -12,7 +12,11 @@ class NetsVocab(nn.Module):
         self.modelIndexByWord = {}
     
     def __init__(self, vocabulary, featureVectorSize, device):
-        self.__init__(device)
+        super(NetsVocab, self).__init__()
+        
+        self.device = device
+        self.models = nn.ModuleList()
+        self.modelIndexByWord = {}
         
         self.vocabulary = vocabulary
         self.featureVectorSize = featureVectorSize
