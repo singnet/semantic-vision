@@ -46,8 +46,6 @@ vocab = []
 with open(pathVocabFile, 'r') as filehandle:
     vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
 
-Nnets = len(vocab)
-
 def getWords(groundedFormula):
     words = re.split(r', ', groundedFormula[groundedFormula.find("(") + 1:groundedFormula.find(")")])
     return words
