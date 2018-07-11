@@ -9,24 +9,25 @@ import os, sys, time, re
 import math
 from netsvocabulary import NetsVocab
 
-# FOR RUNNING ON K4
-# pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
-# pathFeaturesTrainParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/train2014_parsed_features'
-# pathFeaturesValParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
-# pathDataTrainFile = '/home/shared/datasets/train2014_questions_parsed.txt'
-# pathDataValFile = '/home/shared/datasets/val2014_questions_parsed.txt'
+pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_words.txt'
+pathFeaturesTrainParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_parsed_features'
+pathFeaturesValParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
+pathDataTrainFile = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_questions_parsed.txt'
+pathDataValFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
+
+pathPickledTrainFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_train2014_yes_no.pkl'
+pathPickledValFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
+
+pathSaveModel = './saved_models_00'
+if os.path.isdir(pathSaveModel) is False:
+    os.mkdir(pathSaveModel)
 
 
-pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-pathFeaturesTrainParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_parsed_features'
-pathFeaturesValParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
-pathDataTrainFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_questions_parsed.txt'
-pathDataValFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
-
-pathSaveModel = './saved_models'
 FILE_PREFIX_TRAIN = 'COCO_train2014_'
 FILE_PREFIX_VAL = 'COCO_val2014_'
 IMAGE_ID_FIELD_NAME = 'imageId'
+
+
 
 
 # pathFeaturesTrainParsed = pathFeaturesValParsed
@@ -36,9 +37,10 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 input_size = 2048
 nBBox = 36
 featOffset = 10
-nEpoch = 100
+nEpoch = 10
 learning_rate = 1e-3
 
+isLoadPickledFeatures = True
 isReduceSet = True
 
 # Load vocabulary
@@ -80,8 +82,12 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet = sorted(set(imgIdList))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX_TRAIN, reduce_set=isReduceSet)
+
+if isLoadPickledFeatures is True:
+    data_feat = vqp.load_pickled_features(pathPickledTrainFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX_TRAIN, reduce_set=isReduceSet)
 
 
 # Get list with binary answers yes = 1, no = 0
@@ -109,8 +115,13 @@ imgIdList_val = df_quest_val[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet_val = sorted(set(imgIdList_val))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat_val =  vqp.load_parsed_features(pathFeaturesValParsed, imgIdSet_val, filePrefix=FILE_PREFIX_VAL, reduce_set=isReduceSet)
+if isLoadPickledFeatures is True:
+    data_feat_val = vqp.load_pickled_features(pathPickledValFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat_val = vqp.load_parsed_features(pathFeaturesValParsed, imgIdSet_val, filePrefix=FILE_PREFIX_VAL,
+                                             reduce_set=isReduceSet)
+
 
 nQuest_val = df_quest_val.shape[0]
 questList_val = df_quest_val['question'].tolist()
@@ -256,6 +267,9 @@ for e in range(nEpoch):
         torch.save(state, filename)
 
         fileLog.write("\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss, 100 * score))
+        print(
+            "\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss,
+                                                                                           100 * score))
 
 fileLogNumbers.close()
 fileLog.close()

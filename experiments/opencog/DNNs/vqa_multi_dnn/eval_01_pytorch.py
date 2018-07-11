@@ -10,20 +10,13 @@ import math
 from netsvocabulary import NetsVocab
 
 
-# FOR RUNNING ON K4
-#pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
-#pathFeaturesParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
-#pathQuestFile = '/home/shared/datasets/val2014_questions_parsed.txt'
-#pathImgs = '/home/shared/datasets/val2014'
-#pathSaveModel = '/mnt/fileserver/shared/models/vqa_multi_dnn/saved_models_01/99.16_67.65'
+pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_words.txt'
+pathImgs = '/mnt/fileserver/shared/datasets/at-on-at-data/images/val2014'
+pathFeaturesParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
+pathQuestFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
+pathSaveModel = '/mnt/fileserver/shared/models/vqa_multi_dnn/saved_models_00/model_99.41_62.8.pth.tar'
+pathPickledFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
-
-#
-pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/val2014'
-pathFeaturesParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
-pathQuestFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
-pathSaveModel = './saved_models_01/99.16_67.65'
 
 FILE_PREFIX = 'COCO_val2014_'
 
@@ -37,6 +30,7 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 id_len = 12
 
 
+isLoadPickledFeatures = True
 isReduceSet = False
 
 input_size = 2048
@@ -84,8 +78,12 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet = sorted(set(imgIdList))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=isReduceSet)
+
+if isLoadPickledFeatures is True:
+    data_feat = vqp.load_pickled_features(pathPickledFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=isReduceSet)
 
 # df.to_csv('parsed_yes_no_predadj.tsv', sep='\t', header=True, index=None)
 
