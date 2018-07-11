@@ -50,7 +50,7 @@ class NetsVocab(nn.Module):
                 # nn.Sigmoid()
                 ).to(self.device))
             self.modelIndexByWord[word] = modelIndex
-            ++modelIndex
+            modelIndex += 1
     
     def getModelByWord(self, word):
         return self.models[self.modelIndexByWord[word]]
