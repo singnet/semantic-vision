@@ -39,7 +39,7 @@ parser.add_argument('--words', '-w', dest='wordsFileName',
     help='words vocabulary (required only if old models file format is used')
 parser.add_argument('--opencog-log-level', dest='opencogLogLevel',
     action='store', type = str, default='NONE',
-    choices=['NONE', 'INFO', 'DEBUG', 'ERROR'],
+    choices=['FINE', 'DEBUG', 'INFO', 'ERROR', 'NONE'],
     help='OpenCog logging level')
 parser.add_argument('--python-log-level', dest='pythonLogLevel',
     action='store', type = str, default='INFO',
@@ -109,7 +109,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
     word = conceptNode.name
     model = netsVocabulary.getModelByWord(word)
     # TODO: F.sigmoid should part of NN
-    result = F.sigmoid(model(features))
+    result = F.sigmoid(model(torch.Tensor(features)))
     log.debug('word: %s, result: %s', word, str(result))
     return TruthValue(result.item(), 1.0)
 
@@ -121,12 +121,12 @@ def answerQuestion(record):
     boundingBoxNumber = 0
     for boundingBoxFeatures in loadFeatures(featuresFileName):
         imageFeatures = FloatValue(boundingBoxFeatures)
-        
+         
         boundingBoxInstance = ConceptNode('BoundingBox-'+
                                           str(boundingBoxNumber))
         InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
         boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
-        
+         
         boundingBoxNumber += 1
     
     relexFormula = questionConverter.parseQuestion(record.question)

@@ -47,8 +47,8 @@ public class RelexPredicate implements Comparable<RelexPredicate> {
             String secondPredicate = arguments.get(1).getName();
             return String.format("(AndLink " +
                     "(InheritanceLink (VariableNode \"$%1$s\") (ConceptNode \"BoundingBox\"))" +
-                    "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$%1$s\") (ConceptNode \"%2$s\") )" +
-                    "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$%1$s\") (ConceptNode \"%3$s\") )" +
+                    "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$%1$s\") (ConceptNode \"%2$s\")) )" +
+                    "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$%1$s\") (ConceptNode \"%3$s\")) )" +
                     ")", object, firstPredicate, secondPredicate);
         }
         return "";   
