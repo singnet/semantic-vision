@@ -59,6 +59,8 @@ log = None
 questionConverter = None
 atomspace = None
 netsVocabulary = None
+questionsAnswered = 0
+correctAnswers = 0
 
 def addLeadingZeros(number, requriedLength):
     result = ''
@@ -102,12 +104,15 @@ def initializeAtomspace():
 def runNeuralNetwork(boundingBox, conceptNode):
     log.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
     featuresValue = boundingBox.get_value(PredicateNode('features'))
-    if (featuresValue is None):
+    if featuresValue is None:
         log.debug('no features found, return FALSE')
         return TruthValue(0.0, 1.0)
     features = np.array(featuresValue.to_list())
     word = conceptNode.name
     model = netsVocabulary.getModelByWord(word)
+    if model is None:
+        log.debug('no model found, return FALSE')
+        return TruthValue(0.0, 1.0)
     # TODO: F.sigmoid should part of NN
     result = F.sigmoid(model(torch.Tensor(features)))
     log.debug('word: %s, result: %s', word, str(result))
@@ -137,10 +142,16 @@ def answerQuestion(record):
     start = datetime.datetime.now()
     result = scheme_eval_v(atomspace, evaluateStatement)
     delta = datetime.datetime.now() - start
-    log.debug('The result of pattern matching is: ' + str(result) + 
-          ', time: ' + str(delta.microseconds) + ' microseconds')
     
     answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
+    global questionsAnswered, correctAnswers
+    questionsAnswered += 1
+    if answer == record.answer:
+        correctAnswers += 1
+        
+    log.debug('The result of pattern matching is: %s, time: %s microseconds',
+              result, delta.microseconds)
+    log.debug('Correct answers %s%%', correctAnswerPercent())
     print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
         answer, record.answer, record.imageId))
 
@@ -220,6 +231,10 @@ def loadNets():
         nets.load_state_dict_deprecated(checkpoint['state_dict'])
     return nets
 
+
+def correctAnswerPercent():
+    return correctAnswers / questionsAnswered * 100
+
 def main():
     global log
     log = initializeLogger()
@@ -239,6 +254,10 @@ def main():
     
     answerAllQuestions(args.questionsFileName)
 #     answerTestQuestion('Are the zebras fat?', 11760)
+    print('Questions answered: {}, correct answers: {}% ({})'
+          .format(questionsAnswered, 
+                  correctAnswerPercent(),
+                  correctAnswers))
     
     jpype.shutdownJVM()
     
