@@ -255,7 +255,7 @@ def main():
     answerAllQuestions(args.questionsFileName)
 #     answerTestQuestion('Are the zebras fat?', 11760)
     print('Questions answered: {}, correct answers: {}% ({})'
-          .format(questionsAnswered, 
+          .format(questionsAnswered,
                   correctAnswerPercent(),
                   correctAnswers))
     
