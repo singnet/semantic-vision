@@ -62,7 +62,7 @@ netsVocabulary = None
 
 def addLeadingZeros(number, requriedLength):
     result = ''
-    nZeros = int((requriedLength - 1) - math.floor(math.log10(number)))
+    nZeros = int((requriedLength - 1) - math.floor(math.log10(int(number))))
     for _ in range(0, nZeros):
         result += '0'
     return result + str(number)
@@ -137,8 +137,12 @@ def answerQuestion(record):
     start = datetime.datetime.now()
     result = scheme_eval_v(atomspace, evaluateStatement)
     delta = datetime.datetime.now() - start
-    print('The result of pattern matching is: ' + str(result) + 
+    log.debug('The result of pattern matching is: ' + str(result) + 
           ', time: ' + str(delta.microseconds) + ' microseconds')
+    
+    answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
+    print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
+        answer, record.answer, record.imageId))
 
 
 def initializeLogger():
@@ -165,16 +169,30 @@ class Record:
         self.questionType = None
         self.questionId = None
         self.imageId = None
+        self.answer = None
+        self.formula = None
+        self.groundedFormula = None
 
     def toString(self):
-        return '{}:{}:{}:{}'.format(self.questionId, self.questionType,
-                                    self.question, self.imageId);
-        
-    @staticmethod                            
-    def fromString(line):
+        return '{}::{}::{}::{}::{}::{}::{}'.format(self.questionId, 
+                                                   self.questionType, 
+                                                   self.question, self.imageId, 
+                                                   self.answer, self.formula, 
+                                                   self.groundedFormula);
+    
+    @staticmethod
+    def fromString(string):
         record = Record()
-        record.questionId, record.questionType, record.question, record.imageId = line.rstrip().split(":")
+        (record.questionId, record.questionType, 
+         record.question, record.imageId, record.answer,
+         record.formula, record.groundedFormula) = string.strip().split('::')
         return record
+    
+    def getWords(self):
+        # parse '_test(A, B);next(B, A)'
+        words = re.split('\)[^\(]+\(|, |^[^\(]+\(|\)[^\(]+$', 
+                         self.groundedFormula)
+        return map(str.strip, words)
 
 def answerAllQuestions(questionsFileName):
     questionFile = open(questionsFileName, 'r')
@@ -219,8 +237,8 @@ def main():
     global netsVocabulary
     netsVocabulary = loadNets()
     
-#     answerAllQuestions(args.questionsFileName)
-    answerTestQuestion('Are the zebras fat?', 11760)
+    answerAllQuestions(args.questionsFileName)
+#     answerTestQuestion('Are the zebras fat?', 11760)
     
     jpype.shutdownJVM()
     
