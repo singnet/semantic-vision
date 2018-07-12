@@ -41,3 +41,5 @@ Acquired validation score for this type of loss is 62.8%.
         output = sum_sq / sum
         loss = F.binary_cross_entropy(output, ans)
 
+
+Acquired validation score for this type of loss is 67.65%.
