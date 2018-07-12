@@ -57,15 +57,18 @@ class NetsVocab(nn.Module):
             modelIndex += 1
     
     def getModelByWord(self, word):
-        return self.models[self.modelIndexByWord[word]]
+        if word in self.modelIndexByWord:
+            return self.models[self.modelIndexByWord[word]]
+        else:
+            return None
     
     def getModelsByWords(self, words):
         models = []
         for word in words:
-            try:
-                models.append(self.getModelByWord(word))
-            except KeyError:
+            model = self.getModelByWord(word)
+            if model is None:
                 continue
+            models.append()
         return models
     
     def feed_forward(self, nBBox, x, words):
