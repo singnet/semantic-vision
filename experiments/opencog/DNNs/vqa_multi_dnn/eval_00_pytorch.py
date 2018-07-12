@@ -10,24 +10,17 @@ import math
 from netsvocabulary import NetsVocab
 
 
-# FOR RUNNING ON K4
-# pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
-# pathFeaturesParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
-# pathQuestFile = '/home/shared/datasets/val2014_questions_parsed.txt'
-# pathImgs = '/home/shared/datasets/val2014'
+pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_words.txt'
+pathImgs = '/mnt/fileserver/shared/datasets/at-on-at-data/images/val2014'
+pathFeaturesParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
+pathQuestFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
+pathSaveModel = '/mnt/fileserver/shared/models/vqa_multi_dnn/saved_models_00/model_99.41_62.8.pth.tar'
+pathPickledFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
 
-#
-pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-
-pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/val2014'
-pathFeaturesParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
-pathQuestFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
 FILE_PREFIX = 'COCO_val2014_'
 
-# pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/train2014'
-# pathFeaturesParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_parsed_features'
-# pathQuestFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_questions_parsed.txt'
+
 # FILE_PREFIX = 'COCO_train2014_'
 
 
@@ -35,7 +28,8 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 id_len = 12
 
 
-pathSaveModel = './saved_models'
+isLoadPickledFeatures = True
+isReduceSet = False
 
 
 input_size = 2048
@@ -53,7 +47,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 print('Loading model...')
-checkpoint = torch.load(pathSaveModel + '/model.pth.tar')
+checkpoint = torch.load(pathSaveModel)
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
 if ('version' in checkpoint['state_dict']):
@@ -84,8 +78,11 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet = sorted(set(imgIdList))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=False)
+if isLoadPickledFeatures is True:
+    data_feat = vqp.load_pickled_features(pathPickledFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=isReduceSet)
 
 # df.to_csv('parsed_yes_no_predadj.tsv', sep='\t', header=True, index=None)
 
