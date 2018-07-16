@@ -12,5 +12,5 @@ java \
 	-Drelex.semalgpath=$RELEX/data/relex-semantic.algs \
 	-Drelex.pennalgpath=$RELEX/data/relex-penn-tagging.algs \
 	-Drelex.sfalgpath=$RELEX/data/relex-stanford.algs \
-	-jar ./target/question2atomeese-1.0-SNAPSHOT.jar \
+	-jar ./target/question2atomese-1.0-SNAPSHOT.jar \
 	$* 2>/dev/null
