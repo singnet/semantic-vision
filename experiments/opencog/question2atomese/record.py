@@ -1,7 +1,7 @@
 import re
 
 class Record:
-
+    
     def __init__(self):
         self.question = None
         self.questionType = None
@@ -10,7 +10,7 @@ class Record:
         self.answer = None
         self.formula = None
         self.groundedFormula = None
-
+    
     def toString(self):
         return '{}::{}::{}::{}::{}::{}::{}'.format(self.questionId, 
                                                    self.questionType, 
@@ -18,12 +18,24 @@ class Record:
                                                    self.answer, self.formula, 
                                                    self.groundedFormula);
     
-    @staticmethod
-    def fromString(string):
-        record = Record()
+    @classmethod
+    def fromString(cls, string):
+        record = cls()
         (record.questionId, record.questionType, 
          record.question, record.imageId, record.answer,
          record.formula, record.groundedFormula) = string.split('::')
+        return record
+    
+    @classmethod
+    def fromOther(cls, other):
+        record = cls()
+        record.question = other.question
+        record.questionType = other.questionType
+        record.questionId = other.questionId
+        record.imageId = other.imageId
+        record.answer = other.answer
+        record.formula = other.formula
+        record.groundedFormula = other.groundedFormula
         return record
     
     def getWords(self):
