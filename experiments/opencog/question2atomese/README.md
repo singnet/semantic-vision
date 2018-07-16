@@ -3,32 +3,16 @@
 Build Link Grammar with Java bindings (see 
 [link-grammar repo](https://github.com/opencog/link-grammar))
 
-Build RelEx (see [relex repo](https://github.com/opencog/relex))
-
 Install ```maven```:
 ```
 sudo apt install maven
 ```
 
+Build RelEx using maven (see ["With Maven" section of RelEx README.md](https://github.com/opencog/relex#with-maven))
+
 Python 3 is required to parse questions dataset.
 
 # Building
-
-Add linkgrammar.jar and relex.jar into local maven repository:
-```
-mvn install:install-file \
-	-Dfile=<linkgrammar-jar-folder/linkgrammar.jar> \
-	-DgroupId=org.opencog \
-	-DartifactId=linkgrammar \
-	-Dversion=<linkgrammar.version> \
-	-Dpackaging=jar
-mvn install:install-file \
-	-Dfile=<relex-jar-folder/relex.jar> \
-	-DgroupId=org.opencog \
-	-DartifactId=relex \
-	-Dversion=<relex.version> \
-	-Dpackaging=jar
-```
 
 Build using maven:
 ```
@@ -67,10 +51,22 @@ optional arguments:
                         logging level
 ```
 
-# Running
+# Parse questions using RelEx
 
 Run question2atomese app:
 ```
 RELEX=<path-to-relex-src-dir> ./question2atomese.sh questions.txt \
 	> parsed_questions.txt
 ```
+
+# Sort question types by frequency
+
+Get 10 most frequent question types:
+```
+$ ./sort_questions_by_frequency.sh parsed_questions.txt | head -10
+```
+
+# Other scripts
+
+```get_words.py``` - get key words from parsed questions file
+```unique_questions.py``` - calculate number of questions with unique words in validation dataset
