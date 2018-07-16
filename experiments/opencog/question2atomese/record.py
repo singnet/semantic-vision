@@ -40,6 +40,6 @@ class Record:
     
     def getWords(self):
         # parse '_test(A, B);next(B, A)'
-        words = re.split('\)[^\(]+\(|, |^[^\(]+\(|\)[^\(]+$', 
+        words = re.split('^[^\(]+\(|\)[^\(]+\(|, |\)[^\(]*$', 
                          self.groundedFormula)
-        return map(str.strip, words)
+        return filter(lambda x: len(x) > 0, map(str.strip, words))
