@@ -9,7 +9,7 @@ def loadWordsFromFile(fileName):
     words = set()
     file = open(fileName, 'r')
     for line in file:
-        record = Record.fromString(line)
+        record = Record.fromString(line.strip())
         for word in record.getWords():
             words.add(word)
     return words
@@ -35,7 +35,7 @@ print('unique words in test set - ', len(uniqueWords))
 
 file = open(args.testFileName, 'r')
 for line in file:
-    record = Record.fromString(line)
+    record = Record.fromString(line.strip())
     for word in record.getWords():
         if word in uniqueWords:
             print('{} (unique word: {})'.format(record.question, word))

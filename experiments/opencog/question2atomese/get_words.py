@@ -27,7 +27,7 @@ class Word:
 words = {}
 
 for line in sys.stdin:
-    record = Record.fromString(line)
+    record = Record.fromString(line.strip())
     for word in record.getWords():
         words.setdefault(word.lower(), Word(word.lower())).addRecord(record)
 
