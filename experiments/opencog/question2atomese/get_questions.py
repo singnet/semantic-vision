@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import ijson
 import logging
 import argparse

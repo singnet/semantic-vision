@@ -10,7 +10,9 @@ sudo apt install maven
 
 Build RelEx using maven (see ["With Maven" section of RelEx README.md](https://github.com/opencog/relex#with-maven))
 
-Python 3 is required to parse questions dataset.
+Python 3 is required to parse questions dataset. 
+Python libraries:
+- ```ijson``` - JSON streaming parsing library
 
 # Building
 
@@ -28,7 +30,7 @@ wget http://visualqa.org/data/mscoco/vqa/v2_Questions_Train_mscoco.zip
 wget http://visualqa.org/data/mscoco/vqa/v2_Annotations_Train_mscoco.zip
 unzip v2_Questions_Train_mscoco.zip
 unzip v2_Annotations_Train_mscoco.zip
-./get_questions.py -q v2_OpenEnded_mscoco_train2014_questions.json 
+python get_questions.py -q v2_OpenEnded_mscoco_train2014_questions.json 
 	-a v2_mscoco_train2014_annotations.json > questions.txt
 ```
 
