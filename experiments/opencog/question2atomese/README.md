@@ -63,10 +63,10 @@ RELEX=<path-to-relex-src-dir> ./question2atomese.sh questions.txt \
 
 Get 10 most frequent question types:
 ```
-$ ./sort_questions_by_frequency.sh parsed_questions.txt | head -10
+./sort_questions_by_frequency.sh parsed_questions.txt | head -10
 ```
 
 # Other scripts
 
-```get_words.py``` - get key words from parsed questions file
-```unique_questions.py``` - calculate number of questions with unique words in validation dataset
+- ```get_words.py``` - get key words from parsed questions file
+- ```unique_questions.py``` - calculate number of questions with unique words in validation dataset
