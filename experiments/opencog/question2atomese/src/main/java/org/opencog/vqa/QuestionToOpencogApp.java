@@ -36,7 +36,7 @@ public class QuestionToOpencogApp {
 
     private void run() {
         Stream<String> linesStream = bufferedReader.lines();
-//        Stream<String> linesStream = Stream.of("0:yes/no:Is the room messy?:0");
+//        Stream<String> linesStream = Stream.of("0::yes/no::Is the book a paperback?::0::none");
         try {
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
