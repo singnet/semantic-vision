@@ -35,10 +35,10 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 input_size = 2048
 nBBox = 36
 featOffset = 10
-nEpoch = 500
+nEpoch = 200
 learning_rate = 1e-2
 lr_decay_iter = 30
-
+eps = 1e-16
 
 isLoadPickledFeatures = True
 isReduceSet = False
@@ -53,7 +53,9 @@ def getWords(groundedFormula):
     return words
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+device = "cpu"
 
 nets = NetsVocab(vocab, input_size, device)
 
@@ -176,7 +178,7 @@ for e in range(nEpoch):
 
         ans = torch.from_numpy(np.asarray(ansList[i], dtype=np.float32)).to(device)
 
-        sum = torch.sum(output)
+        sum = torch.sum(output) + torch.Tensor([eps])
         #s = torch.div(output, sum)
         sum_sq = torch.sum(torch.mul(output, output))
         output = sum_sq / sum
@@ -233,7 +235,7 @@ for e in range(nEpoch):
             # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
             output_val = nets.feed_forward(nBBox, inputs_val, words_val)
 
-            sum_val = torch.sum(output_val)
+            sum_val = torch.sum(output_val) + torch.Tensor([eps])
             #s_val = torch.div(output_val, sum_val)
             sum_sq_val = torch.sum(torch.mul(output_val, output_val))
             output_val = sum_sq_val / sum_val
@@ -270,15 +272,15 @@ for e in range(nEpoch):
 
             max_score_val = score_val
 
-    if (mean_loss < min_loss):
-        state = {'epoch': e, 'state_dict': nets.state_dict(), 'optimizer' : optimizer.state_dict(), 'mean_loss' : mean_loss }
-        filename = pathSaveModel + '/model_01.pth.tar'
-        torch.save(state, filename)
-
-        fileLog.write("\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss, 100 * score))
-        print(
-            "\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss,
-                                                                                           100 * score))
+    # if (mean_loss < min_loss):
+    #     state = {'epoch': e, 'state_dict': nets.state_dict(), 'optimizer' : optimizer.state_dict(), 'mean_loss' : mean_loss }
+    #     filename = pathSaveModel + '/model_01.pth.tar'
+    #     torch.save(state, filename)
+    #
+    #     fileLog.write("\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss, 100 * score))
+    #     print(
+    #         "\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss,
+    #                                                                                        100 * score))
 
 fileLogNumbers.close()
 fileLog.close()

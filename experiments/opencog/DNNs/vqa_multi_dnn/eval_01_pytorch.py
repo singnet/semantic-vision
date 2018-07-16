@@ -28,7 +28,7 @@ FILE_PREFIX = 'COCO_val2014_'
 
 IMAGE_ID_FIELD_NAME = 'imageId'
 id_len = 12
-
+eps = 1e-16
 
 isLoadPickledFeatures = True
 isReduceSet = False
@@ -145,7 +145,7 @@ for i in range(nQuest):
     _, idx_max = torch.max(output, 0)
     imax = idx_max.data.cpu().numpy()
 
-    sum = torch.sum(output)
+    sum = torch.sum(output) + torch.Tensor([eps])
     s = torch.div(output, sum)
     sum_sq = torch.sum(torch.mul(output, output))
     output = sum_sq / sum
