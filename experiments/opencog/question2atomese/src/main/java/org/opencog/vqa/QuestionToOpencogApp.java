@@ -2,29 +2,57 @@ package org.opencog.vqa;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.stream.Stream;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.opencog.vqa.relex.QuestionToOpencogConverter;
 import org.opencog.vqa.relex.RelexFormula;
 
 public class QuestionToOpencogApp {
 
+    private static final String OPTION_INPUT = "input";
+    private static final String OPTION_OUTPUT = "output";
+    
     private final BufferedReader bufferedReader;
+    private final PrintWriter printWriter;
+    
     private final QuestionToOpencogConverter questionToOpencogConverter;
 
-    private QuestionToOpencogApp(InputStream inputStream) {
+    private QuestionToOpencogApp(InputStream inputStream, OutputStream outputStream) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        this.printWriter = new PrintWriter(outputStream);
         this.questionToOpencogConverter = new QuestionToOpencogConverter();
     }
 
     public static void main(String args[]) {
+        Options options = new Options();
         try {
+            options.addOption("i", OPTION_INPUT, true, "input filename, stdin if not provided");
+            options.addOption("o", OPTION_OUTPUT, true, "output filename, stdout if not provided");
+            
+            CommandLineParser argsParser = new DefaultParser();
+            CommandLine commandLine = argsParser.parse(options, args);
 
-            String filename = args[0];
-            new QuestionToOpencogApp(new FileInputStream(filename)).run();
-
+            InputStream inputStream = commandLine.hasOption(OPTION_INPUT) 
+                    ? new FileInputStream(commandLine.getOptionValue(OPTION_INPUT))
+                    : System.in;
+            OutputStream outputStream = commandLine.hasOption(OPTION_OUTPUT) 
+                    ? new FileOutputStream(commandLine.getOptionValue(OPTION_OUTPUT))
+                    : System.out;
+            new QuestionToOpencogApp(inputStream, outputStream).run();
+        } catch (ParseException e) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("QuestionToOpencogApp", options);
         } catch (Exception e) {
             handleException(e);
         }
@@ -45,9 +73,10 @@ public class QuestionToOpencogApp {
 //                    .filter(parsedRecord -> parsedRecord.getRelexFormula().getFullFormula().equals("_predadj(A, B)"))
 //                    .map(this::convertToOpencogSchema)
                     .parallel()
-                    .forEach(System.out::println);
+                    .forEach(printWriter::println);
         } finally {
             linesStream.close();
+            printWriter.flush();
         }
     }
 
