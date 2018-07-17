@@ -91,9 +91,6 @@ optional arguments:
                         name)
   --features-prefix FEATURESPREFIX
                         features prefix to be merged with path to open feature
-  --words WORDSFILENAME, -w WORDSFILENAME
-                        words vocabulary (required only if old models file
-                        format is used
   --opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}
                         OpenCog logging level
   --python-log-level {INFO,DEBUG,ERROR}
