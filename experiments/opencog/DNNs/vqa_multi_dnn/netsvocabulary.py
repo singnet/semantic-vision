@@ -10,6 +10,28 @@ class NetsVocab(nn.Module):
         self.device = device
         self.models = nn.ModuleList()
         self.modelIndexByWord = {}
+
+    @classmethod
+    def fromWordsVocabulary(cls, vocabulary, featureVectorSize, device):
+        netsVocab = cls(device)
+        
+        netsVocab.vocabulary = vocabulary
+        netsVocab.featureVectorSize = featureVectorSize
+        netsVocab.initializeModels()
+        
+        return netsVocab
+    
+    @classmethod
+    def fromStateDict(cls, device, stateDict):
+        netsVocab = cls(device)
+        
+        netsVocab.vocabulary = stateDict['vocabulary']
+        netsVocab.featureVectorSize = stateDict['featureVectorSize']
+        netsVocab.initializeModels()
+        
+        netsVocab.load_state_dict(stateDict['pytorch_state_dict'])
+        
+        return netsVocab
     
     def state_dict(self):
         return {
@@ -18,15 +40,6 @@ class NetsVocab(nn.Module):
             'featureVectorSize': self.featureVectorSize,
             'pytorch_state_dict': super().state_dict()
             }
-    
-    def load_state_dict(self, stateDict):
-        self.vocabulary = stateDict['vocabulary']
-        self.featureVectorSize = stateDict['featureVectorSize']
-        self.initializeModels()
-        super().load_state_dict(stateDict['pytorch_state_dict'])
-    
-    def load_state_dict_deprecated(self, stateDict):
-        super().load_state_dict(stateDict)
     
     def initializeModels(self):
         modelIndex = 0
