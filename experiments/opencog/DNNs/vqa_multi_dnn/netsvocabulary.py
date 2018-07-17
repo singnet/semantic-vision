@@ -11,18 +11,6 @@ class NetsVocab(nn.Module):
         self.models = nn.ModuleList()
         self.modelIndexByWord = {}
     
-    def __init__(self, vocabulary, featureVectorSize, device):
-        super(NetsVocab, self).__init__()
-        
-        self.device = device
-        self.models = nn.ModuleList()
-        self.modelIndexByWord = {}
-        
-        self.vocabulary = vocabulary
-        self.featureVectorSize = featureVectorSize
-        
-        self.initializeModels()
-    
     def state_dict(self):
         return {
             'version' : 1,

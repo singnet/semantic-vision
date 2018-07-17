@@ -76,7 +76,7 @@ usage: pattern_matcher_vqa.py [-h] --questions QUESTIONSFILENAME --models
                               [--words WORDSFILENAME]
                               [--opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}]
                               [--python-log-level {INFO,DEBUG,ERROR}]
-                              [--question2atomeese-java-library Q2AJARFILENNAME]
+                              [--question2atomese-java-library Q2AJARFILENNAME]
 
 Load pretrained words models and answer questions using OpenCog PatternMatcher
 
@@ -98,6 +98,6 @@ optional arguments:
                         OpenCog logging level
   --python-log-level {INFO,DEBUG,ERROR}
                         Python logging level
-  --question2atomeese-java-library Q2AJARFILENNAME
-                        path to question2atomeese-<version>.jar
+  --question2atomese-java-library Q2AJARFILENNAME
+                        path to question2atomese-<version>.jar
 ```

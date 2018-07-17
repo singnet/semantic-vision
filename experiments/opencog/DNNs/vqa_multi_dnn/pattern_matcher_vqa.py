@@ -18,7 +18,7 @@ from netsvocabulary import NetsVocab
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 question2atomeeseLibraryPath = (str(currentDir) +
-    '/../../question2atomeese/target/question2atomeese-1.0-SNAPSHOT.jar')
+    '/../../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
    'and answer questions using OpenCog PatternMatcher')
@@ -34,9 +34,6 @@ parser.add_argument('--features', '-f', dest='featuresPath',
 parser.add_argument('--features-prefix', dest='featuresPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
     help='features prefix to be merged with path to open feature')
-parser.add_argument('--words', '-w', dest='wordsFileName',
-    action='store', type=str,
-    help='words vocabulary (required only if old models file format is used')
 parser.add_argument('--opencog-log-level', dest='opencogLogLevel',
     action='store', type = str, default='NONE',
     choices=['FINE', 'DEBUG', 'INFO', 'ERROR', 'NONE'],
@@ -45,10 +42,10 @@ parser.add_argument('--python-log-level', dest='pythonLogLevel',
     action='store', type = str, default='INFO',
     choices=['INFO', 'DEBUG', 'ERROR'], 
     help='Python logging level')
-parser.add_argument('--question2atomeese-java-library',
+parser.add_argument('--question2atomese-java-library',
     dest='q2aJarFilenName', action='store', type = str,
     default=question2atomeeseLibraryPath,
-    help='path to question2atomeese-<version>.jar')
+    help='path to question2atomese-<version>.jar')
 args = parser.parse_args()
 
 # global variables
@@ -219,16 +216,8 @@ def loadNets():
     nets = None
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     checkpoint = torch.load(args.modelsFileName, map_location=device.type)
-    if ('version' in checkpoint['state_dict']):
-        nets = NetsVocab(device)
-        nets.load_state_dict(checkpoint['state_dict'])
-    else:
-        # Load vocabulary
-        vocab = []
-        with open(args.wordsFileName, 'r') as filehandle:
-            vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-        nets = NetsVocab(vocab, 2048, device)
-        nets.load_state_dict_deprecated(checkpoint['state_dict'])
+    nets = NetsVocab(device)
+    nets.load_state_dict(checkpoint['state_dict'])
     return nets
 
 
