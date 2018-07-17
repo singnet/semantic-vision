@@ -14,7 +14,7 @@ pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_wor
 pathImgs = '/mnt/fileserver/shared/datasets/at-on-at-data/images/val2014'
 pathFeaturesParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
 pathQuestFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
-pathSaveModel = '/mnt/fileserver/shared/models/vqa_multi_dnn/saved_models_00/model_99.41_62.8.pth.tar'
+pathSaveModel = './saved_models_01'
 pathPickledFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
 
@@ -50,16 +50,9 @@ print('Loading model...')
 checkpoint = torch.load(pathSaveModel + '/model_01_max_score_val.pth.tar')
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
-if ('version' in checkpoint['state_dict']):
-    nets = NetsVocab(device)
-    nets.load_state_dict(checkpoint['state_dict'])
-else:
-    # Load vocabulary
-    vocab = []
-    with open(pathVocabFile, 'r') as filehandle:
-        vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-    nets = NetsVocab(vocab, input_size, device)
-    nets.load_state_dict_deprecated(checkpoint['state_dict'])
+
+nets = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+
 print("Mean loss value: {} (epoch {})" .format(mean_loss, checkpoint['epoch']))
 
 
@@ -145,7 +138,7 @@ for i in range(nQuest):
     _, idx_max = torch.max(output, 0)
     imax = idx_max.data.cpu().numpy()
 
-    sum = torch.sum(output) + torch.Tensor([eps])
+    sum = torch.sum(output) + torch.Tensor([eps]).to(device)
     s = torch.div(output, sum)
     sum_sq = torch.sum(torch.mul(output, output))
     output = sum_sq / sum

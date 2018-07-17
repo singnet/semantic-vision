@@ -57,13 +57,14 @@ def getWords(groundedFormula):
 
 device = "cpu"
 
-nets = NetsVocab(vocab, input_size, device)
+nets = NetsVocab.fromWordsVocabulary(vocab, input_size, device)
 
 # Continue training from saved checkpoint
 # checkpoint = torch.load(pathSaveModel + '/model_bkp.pth.tar')
 # mean_loss = checkpoint['mean_loss']
 # ep = checkpoint['epoch']
-# nets.load_state_dict(checkpoint['state_dict'])
+# nets.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+
 
 
 # Prepare training data
@@ -178,7 +179,7 @@ for e in range(nEpoch):
 
         ans = torch.from_numpy(np.asarray(ansList[i], dtype=np.float32)).to(device)
 
-        sum = torch.sum(output) + torch.Tensor([eps])
+        sum = torch.sum(output) + torch.Tensor([eps]).to(device)
         #s = torch.div(output, sum)
         sum_sq = torch.sum(torch.mul(output, output))
         output = sum_sq / sum
@@ -235,7 +236,7 @@ for e in range(nEpoch):
             # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
             output_val = nets.feed_forward(nBBox, inputs_val, words_val)
 
-            sum_val = torch.sum(output_val) + torch.Tensor([eps])
+            sum_val = torch.sum(output_val) + torch.Tensor([eps]).to(device)
             #s_val = torch.div(output_val, sum_val)
             sum_sq_val = torch.sum(torch.mul(output_val, output_val))
             output_val = sum_sq_val / sum_val
