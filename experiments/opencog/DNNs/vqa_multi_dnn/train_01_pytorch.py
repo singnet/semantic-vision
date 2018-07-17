@@ -53,9 +53,9 @@ def getWords(groundedFormula):
     return words
 
 
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-device = "cpu"
+# device = "cpu"
 
 nets = NetsVocab.fromWordsVocabulary(vocab, input_size, device)
 

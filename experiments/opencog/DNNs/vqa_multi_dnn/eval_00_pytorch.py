@@ -50,16 +50,9 @@ print('Loading model...')
 checkpoint = torch.load(pathSaveModel)
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
-if ('version' in checkpoint['state_dict']):
-    nets = NetsVocab(device)
-    nets.load_state_dict(checkpoint['state_dict'])
-else:
-    # Load vocabulary
-    vocab = []
-    with open(pathVocabFile, 'r') as filehandle:
-        vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-    nets = NetsVocab(vocab, input_size, device)
-    nets.load_state_dict_deprecated(checkpoint['state_dict'])
+
+nets = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+
 print("Mean loss value: {} (epoch {})" .format(mean_loss, checkpoint['epoch']))
 
 

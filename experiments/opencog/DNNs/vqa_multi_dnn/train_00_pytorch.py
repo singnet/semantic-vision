@@ -56,13 +56,13 @@ def getWords(groundedFormula):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-nets = NetsVocab(vocab, input_size, device)
+nets = NetsVocab.fromWordsVocabulary(vocab, input_size, device)
 
 # Continue training from saved checkpoint
 # checkpoint = torch.load(pathSaveModel + '/model_bkp.pth.tar')
 # mean_loss = checkpoint['mean_loss']
 # ep = checkpoint['epoch']
-# nets.load_state_dict(checkpoint['state_dict'])
+# nets.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
 
 
 # Prepare training data
