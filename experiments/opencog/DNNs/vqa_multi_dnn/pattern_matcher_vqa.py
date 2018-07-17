@@ -133,6 +133,9 @@ def answerQuestion(record):
     
     relexFormula = questionConverter.parseQuestion(record.question)
     queryInScheme = questionConverter.convertToOpencogSchema(relexFormula)
+    if queryInScheme is None:
+        log.debug('Question was not parsed')
+        return
     log.debug('Scheme query: %s', queryInScheme)
 
     evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'

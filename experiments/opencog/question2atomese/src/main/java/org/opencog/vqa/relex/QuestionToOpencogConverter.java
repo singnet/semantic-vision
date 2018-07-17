@@ -27,6 +27,6 @@ public class QuestionToOpencogConverter {
             return formula.getAtomeeseFormula();
         }
         
-        return "<not supported>";
+        return null;
     }
 }
