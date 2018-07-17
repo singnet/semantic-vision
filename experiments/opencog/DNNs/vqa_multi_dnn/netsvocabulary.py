@@ -69,7 +69,7 @@ class NetsVocab(nn.Module):
             model = self.getModelByWord(word)
             if model is None:
                 continue
-            models.append()
+            models.append(model)
         return models
     
     def feed_forward(self, nBBox, x, words):
