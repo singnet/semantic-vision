@@ -57,7 +57,7 @@ optional arguments:
 
 Run question2atomese app:
 ```
-RELEX=<path-to-relex-src-dir> ./question2atomese.sh questions.txt \
+RELEX=<path-to-relex-src-dir> ./question2atomese.sh -i questions.txt \
 	> parsed_questions.txt
 ```
 
