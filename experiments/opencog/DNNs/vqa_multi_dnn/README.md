@@ -53,7 +53,7 @@ PatternMatcher and neural networks for separate words.
 
 (1) Script loads images features by image id and forms an Atomspace with number of ConceptNode instances. Which ConceptNode instance represents a bounding box of the image. Features are placed into bounding box ConceptNode as FloatValue.
 
-(2) Script gets a question and parses it using question2atomeese Java library. Question2atomeese returns PatternMatcher query on Scheme language. Query is executed and PatternMatcher calls GroundingPredicates on bounding box from Atomspace.
+(2) Script gets a question and parses it using question2atomese Java library. Question2atomese returns PatternMatcher query on Scheme language. Query is executed and PatternMatcher calls GroundingPredicates on bounding box from Atomspace.
 
 (3) Predicate procedure has two arguments. First is bounding box ConceptNode and second is word ConceptNode. Predicate returns truth value which answers question whether word can be recognized on bounding box. Predicate procedure extracts features from bounding box, converts
 them into PyTorch tensor and passes to the NN model to calculate the probability the predicate takes true. NN model is queried from the set of models by word.
@@ -62,7 +62,7 @@ them into PyTorch tensor and passes to the NN model to calculate the probability
 
 Three arguments are required to run ```pattern_matcher_vqa.py```:
 
-- QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../../question2atomeese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../../question2atomeese/get_questions.py); see [README.md](../../question2atomeese/README.md)
+- QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../../question2atomese/get_questions.py); see [README.md](../../question2atomese/README.md)
 
 - MODELSFILENAME - file which contains pretrained words model; it can be prepared using [train_01_pytorch.py](./train_01_pytorch.py) script
 

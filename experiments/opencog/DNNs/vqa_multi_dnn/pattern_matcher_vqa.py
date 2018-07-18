@@ -17,7 +17,7 @@ from opencog.scheme_wrapper import scheme_eval, scheme_eval_v
 from netsvocabulary import NetsVocab
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
-question2atomeeseLibraryPath = (str(currentDir) +
+question2atomeseLibraryPath = (str(currentDir) +
     '/../../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
@@ -44,7 +44,7 @@ parser.add_argument('--python-log-level', dest='pythonLogLevel',
     help='Python logging level')
 parser.add_argument('--question2atomese-java-library',
     dest='q2aJarFilenName', action='store', type = str,
-    default=question2atomeeseLibraryPath,
+    default=question2atomeseLibraryPath,
     help='path to question2atomese-<version>.jar')
 args = parser.parse_args()
 
@@ -172,7 +172,7 @@ def answerTestQuestion(question, imageId):
     answerQuestion(questionRecord)
 
 
-# TODO reuse class from question2atomeese
+# TODO reuse class from question2atomese
 class Record:
 
     def __init__(self):
@@ -219,8 +219,7 @@ def loadNets():
     nets = None
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     checkpoint = torch.load(args.modelsFileName, map_location=device.type)
-    nets = NetsVocab(device)
-    nets.load_state_dict(checkpoint['state_dict'])
+    nets = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
     return nets
 
 

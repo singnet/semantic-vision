@@ -24,7 +24,7 @@ public class QuestionToOpencogConverter {
 
     public String convertToOpencogSchema(RelexFormula formula) {
         if (formula.getFullFormula().equals("_predadj(A, B)")) {
-            return formula.getAtomeeseFormula();
+            return formula.getAtomeseFormula();
         }
         
         return null;

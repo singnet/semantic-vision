@@ -40,7 +40,7 @@ public class RelexPredicate implements Comparable<RelexPredicate> {
         return name + "()";
     }
 
-    public String toAtomeeseFormula() {
+    public String toAtomeseFormula() {
         if (name.equals("_predadj")) {
             String object = arguments.get(0).getVariableName();
             String firstPredicate = arguments.get(0).getName();
