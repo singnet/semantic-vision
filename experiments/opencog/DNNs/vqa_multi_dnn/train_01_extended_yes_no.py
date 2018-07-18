@@ -9,23 +9,27 @@ import os, sys, time, re
 import math
 from netsvocabulary import NetsVocab
 
-pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_words.txt'
+pathVocabFile = '/mnt/fileserver/shared/vital/yesno_predadj_words.txt'
 pathFeaturesTrainParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_parsed_features'
 pathFeaturesValParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
-pathDataTrainFile = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_questions_parsed.txt'
+pathDataTrainFile = '/mnt/fileserver/shared/vital/yesno_predadj_questions.txt'
 pathDataValFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
 
-pathPickledTrainFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_train2014_yes_no.pkl'
+pathPickledTrainFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_train2014_yes_no_extended.pkl'
 pathPickledValFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
 
-pathSaveModel = '/mnt/fileserver/users/mvp/models/vqa/multi_dnn_01'
+pathSaveModel = '/mnt/fileserver/users/mvp/models/vqa/multi_dnn_01_extended_yes_no'
 if os.path.isdir(pathSaveModel) is False:
     try:
         os.makedirs(pathSaveModel)
     except FileNotFoundError or PermissionError:
-        print("Error: can't create directory %s" % pathSaveModel)
+        print("Error: can't create directory %s"%pathSaveModel)
         quit()
+
+pathTrainLog = pathSaveModel  + '/log_train_01.txt'
+pathTrainLogNums = pathSaveModel + '/log_train_01_nums.txt'
+
 
 FILE_PREFIX_TRAIN = 'COCO_train2014_'
 FILE_PREFIX_VAL = 'COCO_val2014_'
@@ -39,7 +43,7 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 input_size = 2048
 nBBox = 36
 featOffset = 10
-nEpoch = 200
+nEpoch = 500
 learning_rate = 1e-2
 lr_decay_iter = 30
 eps = 1e-16
@@ -88,6 +92,10 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet = sorted(set(imgIdList))
 
+# pathSave = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_train2014_yes_no_extended.pkl'
+# vqp.pickle_parsed_features(pathFeaturesTrainParsed , imgIdSet, pathSave=pathSave, filePrefix = 'COCO_train2014_', id_len = 12)
+#
+# quit()
 
 df_val = pd.read_csv(pathDataValFile, header=0, sep='\s*\::',  engine='python')
 df_quest_val = df_val.loc[(df_val['questionType'] == 'yes/no') & (df_val['relexFormula'] == '_predadj(A, B)')]
@@ -141,17 +149,18 @@ for i in range(nQuest_val):
     else:
         ansListBin_val.append(0)
 
+
 ##########################################################################
 
 
 
-fileLog = open('log_train_01.txt', 'w')
+fileLog = open(pathTrainLog, 'w')
 fileLog.write("Number of training questions: {}\n".format(nQuest))
 fileLog.write("Number of training images: {}\n".format(len(imgIdSet)))
 fileLog.write("GT answers stat:\tyes: {0}%\tno: {1}%\n".format( 100*float(num_yes_gt)/float(nQuest),
                                                       100*(1-float(num_yes_gt)/float(nQuest))))
 
-fileLogNumbers = open('log_train_01_nums.txt', 'w')
+fileLogNumbers = open(pathTrainLogNums, 'w')
 fileLogNumbers.write("# epoch\tmean_loss\ttrain_score\tval_score\n")
 
 
@@ -165,6 +174,9 @@ for e in range(nEpoch):
 
     for i in range(nQuest):
         words = getWords(df_quest.loc[i, 'groundedFormula'])
+
+        if words[0] == words[1]:
+            continue
 
         # get img bbox features
         img_id = df_quest.loc[i, 'imageId']

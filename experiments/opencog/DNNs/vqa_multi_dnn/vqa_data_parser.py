@@ -35,7 +35,7 @@ num_fixed_boxes = 36
 num_spatial_features = 6
 
 
-def pickle_parsed_features(pathFeatures, imgIDSet, pathSave='.', filePrefix = 'COCO_train2014_', id_len = 12):
+def pickle_parsed_features(pathFeatures, imgIDSet, pathSave='_.pkl', filePrefix = 'COCO_train2014_', id_len = 12):
     data = []
 
     nImg = len(imgIDSet)
@@ -61,7 +61,7 @@ def pickle_parsed_features(pathFeatures, imgIDSet, pathSave='.', filePrefix = 'C
         time.sleep(0.01)
 
     print("\nPickle loaded features...")
-    output = open(pathSave + '/' + filePrefix + '.pkl', 'wb')
+    output = open(pathSave, 'wb')
     pickle.dump(data, output, 2)
     output.close()
     print("Features are pickled!")
