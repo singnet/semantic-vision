@@ -19,9 +19,13 @@ pathPickledTrainFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_t
 pathPickledValFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
 
-pathSaveModel = './saved_models_01'
+pathSaveModel = '/mnt/fileserver/shared/mvp/models/vqa/multi_dnn_01'
 if os.path.isdir(pathSaveModel) is False:
-    os.mkdir(pathSaveModel)
+    try:
+        os.mkdir(pathSaveModel)
+    except FileNotFoundError:
+        print("Error: can't create directory %s"%pathSaveModel)
+        quit()
 
 FILE_PREFIX_TRAIN = 'COCO_train2014_'
 FILE_PREFIX_VAL = 'COCO_val2014_'
