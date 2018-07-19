@@ -1,12 +1,15 @@
 package org.opencog.vqa;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
@@ -22,39 +25,69 @@ public class QuestionToOpencogApp {
 
     private static final String OPTION_INPUT = "input";
     private static final String OPTION_OUTPUT = "output";
+    private static final String OPTION_ATOMSPACE = "atomspace";
     
     private final BufferedReader bufferedReader;
     private final PrintWriter printWriter;
+    private final PrintWriter atomspaceWriter;
     
     private final QuestionToOpencogConverter questionToOpencogConverter;
 
-    private QuestionToOpencogApp(InputStream inputStream, OutputStream outputStream) {
+    private QuestionToOpencogApp(InputStream inputStream,
+            OutputStream outputStream,
+            Optional<OutputStream> atomspaceWriter) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         this.printWriter = new PrintWriter(outputStream);
+        if (atomspaceWriter.isPresent()) {
+            this.atomspaceWriter = new PrintWriter(atomspaceWriter.get());
+        } else {
+            this.atomspaceWriter = null;
+        }
         this.questionToOpencogConverter = new QuestionToOpencogConverter();
     }
 
     public static void main(String args[]) {
         Options options = new Options();
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        OutputStream atomspaceStream = null;
         try {
             options.addOption("i", OPTION_INPUT, true, "input filename, stdin if not provided");
             options.addOption("o", OPTION_OUTPUT, true, "output filename, stdout if not provided");
+            options.addOption("a", OPTION_OUTPUT, true, "filename for atomspace which is calculated from questions");
             
             CommandLineParser argsParser = new DefaultParser();
             CommandLine commandLine = argsParser.parse(options, args);
 
-            InputStream inputStream = commandLine.hasOption(OPTION_INPUT) 
+            inputStream = commandLine.hasOption(OPTION_INPUT) 
                     ? new FileInputStream(commandLine.getOptionValue(OPTION_INPUT))
                     : System.in;
-            OutputStream outputStream = commandLine.hasOption(OPTION_OUTPUT) 
+            outputStream = commandLine.hasOption(OPTION_OUTPUT) 
                     ? new FileOutputStream(commandLine.getOptionValue(OPTION_OUTPUT))
                     : System.out;
-            new QuestionToOpencogApp(inputStream, outputStream).run();
+            atomspaceStream = commandLine.hasOption(OPTION_ATOMSPACE)
+                    ? new FileOutputStream(commandLine.getOptionValue(OPTION_ATOMSPACE))
+                    : null;
+            new QuestionToOpencogApp(inputStream, outputStream, Optional.ofNullable(atomspaceStream)).run();
         } catch (ParseException e) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("QuestionToOpencogApp", options);
         } catch (Exception e) {
             handleException(e);
+        } finally {
+            closeStream(inputStream, System.in);
+            closeStream(outputStream, System.out);
+            closeStream(atomspaceStream, System.out);
+        }
+    }
+
+    private static void closeStream(Closeable stream, Closeable dflt) {
+        if (stream != null && stream != dflt) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                handleException(e);
+            }
         }
     }
     
@@ -68,12 +101,10 @@ public class QuestionToOpencogApp {
         try {
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
-                    .map(parsedRecord -> parsedRecord.getRecord().save())
-//                    .filter(parsedRecord -> parsedRecord.getRecord().getQuestionType().equals("yes/no"))
-//                    .filter(parsedRecord -> parsedRecord.getRelexFormula().getFullFormula().equals("_predadj(A, B)"))
-//                    .map(this::convertToOpencogSchema)
                     .parallel()
-                    .forEach(printWriter::println);
+                    .forEach(parsedRecord -> {
+                        printWriter.println(parsedRecord.getRecord().save());
+                    });
         } finally {
             linesStream.close();
             printWriter.flush();
