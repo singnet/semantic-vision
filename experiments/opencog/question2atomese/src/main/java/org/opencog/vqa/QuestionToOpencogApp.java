@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -22,6 +24,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.opencog.vqa.relex.PhraseToWordsConverter;
 import org.opencog.vqa.relex.QuestionToOpencogConverter;
 import org.opencog.vqa.relex.RelexArgument;
 import org.opencog.vqa.relex.RelexFormula;
@@ -39,6 +42,7 @@ public class QuestionToOpencogApp {
     private final PrintWriter atomspaceWriter;
     
     private final QuestionToOpencogConverter questionToOpencogConverter;
+    private final PhraseToWordsConverter phraseToWordsConverter;
 
     @VisibleForTesting
     QuestionToOpencogApp(InputStream inputStream,
@@ -52,6 +56,7 @@ public class QuestionToOpencogApp {
             this.atomspaceWriter = null;
         }
         this.questionToOpencogConverter = new QuestionToOpencogConverter();
+        this.phraseToWordsConverter = new PhraseToWordsConverter();
     }
 
     public static void main(String args[]) {
@@ -62,7 +67,7 @@ public class QuestionToOpencogApp {
         try {
             options.addOption("i", OPTION_INPUT, true, "input filename, stdin if not provided");
             options.addOption("o", OPTION_OUTPUT, true, "output filename, stdout if not provided");
-            options.addOption("a", OPTION_OUTPUT, true, "filename for atomspace which is calculated from questions");
+            options.addOption("a", OPTION_ATOMSPACE, true, "filename for atomspace which is calculated from questions");
             
             CommandLineParser argsParser = new DefaultParser();
             CommandLine commandLine = argsParser.parse(options, args);
@@ -131,19 +136,25 @@ public class QuestionToOpencogApp {
                 List<RelexArgument> arguments = determiner.getArguments();
                 checkState(arguments.size() == 2, "Incorrect number of arguments for _det(): %s", arguments.size());
                 
-                String firstArgument = arguments.get(0).getName();
+                String firstWord = arguments.get(0).getName();
                 String secondArgument = arguments.get(1).getName();
-   
-                if (firstArgument.equals("_$qVar")) {
-                    firstArgument = parsedRecord.getRecord().getAnswer();
-                }
+                Collection<String> secondWords;
+
                 if (secondArgument.equals("_$qVar")) {
-                    secondArgument = parsedRecord.getRecord().getAnswer();
+                    secondWords = splitAnswer(parsedRecord.getRecord().getAnswer());
+                } else {
+                    secondWords = Collections.singletonList(secondArgument);
                 }
                 
-                atomspaceWriter.println(format("(InheritanceLink (ConceptNode \"%s\") (ConceptNode \"%s\"))",
-                        secondArgument, firstArgument));
+                for (String secondWord : secondWords) {
+                    atomspaceWriter.println(format("(InheritanceLink (ConceptNode \"%s\") (ConceptNode \"%s\"))",
+                            secondWord, firstWord));
+                }
             });
+    }
+
+    private Collection<String> splitAnswer(String answer) {
+        return phraseToWordsConverter.parsePhrase(answer);
     }
 
     private ParsedQuestion parseQuestion(QuestionRecord record) {
