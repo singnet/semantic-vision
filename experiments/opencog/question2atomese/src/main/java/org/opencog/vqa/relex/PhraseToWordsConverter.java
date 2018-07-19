@@ -1,5 +1,6 @@
 package org.opencog.vqa.relex;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +20,10 @@ public class PhraseToWordsConverter {
     }
     
     public Set<String> parsePhrase(String phrase) {
+        if (phrase.matches("\\w*")) {
+            return Collections.singleton(phrase);
+        }
+        
         Sentence sentence = relationExtractor.processSentence(phrase);
         ParsedSentence parsedSentence = sentence.getParses().get(0);
         

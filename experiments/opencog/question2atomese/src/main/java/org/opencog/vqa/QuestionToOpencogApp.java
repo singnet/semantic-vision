@@ -31,6 +31,8 @@ import org.opencog.vqa.relex.RelexFormula;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import relex.feature.FeatureNode;
+
 public class QuestionToOpencogApp {
 
     private static final String OPTION_INPUT = "input";
@@ -143,7 +145,7 @@ public class QuestionToOpencogApp {
                 if (secondArgument.equals("_$qVar")) {
                     secondWords = splitAnswer(parsedRecord.getRecord().getAnswer());
                 } else {
-                    secondWords = Collections.singletonList(secondArgument);
+                    secondWords = filterOutPronouns(arguments.get(1));
                 }
                 
                 for (String secondWord : secondWords) {
@@ -151,6 +153,17 @@ public class QuestionToOpencogApp {
                             secondWord, firstWord));
                 }
             });
+    }
+
+    private Collection<String> filterOutPronouns(RelexArgument relexArgument) {
+        FeatureNode pos = relexArgument.getFeatureNode().get("pos");
+        FeatureNode pronounFlag = relexArgument.getFeatureNode().get("pronoun-FLAG");
+        if ((pronounFlag != null && pronounFlag.getValue().equals("T"))
+                || (pos != null && pos.getValue().equals("det"))) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(relexArgument.getName());
+        }
     }
 
     private Collection<String> splitAnswer(String answer) {
