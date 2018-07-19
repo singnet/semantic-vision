@@ -1,5 +1,6 @@
 package org.opencog.vqa.relex;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,14 @@ public class RelexPredicate implements Comparable<RelexPredicate> {
         secondArg.addRelation(this);
     }
 
+    public String getName() {
+        return name;
+    }
+    
+    public List<RelexArgument> getArguments() {
+        return Collections.unmodifiableList(arguments);
+    }
+    
     @Override
     public int compareTo(RelexPredicate other) {
         if (getNumberOfArgumentUsages() != other.getNumberOfArgumentUsages()) {

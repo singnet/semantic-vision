@@ -28,6 +28,10 @@ class QuestionRecord {
     public String getQuestion() {
         return question;
     }
+    
+    public String getAnswer() {
+        return answer;
+    }
 
     public static QuestionRecord load(String string) {
         String[] fields = string.split(FIELD_DELIMITER);

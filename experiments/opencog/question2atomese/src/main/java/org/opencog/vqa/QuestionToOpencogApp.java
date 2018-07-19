@@ -1,5 +1,8 @@
 package org.opencog.vqa;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.FileInputStream;
@@ -9,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -19,7 +23,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.opencog.vqa.relex.QuestionToOpencogConverter;
+import org.opencog.vqa.relex.RelexArgument;
 import org.opencog.vqa.relex.RelexFormula;
+
+import com.google.common.annotations.VisibleForTesting;
 
 public class QuestionToOpencogApp {
 
@@ -33,7 +40,8 @@ public class QuestionToOpencogApp {
     
     private final QuestionToOpencogConverter questionToOpencogConverter;
 
-    private QuestionToOpencogApp(InputStream inputStream,
+    @VisibleForTesting
+    QuestionToOpencogApp(InputStream inputStream,
             OutputStream outputStream,
             Optional<OutputStream> atomspaceWriter) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -95,20 +103,47 @@ public class QuestionToOpencogApp {
         e.printStackTrace();
     }
 
-    private void run() {
+    @VisibleForTesting
+    void run() {
         Stream<String> linesStream = bufferedReader.lines();
-//        Stream<String> linesStream = Stream.of("0::yes/no::Is the book a paperback?::0::none");
         try {
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
                     .parallel()
                     .forEach(parsedRecord -> {
+                        
+                        if (atomspaceWriter != null) {
+                            extractFactForAtomspace(parsedRecord);
+                        }
                         printWriter.println(parsedRecord.getRecord().save());
                     });
         } finally {
             linesStream.close();
             printWriter.flush();
+            atomspaceWriter.flush();
         }
+    }
+
+    private void extractFactForAtomspace(ParsedQuestion parsedRecord) {
+        parsedRecord.getRelexFormula().getPredicates().stream()
+            .filter(predicate -> predicate.getName().equals("_det"))
+            .forEach(determiner -> {
+                List<RelexArgument> arguments = determiner.getArguments();
+                checkState(arguments.size() == 2, "Incorrect number of arguments for _det(): %s", arguments.size());
+                
+                String firstArgument = arguments.get(0).getName();
+                String secondArgument = arguments.get(1).getName();
+   
+                if (firstArgument.equals("_$qVar")) {
+                    firstArgument = parsedRecord.getRecord().getAnswer();
+                }
+                if (secondArgument.equals("_$qVar")) {
+                    secondArgument = parsedRecord.getRecord().getAnswer();
+                }
+                
+                atomspaceWriter.println(format("(InheritanceLink (ConceptNode \"%s\") (ConceptNode \"%s\"))",
+                        secondArgument, firstArgument));
+            });
     }
 
     private ParsedQuestion parseQuestion(QuestionRecord record) {

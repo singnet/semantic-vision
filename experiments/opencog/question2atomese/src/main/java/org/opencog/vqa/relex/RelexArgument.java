@@ -28,6 +28,10 @@ public class RelexArgument {
         return featureNode.get("name").getValue();
     }
 
+    public FeatureNode getFeatureNode() {
+        return featureNode;
+    }
+    
     @Override
     public String toString() {
         return getName();
