@@ -116,12 +116,6 @@ def runNeuralNetwork(boundingBox, conceptNode):
     return TruthValue(result.item(), 1.0)
 
 def answerQuestion(record):
-    if questionRecord.questionType == 'yes/no':
-        answerYesNoQuestion(questionRecord)
-    else:
-        answerOtherQuestion(questionRecord)
-
-def answerYesNoQuestion(record):
     log.debug('processing question: %s', record.question)
     atomspace.clear()
     
@@ -144,25 +138,39 @@ def answerYesNoQuestion(record):
         return
     log.debug('Scheme query: %s', queryInScheme)
 
-    evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
-    start = datetime.datetime.now()
-    result = scheme_eval_v(atomspace, evaluateStatement)
-    delta = datetime.datetime.now() - start
+    if questionRecord.questionType == 'yes/no':
+        answer = answerYesNoQuestion(queryInScheme)
+    else:
+        answer = answerOtherQuestion(queryInScheme)
     
-    answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
     global questionsAnswered, correctAnswers
     questionsAnswered += 1
     if answer == record.answer:
         correctAnswers += 1
-        
-    log.debug('The result of pattern matching is: %s, time: %s microseconds',
-              result, delta.microseconds)
+    
     log.debug('Correct answers %s%%', correctAnswerPercent())
     print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
         answer, record.answer, record.imageId))
 
-def answerOtherQuestion(record):
-    pass
+def answerYesNoQuestion(queryInScheme):
+    evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
+    start = datetime.datetime.now()
+    result = scheme_eval_v(atomspace, evaluateStatement)
+    delta = datetime.datetime.now() - start
+    log.debug('The result of pattern matching is: %s, time: %s microseconds',
+              result, delta.microseconds)
+    answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
+    return anwer
+
+def answerOtherQuestion(queryInScheme):
+    evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
+    start = datetime.datetime.now()
+    result = scheme_eval_v(atomspace, evaluateStatement)
+    delta = datetime.datetime.now() - start
+    log.debug('The result of pattern matching is: %s, time: %s microseconds',
+              result, delta.microseconds)
+    answer = None # TODO: get answer from matching results
+    return anwer
 
 def initializeLogger():
     opencog.logger.log.set_level(opencogLogLevel)
