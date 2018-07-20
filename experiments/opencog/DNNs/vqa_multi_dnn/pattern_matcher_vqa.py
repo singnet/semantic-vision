@@ -34,7 +34,7 @@ parser.add_argument('--features', '-f', dest='featuresPath',
 parser.add_argument('--features-prefix', dest='featuresPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
     help='features prefix to be merged with path to open feature')
-parser.add_argument('--facts', '-s', dest='factsFileName',
+parser.add_argument('--atomspace', '-a', dest='atomspaceFileName',
     action='store', type=str, required=True,
     help='Scheme program to fill atomspace with facts')
 parser.add_argument('--opencog-log-level', dest='opencogLogLevel',
@@ -101,8 +101,8 @@ def initializeAtomspace():
     scheme_eval(atomspace, '(use-modules (opencog query))')
     scheme_eval(atomspace, '(add-to-load-path ".")')
     global args
-    if args.factsFileName is not None:
-        scheme_eval(atomspace, '(load-from-path "' + args.factsFileName + '")')
+    if args.atomspaceFileName is not None:
+        scheme_eval(atomspace, '(load-from-path "' + args.atomspaceFileName + '")')
 
     return atomspace
 

@@ -68,12 +68,15 @@ Three arguments are required to run ```pattern_matcher_vqa.py```:
 
 - FEATURESPATH - folder or .zip file which contains features of bounding boxes
 
+One optional argument is required to answer complex questions:
+
+- ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../../question2atomese/question2atomese.sh); see [README.md](../../question2atomese/README.md)
 ```
-$ python pattern_matcher_vqa.py -h
+$ python DNNs/vqa_multi_dnn/pattern_matcher_vqa.py --help
 usage: pattern_matcher_vqa.py [-h] --questions QUESTIONSFILENAME --models
                               MODELSFILENAME --features FEATURESPATH
-                              [--features-prefix FEATURESPREFIX]
-                              [--words WORDSFILENAME]
+                              [--features-prefix FEATURESPREFIX] --atomspace
+                              ATOMSPACEFILENAME
                               [--opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}]
                               [--python-log-level {INFO,DEBUG,ERROR}]
                               [--question2atomese-java-library Q2AJARFILENNAME]
@@ -91,6 +94,8 @@ optional arguments:
                         name)
   --features-prefix FEATURESPREFIX
                         features prefix to be merged with path to open feature
+  --atomspace ATOMSPACEFILENAME, -a ATOMSPACEFILENAME
+                        Scheme program to fill atomspace with facts
   --opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}
                         OpenCog logging level
   --python-log-level {INFO,DEBUG,ERROR}

@@ -58,8 +58,18 @@ optional arguments:
 Run question2atomese app:
 ```
 RELEX=<path-to-relex-src-dir> ./question2atomese.sh -i questions.txt \
-	> parsed_questions.txt
+	-a atomspace.scm > parsed_questions.txt
 ```
+
+question2atomese usage:
+```
+$ ./question2atomese.sh --help
+usage: QuestionToOpencogApp
+ -a,--atomspace <arg>   filename for atomspace which is calculated from
+                        questions
+ -i,--input <arg>       input filename, stdin if not provided
+ -o,--output <arg>      output filename, stdout if not provided
+ ```
 
 # Sort question types by frequency
 
