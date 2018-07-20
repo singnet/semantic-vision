@@ -135,22 +135,24 @@ def popAtomspace():
     atomspace = scheme_eval_as('(cog-atomspace)')
     set_type_ctor_atomspace(atomspace)
 
+# TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
+def addBoundingBoxesIntoAtomspace(record):
+    featuresFileName = getFeaturesFileName(record.imageId)
+    boundingBoxNumber = 0
+    for boundingBoxFeatures in loadFeatures(featuresFileName):
+        imageFeatures = FloatValue(boundingBoxFeatures)
+        boundingBoxInstance = ConceptNode(
+            'BoundingBox-' + str(boundingBoxNumber))
+        InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
+        boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
+        boundingBoxNumber += 1
+
 def answerQuestion(record):
     log.debug('processing question: %s', record.question)
     pushAtomspace()
     try:
         
-        featuresFileName = getFeaturesFileName(record.imageId)
-        boundingBoxNumber = 0
-        for boundingBoxFeatures in loadFeatures(featuresFileName):
-            imageFeatures = FloatValue(boundingBoxFeatures)
-             
-            boundingBoxInstance = ConceptNode('BoundingBox-'+
-                                              str(boundingBoxNumber))
-            InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
-            boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
-             
-            boundingBoxNumber += 1
+        addBoundingBoxesIntoAtomspace(record)
         
         relexFormula = questionConverter.parseQuestion(record.question)
         queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
