@@ -116,6 +116,12 @@ def runNeuralNetwork(boundingBox, conceptNode):
     return TruthValue(result.item(), 1.0)
 
 def answerQuestion(record):
+    if questionRecord.questionType == 'yes/no':
+        answerYesNoQuestion(questionRecord)
+    else:
+        answerOtherQuestion(questionRecord)
+
+def answerYesNoQuestion(record):
     log.debug('processing question: %s', record.question)
     atomspace.clear()
     
@@ -155,6 +161,8 @@ def answerQuestion(record):
     print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
         answer, record.answer, record.imageId))
 
+def answerOtherQuestion(record):
+    pass
 
 def initializeLogger():
     opencog.logger.log.set_level(opencogLogLevel)
