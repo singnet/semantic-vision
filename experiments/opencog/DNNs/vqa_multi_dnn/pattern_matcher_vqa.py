@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 from opencog.atomspace import AtomSpace, TruthValue, types
 from opencog.type_constructors import *
-from opencog.scheme_wrapper import scheme_eval, scheme_eval_v
+from opencog.scheme_wrapper import *
 
 from netsvocabulary import NetsVocab
 
@@ -34,6 +34,9 @@ parser.add_argument('--features', '-f', dest='featuresPath',
 parser.add_argument('--features-prefix', dest='featuresPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
     help='features prefix to be merged with path to open feature')
+parser.add_argument('--facts', '-s', dest='factsFileName',
+    action='store', type=str, required=True,
+    help='Scheme program to fill atomspace with facts')
 parser.add_argument('--opencog-log-level', dest='opencogLogLevel',
     action='store', type = str, default='NONE',
     choices=['FINE', 'DEBUG', 'INFO', 'ERROR', 'NONE'],
@@ -67,6 +70,7 @@ def addLeadingZeros(number, requriedLength):
     return result + str(number)
 
 def getFeaturesFileName(imageId):
+    global args
     return args.featuresPrefix + addLeadingZeros(imageId, 12) + '.tsv'
 
 def loadDataFromZipOrFolder(folderOrZip, fileName, loadProcedure):
@@ -91,11 +95,15 @@ def loadFeatures(featureFileName):
                             loadFeaturesUsingFileHandle)
 
 def initializeAtomspace():
-    atomspace = AtomSpace()
-    set_type_ctor_atomspace(atomspace)
-    scheme_eval(atomspace, "(use-modules (opencog))")
-    scheme_eval(atomspace, "(use-modules (opencog exec))")
-    scheme_eval(atomspace, "(use-modules (opencog query))")
+    atomspace = scheme_eval_as('(cog-atomspace)')
+    scheme_eval(atomspace, '(use-modules (opencog))')
+    scheme_eval(atomspace, '(use-modules (opencog exec))')
+    scheme_eval(atomspace, '(use-modules (opencog query))')
+    scheme_eval(atomspace, '(add-to-load-path ".")')
+    global args
+    if args.factsFileName is not None:
+        scheme_eval(atomspace, '(load-from-path "' + args.factsFileName + '")')
+
     return atomspace
 
 def runNeuralNetwork(boundingBox, conceptNode):
@@ -115,46 +123,63 @@ def runNeuralNetwork(boundingBox, conceptNode):
     log.debug('word: %s, result: %s', word, str(result))
     return TruthValue(result.item(), 1.0)
 
+def pushAtomspace():
+    global atomspace
+    scheme_eval(atomspace, '(cog-push-atomspace)')
+    atomspace = scheme_eval_as('(cog-atomspace)')
+    set_type_ctor_atomspace(atomspace)
+
+def popAtomspace():
+    global atomspace
+    scheme_eval(atomspace, '(cog-pop-atomspace)')
+    atomspace = scheme_eval_as('(cog-atomspace)')
+    set_type_ctor_atomspace(atomspace)
+
 def answerQuestion(record):
     log.debug('processing question: %s', record.question)
-    atomspace.clear()
+    pushAtomspace()
+    try:
+        
+        featuresFileName = getFeaturesFileName(record.imageId)
+        boundingBoxNumber = 0
+        for boundingBoxFeatures in loadFeatures(featuresFileName):
+            imageFeatures = FloatValue(boundingBoxFeatures)
+             
+            boundingBoxInstance = ConceptNode('BoundingBox-'+
+                                              str(boundingBoxNumber))
+            InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
+            boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
+             
+            boundingBoxNumber += 1
+        
+        relexFormula = questionConverter.parseQuestion(record.question)
+        queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
+        if queryInScheme is None:
+            log.debug('Question was not parsed')
+            return
+        log.debug('Scheme query: %s', queryInScheme)
     
-    featuresFileName = getFeaturesFileName(record.imageId)
-    boundingBoxNumber = 0
-    for boundingBoxFeatures in loadFeatures(featuresFileName):
-        imageFeatures = FloatValue(boundingBoxFeatures)
-         
-        boundingBoxInstance = ConceptNode('BoundingBox-'+
-                                          str(boundingBoxNumber))
-        InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
-        boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
-         
-        boundingBoxNumber += 1
-    
-    relexFormula = questionConverter.parseQuestion(record.question)
-    queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
-    if queryInScheme is None:
-        log.debug('Question was not parsed')
-        return
-    log.debug('Scheme query: %s', queryInScheme)
-
-    if questionRecord.questionType == 'yes/no':
-        answer = answerYesNoQuestion(queryInScheme)
-    else:
-        answer = answerOtherQuestion(queryInScheme)
-    
-    global questionsAnswered, correctAnswers
-    questionsAnswered += 1
-    if answer == record.answer:
-        correctAnswers += 1
-    
-    log.debug('Correct answers %s%%', correctAnswerPercent())
-    print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
-        answer, record.answer, record.imageId))
+        if record.questionType == 'yes/no':
+            answer = answerYesNoQuestion(queryInScheme)
+        else:
+            answer = answerOtherQuestion(queryInScheme)
+        
+        global questionsAnswered, correctAnswers
+        questionsAnswered += 1
+        if answer == record.answer:
+            correctAnswers += 1
+        
+        log.debug('Correct answers %s%%', correctAnswerPercent())
+        print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
+            answer, record.answer, record.imageId))
+        
+    finally:
+        popAtomspace()
 
 def answerYesNoQuestion(queryInScheme):
     evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
     start = datetime.datetime.now()
+    global atomspace
     result = scheme_eval_v(atomspace, evaluateStatement)
     delta = datetime.datetime.now() - start
     log.debug('The result of pattern matching is: %s, time: %s microseconds',
@@ -165,12 +190,13 @@ def answerYesNoQuestion(queryInScheme):
 def answerOtherQuestion(queryInScheme):
     evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
     start = datetime.datetime.now()
+    global atomspace
     result = scheme_eval_v(atomspace, evaluateStatement)
     delta = datetime.datetime.now() - start
     log.debug('The result of pattern matching is: %s, time: %s microseconds',
               result, delta.microseconds)
     answer = None # TODO: get answer from matching results
-    return anwer
+    return answer
 
 def initializeLogger():
     opencog.logger.log.set_level(opencogLogLevel)
@@ -234,6 +260,7 @@ def answerAllQuestions(questionsFileName):
 def loadNets():
     nets = None
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    global args
     checkpoint = torch.load(args.modelsFileName, map_location=device.type)
     nets = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
     return nets
@@ -255,12 +282,12 @@ def main():
     
     global atomspace
     atomspace = initializeAtomspace()
-
+    
     global netsVocabulary
     netsVocabulary = loadNets()
     
     answerAllQuestions(args.questionsFileName)
-#     answerTestQuestion('Are the zebras fat?', 11760)
+#     answerTestQuestion('What color is the sky?', 11760)
     print('Questions answered: {}, correct answers: {}% ({})'
           .format(questionsAnswered,
                   correctAnswerPercent(),
