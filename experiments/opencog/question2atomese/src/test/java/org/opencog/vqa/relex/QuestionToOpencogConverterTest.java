@@ -14,7 +14,7 @@ public class QuestionToOpencogConverterTest {
     }
     
     @Test
-    public void test_IsTheRoomDark() {
+    public void test_YesNoPredadj_IsTheRoomDark() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("Is the room dark?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
         Assert.assertEquals("(SatisfactionLink\n" + 
@@ -29,7 +29,7 @@ public class QuestionToOpencogConverterTest {
     }
     
     @Test
-    public void test_WhatColorIsTheSky() {
+    public void test_OtherDetObjSubj_WhatColorIsTheSky() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("What color is the sky?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
         Assert.assertEquals("(GetLink\n" + 

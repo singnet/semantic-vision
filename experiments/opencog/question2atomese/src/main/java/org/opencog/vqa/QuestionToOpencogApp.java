@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -168,6 +169,7 @@ public class QuestionToOpencogApp {
 
     private Collection<String> splitAnswer(String answer) {
         return phraseToWordsConverter.parsePhrase(answer);
+//        return Arrays.asList(answer.split("\\s+and\\s+|\\s*,\\s*|\\s*,\\s*and\\+"));
     }
 
     private ParsedQuestion parseQuestion(QuestionRecord record) {
