@@ -17,13 +17,14 @@ public class QuestionToOpencogConverterTest {
     public void test_IsTheRoomDark() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("Is the room dark?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
-        Assert.assertEquals("(SatisfactionLink " + 
-                            "(TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\")) " +
-                            "(AndLink " +
-                            "(InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\")) " +
-                            "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"room\")) )" + 
-                            "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"dark\")) )" +
-                            ") )"
+        Assert.assertEquals("(SatisfactionLink\n" + 
+                            "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
+                            "  (AndLink\n" +
+                            "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"room\")) )\n" + 
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"dark\")) )\n" +
+                            "  )\n" +
+                            ")\n"
                             , scheme);
     }
     

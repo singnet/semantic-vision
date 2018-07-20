@@ -1,7 +1,5 @@
 package org.opencog.vqa.relex;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import relex.feature.FeatureNode;
 import relex.feature.RelationCallback;
 
@@ -16,13 +14,14 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
     public String getSchemeQuery(RelexFormula relexFormula) {
         RelexVisitor visitor = new RelexVisitor();
         relexFormula.getRelexSentence().foreach(visitor);
-        return String.format("(SatisfactionLink " +
-                "(TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\")) " +
-                "(AndLink " +
-                "(InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\")) " +
-                "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%1$s\")) )" +
-                "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%2$s\")) )" +
-                ") )", visitor.object, visitor.state);
+        return String.format("(SatisfactionLink\n" +
+                "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
+                "  (AndLink\n" +
+                "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
+                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%1$s\")) )\n" +
+                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%2$s\")) )\n" +
+                "  )\n" + 
+                ")\n", visitor.object, visitor.state);
     }
 
     private static class RelexVisitor implements RelationCallback {
