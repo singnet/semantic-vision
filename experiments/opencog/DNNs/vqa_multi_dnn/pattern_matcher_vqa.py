@@ -121,6 +121,8 @@ def runNeuralNetwork(boundingBox, conceptNode):
     # TODO: F.sigmoid should part of NN
     result = F.sigmoid(model(torch.Tensor(features)))
     log.debug('word: %s, result: %s', word, str(result))
+    boundingBox.set_value(conceptNode, FloatValue(result.item()))
+    conceptNode.set_value(boundingBox, FloatValue(result.item()))
     return TruthValue(result.item(), 1.0)
 
 def pushAtomspace():
@@ -137,6 +139,8 @@ def popAtomspace():
 
 # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
 def addBoundingBoxesIntoAtomspace(record):
+    global boundingBoxesTmp
+    boundingBoxesTmp = []
     featuresFileName = getFeaturesFileName(record.imageId)
     boundingBoxNumber = 0
     for boundingBoxFeatures in loadFeatures(featuresFileName):
@@ -146,6 +150,7 @@ def addBoundingBoxesIntoAtomspace(record):
         InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
         boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
         boundingBoxNumber += 1
+        boundingBoxesTmp.append(boundingBoxInstance)
 
 def answerQuestion(record):
     log.debug('processing question: %s', record.question)
@@ -197,6 +202,24 @@ def answerOtherQuestion(queryInScheme):
     delta = datetime.datetime.now() - start
     log.debug('The result of pattern matching is: %s, time: %s microseconds',
               result, delta.microseconds)
+    
+    max = 0
+    max_atom = None
+    max_bb = None
+    global boundingBoxesTmp
+    for atom in result.out:
+        for bb in boundingBoxesTmp:
+            v = atom.get_value(bb)
+            if v is None:
+                continue
+            f = v.to_list()[0]
+            if f >= 0.5:
+                log.info('{} x {}: {}'.format(atom, bb, atom.get_value(bb)))
+            if f > max and f < 1:
+                max = f
+                max_atom = atom
+                max_bb = bb
+    log.info('{} x {}: {}'.format(max_atom, max_bb, max_atom.get_value(max_bb)))
     answer = None # TODO: get answer from matching results
     return answer
 
