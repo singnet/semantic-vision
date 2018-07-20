@@ -8,18 +8,25 @@ import java.util.stream.Collectors;
 
 import lombok.Builder;
 import lombok.Singular;
+import relex.ParsedSentence;
 
 public class RelexFormula {
 
     private final List<RelexPredicate> predicates;
+    private final ParsedSentence relexSentence;
 
     @Builder
-    public RelexFormula(@Singular List<RelexPredicate> predicates) {
+    public RelexFormula(@Singular List<RelexPredicate> predicates, ParsedSentence relexSentence) {
         this.predicates = sortRelexPredicates(predicates);
+        this.relexSentence = relexSentence;
     }
 
     public List<RelexPredicate> getPredicates() {
         return Collections.unmodifiableList(predicates);
+    }
+    
+    public ParsedSentence getRelexSentence() {
+        return relexSentence;
     }
 
     public String getFullFormula() {

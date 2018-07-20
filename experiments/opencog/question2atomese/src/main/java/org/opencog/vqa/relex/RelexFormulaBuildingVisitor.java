@@ -3,6 +3,7 @@ package org.opencog.vqa.relex;
 import java.util.HashMap;
 import java.util.Map;
 
+import relex.ParsedSentence;
 import relex.feature.FeatureNode;
 import relex.feature.RelationCallback;
 
@@ -11,7 +12,11 @@ class RelexFormulaBuildingVisitor implements RelationCallback {
     private final Map<FeatureNode, RelexArgument> argumentCache = new HashMap<>();
     private char nextVariableName = 'A';
     
-    private final RelexFormula.RelexFormulaBuilder formulaBuilder = RelexFormula.builder();
+    private final RelexFormula.RelexFormulaBuilder formulaBuilder;
+    
+    RelexFormulaBuildingVisitor(ParsedSentence relexSentence) {
+        this.formulaBuilder = RelexFormula.builder().relexSentence(relexSentence);
+    }
 
     @Override
     public Boolean BinaryHeadCB(FeatureNode arg0) {
