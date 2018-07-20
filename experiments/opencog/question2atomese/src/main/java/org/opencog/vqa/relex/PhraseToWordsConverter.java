@@ -49,7 +49,7 @@ public class PhraseToWordsConverter {
             if (pos.equals("punctuation") || pos.equals("conjunction")) {
                 return false;
             }
-            words.add(node.get("name").getValue());
+            words.add(RelexUtils.getFeatureNodeName(node));
             return false;
         }
 

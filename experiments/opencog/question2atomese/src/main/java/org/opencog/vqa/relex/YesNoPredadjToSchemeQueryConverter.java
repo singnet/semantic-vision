@@ -38,16 +38,10 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
         @Override
         public Boolean BinaryRelationCB(String relation, FeatureNode srcNode, FeatureNode tgtNode) {
             if (relation.equals("_predadj")) {
-                object = getName(srcNode);
-                state = getName(tgtNode);
+                object = RelexUtils.getFeatureNodeName(srcNode);
+                state = RelexUtils.getFeatureNodeName(tgtNode);
             }
             return Boolean.FALSE;
-        }
-
-        private static String getName(FeatureNode featureNode) {
-            FeatureNode name = featureNode.get("name");
-            checkArgument(name != null, "FeatureNode doesn't have name attribute set");
-            return name.getValue();
         }
 
         @Override

@@ -16,7 +16,10 @@ public class QuestionToOpencogConverter {
     public QuestionToOpencogConverter() {
         this.relationExtractor = new RelationExtractor();
         this.relationExtractor.setMaxParses(1);
-        this.toQueryConverters = ImmutableList.of(new YesNoPredadjToSchemeQueryConverter());
+        this.toQueryConverters = ImmutableList.of(
+                new YesNoPredadjToSchemeQueryConverter(),
+                new WhatDetOtherDetObjSubjToSchemeQueryConverter()
+            );
     }
     
     public RelexFormula parseQuestion(String question) {

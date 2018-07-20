@@ -22,10 +22,7 @@ public class RelexArgument {
     }
     
     public String getName() {
-        if (featureNode.get("name") == null) {
-            return "XXXX";
-        }
-        return featureNode.get("name").getValue();
+        return RelexUtils.getFeatureNodeName(featureNode);
     }
 
     public FeatureNode getFeatureNode() {
