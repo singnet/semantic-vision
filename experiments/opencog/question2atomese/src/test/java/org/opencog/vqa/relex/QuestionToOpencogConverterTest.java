@@ -32,7 +32,7 @@ public class QuestionToOpencogConverterTest {
     public void test_OtherDetObjSubj_WhatColorIsTheSky() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("What color is the sky?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
-        Assert.assertEquals("(GetLink\n" + 
+        Assert.assertEquals("(BindLink\n" + 
                             "  (VariableList\n" +
                             "    (TypedVariableLink (VariableNode \"$B\") (TypeNode \"ConceptNode\"))\n" +
                             "    (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
@@ -43,6 +43,7 @@ public class QuestionToOpencogConverterTest {
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"sky\")) )\n" + 
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
                             "  )\n" +
+                            "  (Variable \"$X\")\n" +
                             ")\n"
                             , scheme);
     }

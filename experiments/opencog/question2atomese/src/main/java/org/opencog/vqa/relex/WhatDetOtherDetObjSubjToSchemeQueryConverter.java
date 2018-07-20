@@ -14,7 +14,7 @@ public class WhatDetOtherDetObjSubjToSchemeQueryConverter implements ToQueryConv
     public String getSchemeQuery(RelexFormula relexFormula) {
         RelexVisitor visitor = new RelexVisitor();
         relexFormula.getRelexSentence().foreach(visitor);
-        return String.format("(GetLink\n" + 
+        return String.format("(BindLink\n" + 
                 "  (VariableList\n" +
                 "    (TypedVariableLink (VariableNode \"$B\") (TypeNode \"ConceptNode\"))\n" +
                 "    (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
@@ -25,6 +25,7 @@ public class WhatDetOtherDetObjSubjToSchemeQueryConverter implements ToQueryConv
                 "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"%2$s\")) )\n" + 
                 "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
                 "  )\n" +
+                "  (Variable \"$X\")\n" +
                 ")\n"
                 , visitor.attribute, visitor.object);
     }

@@ -35,7 +35,7 @@ parser.add_argument('--features-prefix', dest='featuresPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
     help='features prefix to be merged with path to open feature')
 parser.add_argument('--atomspace', '-a', dest='atomspaceFileName',
-    action='store', type=str, required=True,
+    action='store', type=str,
     help='Scheme program to fill atomspace with facts')
 parser.add_argument('--opencog-log-level', dest='opencogLogLevel',
     action='store', type = str, default='NONE',
@@ -187,7 +187,7 @@ def answerYesNoQuestion(queryInScheme):
     log.debug('The result of pattern matching is: %s, time: %s microseconds',
               result, delta.microseconds)
     answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
-    return anwer
+    return answer
 
 def answerOtherQuestion(queryInScheme):
     evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
@@ -289,7 +289,6 @@ def main():
     netsVocabulary = loadNets()
     
     answerAllQuestions(args.questionsFileName)
-#     answerTestQuestion('What color is the sky?', 11760)
     print('Questions answered: {}, correct answers: {}% ({})'
           .format(questionsAnswered,
                   correctAnswerPercent(),
