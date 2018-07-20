@@ -193,7 +193,7 @@ def answerOtherQuestion(queryInScheme):
     evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
     start = datetime.datetime.now()
     global atomspace
-    result = scheme_eval_v(atomspace, evaluateStatement)
+    result = scheme_eval_h(atomspace, evaluateStatement)
     delta = datetime.datetime.now() - start
     log.debug('The result of pattern matching is: %s, time: %s microseconds',
               result, delta.microseconds)
