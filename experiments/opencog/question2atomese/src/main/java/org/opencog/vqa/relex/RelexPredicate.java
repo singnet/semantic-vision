@@ -48,20 +48,6 @@ public class RelexPredicate implements Comparable<RelexPredicate> {
     public String toShortFormula() {
         return name + "()";
     }
-
-    public String toAtomeseFormula() {
-        if (name.equals("_predadj")) {
-            String object = arguments.get(0).getVariableName();
-            String firstPredicate = arguments.get(0).getName();
-            String secondPredicate = arguments.get(1).getName();
-            return String.format("(AndLink " +
-                    "(InheritanceLink (VariableNode \"$%1$s\") (ConceptNode \"BoundingBox\"))" +
-                    "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$%1$s\") (ConceptNode \"%2$s\")) )" +
-                    "(EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$%1$s\") (ConceptNode \"%3$s\")) )" +
-                    ")", object, firstPredicate, secondPredicate);
-        }
-        return "";   
-    }
     
     @Override
     public String toString() {
