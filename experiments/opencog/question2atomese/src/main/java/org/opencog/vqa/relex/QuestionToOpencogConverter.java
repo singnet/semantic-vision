@@ -28,7 +28,7 @@ public class QuestionToOpencogConverter {
         return relexVisitor.getRelexFormula();
     }
 
-    public String convertToOpencogSchema(RelexFormula formula) {
+    public String convertToOpencogScheme(RelexFormula formula) {
         for (ToQueryConverter converter : toQueryConverters) {
             if (converter.isApplicable(formula)) {
                 return converter.getSchemeQuery(formula);

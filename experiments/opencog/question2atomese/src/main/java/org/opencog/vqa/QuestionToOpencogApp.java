@@ -200,8 +200,8 @@ public class QuestionToOpencogApp {
         }
     }
     
-    private String convertToOpencogSchema(ParsedQuestion parsedQuestion) {
-        return questionToOpencogConverter.convertToOpencogSchema(parsedQuestion.getRelexFormula());
+    private String convertToOpencogScheme(ParsedQuestion parsedQuestion) {
+        return questionToOpencogConverter.convertToOpencogScheme(parsedQuestion.getRelexFormula());
     }
 
 }

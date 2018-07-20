@@ -132,7 +132,7 @@ def answerQuestion(record):
         boundingBoxNumber += 1
     
     relexFormula = questionConverter.parseQuestion(record.question)
-    queryInScheme = questionConverter.convertToOpencogSchema(relexFormula)
+    queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
     if queryInScheme is None:
         log.debug('Question was not parsed')
         return

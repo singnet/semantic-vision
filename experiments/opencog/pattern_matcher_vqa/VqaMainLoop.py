@@ -78,7 +78,7 @@ def answerQuestion(record):
     boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
     
     relexFormula = questionConverter.parseQuestion(record.question)
-    queryInScheme = questionConverter.convertToOpencogSchema(relexFormula)
+    queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
     log.debug('Scheme query: %s', queryInScheme)
 
     evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'

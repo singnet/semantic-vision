@@ -16,7 +16,7 @@ public class QuestionToOpencogConverterTest {
     @Test
     public void test_PredadjQuestionConverter() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("Is the room dark?");
-        String scheme = questionToOpencogConverter.convertToOpencogSchema(formula);
+        String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
         Assert.assertEquals("(SatisfactionLink " + 
                             "(TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\")) " +
                             "(AndLink " +
