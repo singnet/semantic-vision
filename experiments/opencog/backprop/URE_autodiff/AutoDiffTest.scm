@@ -1,4 +1,3 @@
-(use-modules (ice-9 readline)) (activate-readline)
 (add-to-load-path "/usr/share/opencog/scm") ; !!!! check this path
 (add-to-load-path ".")
 
