@@ -7,25 +7,27 @@ import numpy as np
 from torch.autograd import Variable
 import os, sys, time, re
 import math
+from netsvocabulary import NetsVocab
 
-# FOR RUNNING ON K4
-# pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
-# pathFeaturesTrainParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/train2014_parsed_features'
-# pathFeaturesValParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
-# pathDataTrainFile = '/home/shared/datasets/train2014_questions_parsed.txt'
-# pathDataValFile = '/home/shared/datasets/val2014_questions_parsed.txt'
+pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_words.txt'
+pathFeaturesTrainParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_parsed_features'
+pathFeaturesValParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
+pathDataTrainFile = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_questions_parsed.txt'
+pathDataValFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
+
+pathPickledTrainFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_train2014_yes_no.pkl'
+pathPickledValFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
+
+pathSaveModel = './saved_models_00'
+if os.path.isdir(pathSaveModel) is False:
+    os.mkdir(pathSaveModel)
 
 
-pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-pathFeaturesTrainParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_parsed_features'
-pathFeaturesValParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
-pathDataTrainFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/train2014_questions_parsed.txt'
-pathDataValFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
-
-pathSaveModel = './saved_models'
 FILE_PREFIX_TRAIN = 'COCO_train2014_'
 FILE_PREFIX_VAL = 'COCO_val2014_'
 IMAGE_ID_FIELD_NAME = 'imageId'
+
+
 
 
 # pathFeaturesTrainParsed = pathFeaturesValParsed
@@ -35,17 +37,16 @@ IMAGE_ID_FIELD_NAME = 'imageId'
 input_size = 2048
 nBBox = 36
 featOffset = 10
-nEpoch = 100
+nEpoch = 10
 learning_rate = 1e-3
 
+isLoadPickledFeatures = True
 isReduceSet = True
 
 # Load vocabulary
 vocab = []
 with open(pathVocabFile, 'r') as filehandle:
     vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-
-Nnets = len(vocab)
 
 def getWords(groundedFormula):
     words = re.split(r', ', groundedFormula[groundedFormula.find("(") + 1:groundedFormula.find(")")])
@@ -55,40 +56,13 @@ def getWords(groundedFormula):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class NetsVocab(nn.Module):
-    def __init__(self):
-        super(NetsVocab, self).__init__()
-        self.models = nn.ModuleList([nn.Sequential(
-            nn.Linear(input_size, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-            ).to(device) for i in range(Nnets)])
-
-    def feed_forward(self, x, idx):
-        output = torch.ones(size=(nBBox,1)).to(device)
-        for k in idx:
-            logits = self.models[k](x)
-            # logits = model(x).view(-1)
-            predict = F.sigmoid(logits)
-            output = torch.mul(output, predict)
-        return output
-
-    def getParams(self, idx):
-        params=[]
-        for i in idx:
-            params.append({'params': self.models[i].parameters()})
-        return params
-
-
-nets = NetsVocab()
+nets = NetsVocab.fromWordsVocabulary(vocab, input_size, device)
 
 # Continue training from saved checkpoint
 # checkpoint = torch.load(pathSaveModel + '/model_bkp.pth.tar')
 # mean_loss = checkpoint['mean_loss']
 # ep = checkpoint['epoch']
-# nets.load_state_dict(checkpoint['state_dict'])
+# nets.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
 
 
 # Prepare training data
@@ -108,8 +82,12 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet = sorted(set(imgIdList))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX_TRAIN, reduce_set=isReduceSet)
+
+if isLoadPickledFeatures is True:
+    data_feat = vqp.load_pickled_features(pathPickledTrainFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat =  vqp.load_parsed_features(pathFeaturesTrainParsed, imgIdSet, filePrefix=FILE_PREFIX_TRAIN, reduce_set=isReduceSet)
 
 
 # Get list with binary answers yes = 1, no = 0
@@ -137,8 +115,13 @@ imgIdList_val = df_quest_val[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet_val = sorted(set(imgIdList_val))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat_val =  vqp.load_parsed_features(pathFeaturesValParsed, imgIdSet_val, filePrefix=FILE_PREFIX_VAL, reduce_set=isReduceSet)
+if isLoadPickledFeatures is True:
+    data_feat_val = vqp.load_pickled_features(pathPickledValFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat_val = vqp.load_parsed_features(pathFeaturesValParsed, imgIdSet_val, filePrefix=FILE_PREFIX_VAL,
+                                             reduce_set=isReduceSet)
+
 
 nQuest_val = df_quest_val.shape[0]
 questList_val = df_quest_val['question'].tolist()
@@ -176,14 +159,7 @@ for e in range(nEpoch):
     score = 0
     nQuestValid = 0
     for i in range(nQuest):
-        idx = []
         words = getWords(df_quest.loc[i, 'groundedFormula'])
-        nWords = len(words)
-        for w in words:
-            try:
-                idx.append( vocab.index(w) )
-            except ValueError:
-                continue
 
         # get img bbox features
         img_id = df_quest.loc[i, 'imageId']
@@ -194,7 +170,7 @@ for e in range(nEpoch):
 
 
         # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
-        output = nets.feed_forward(inputs, idx)
+        output = nets.feed_forward(nBBox, inputs, words)
 
         ans = torch.from_numpy(np.asarray(ansList[i], dtype=np.float32)).to(device)
 
@@ -205,7 +181,7 @@ for e in range(nEpoch):
 
         loss = F.binary_cross_entropy(output, ans)
 
-        params = nets.getParams(idx)
+        params = nets.getParams(words)
         optimizer = torch.optim.SGD(params, lr=learning_rate, momentum=0)
 
         optimizer.zero_grad()
@@ -237,14 +213,7 @@ for e in range(nEpoch):
         nQuestValid_val = 0
 
         for i in range(nQuest_val):
-            idx_val = []
             words_val = getWords(df_quest_val.loc[i, 'groundedFormula'])
-            nWords_val = len(words_val)
-            for w in words_val:
-                try:
-                    idx_val.append(vocab.index(w))
-                except ValueError:
-                    continue
 
             # get img bbox features
             img_id = df_quest_val.loc[i, 'imageId']
@@ -255,7 +224,7 @@ for e in range(nEpoch):
             inputs_val = Variable(torch.Tensor(f_input_val)).to(device)
 
             # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
-            output_val = nets.feed_forward(inputs_val, idx_val)
+            output_val = nets.feed_forward(nBBox, inputs_val, words_val)
             ans_val = np.asarray(ansListBin_val[i], dtype=np.float32)
             output_max_val, idx_max_val = torch.max(output_val, 0)
             imax_val = idx_max_val.data.cpu().numpy()
@@ -298,6 +267,9 @@ for e in range(nEpoch):
         torch.save(state, filename)
 
         fileLog.write("\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss, 100 * score))
+        print(
+            "\n Saving model at {0}/{1} epoch with mean loss: {2}\tscore: {3}%\n\n".format(e, nEpoch, mean_loss,
+                                                                                           100 * score))
 
 fileLogNumbers.close()
 fileLog.close()

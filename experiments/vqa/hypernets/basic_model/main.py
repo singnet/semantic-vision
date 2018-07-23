@@ -79,7 +79,7 @@ if __name__ == '__main__':
             + '_initializer_' + args.initializer
 
     dictionary = Dictionary.load_from_file('data/dictionary.pkl')
-    train_dset = VQAFeatureDataset('train', dictionary)
+    train_dset = VQAFeatureDataset('val', dictionary)
 
     if args.model == 'baseline':
         model = build_baseline(train_dset, num_hid=args.num_hid, dropout= args.dropout, norm=args.norm,\
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         print("Invalid Model")
         sys.exit(0)
 
-    model = model.cuda()
+    #model = model.cuda()
 
     if args.initializer == 'xavier_normal':
         model.apply(weights_init_xn)
@@ -163,7 +163,7 @@ if __name__ == '__main__':
         model.apply(weights_init_ku)
 
     model.w_emb.init_embedding('data/glove6b_init_300d.npy')
-    model = nn.DataParallel(model).cuda()
+    #model = nn.DataParallel(model).cuda()
 
     batch_size = args.batch_size
     train_loader = DataLoader(train_dset, batch_size, shuffle=True, num_workers=4)

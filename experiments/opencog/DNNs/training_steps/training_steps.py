@@ -74,10 +74,10 @@ def loadFeatures():
     global featureVectorSize
     return list(map(lambda x: random.random(), range(featureVectorSize)))
 
-def applyAtomeeseModel(atomeeseModel, features):
+def applyAtomeseModel(atomeseModel, features):
     global wordModels, torchDevice
     tensor = torch.ones(1).to(torchDevice)
-    andLink = atomeeseModel
+    andLink = atomeseModel
     for conceptNode in andLink.get_out():
         # TODO: can be faster if regexp is compiled
         match = re.search('^(.+)(?=.nn$)', conceptNode.name)
@@ -86,26 +86,26 @@ def applyAtomeeseModel(atomeeseModel, features):
         tensor = torch.mul(model(features), tensor)
     return tensor
 
-def runNeuralNetwork(atomeeseModel, featuresContainer):
+def runNeuralNetwork(atomeseModel, featuresContainer):
     features = torch.tensor(featuresContainer.get_value(
         PredicateNode('neuralNetworkFeatures')).to_list())
-    tensor = applyAtomeeseModel(atomeeseModel, features)
+    tensor = applyAtomeseModel(atomeseModel, features)
     result = EvaluationLink(PredicateNode('neuralNetworkPrediction'), 
-                             ListLink(atomeeseModel, featuresContainer))
+                             ListLink(atomeseModel, featuresContainer))
     result.tv = TruthValue(tensor.item(), 1.0)
     setTensorValue(result, tensor)
     return result
 
-def createExpectedResult(atomeeseModel, featuresContainer, truthValue):
+def createExpectedResult(atomeseModel, featuresContainer, truthValue):
     result = EvaluationLink(PredicateNode('expectedNeuralNetworkAnswer'), 
-                             ListLink(atomeeseModel, featuresContainer))
+                             ListLink(atomeseModel, featuresContainer))
     result.tv = TruthValue(truthValue, 1.0)
     setTensorValue(result, torch.tensor([ truthValue ]))
     return result
 
-def getAtomeeseModelParameters(atomeeseModel):
+def getAtomeseModelParameters(atomeseModel):
     parameters = itertools.chain()
-    andLink = atomeeseModel
+    andLink = atomeseModel
     for conceptNode in andLink.get_out():
         # TODO: can be faster if regexp is compiled
         match = re.search('^(.+)(?=.nn$)', conceptNode.name)
@@ -114,9 +114,9 @@ def getAtomeeseModelParameters(atomeeseModel):
         parameters = itertools.chain(parameters, model.parameters())
     return parameters
 
-def trainNeuralNetwork(atomeeseModel, predictedValue, expectedValue):
+def trainNeuralNetwork(atomeseModel, predictedValue, expectedValue):
     # TODO: model can be cached in predictedValue as well
-    parameters = getAtomeeseModelParameters(atomeeseModel)
+    parameters = getAtomeseModelParameters(atomeseModel)
     # TODO: Maxim already implemented dynamic learning rate
     optimizer = torch.optim.SGD(parameters, lr=1e-3, momentum=0)
     optimizer.zero_grad()
@@ -150,22 +150,22 @@ boundingBox = ConceptNode("someBoundingBox")
 boundingBox.set_value(PredicateNode("neuralNetworkFeatures"), 
                       FloatValue(loadFeatures()))
 
-atomeeseModel = AndLink(ConceptNode('hare.nn'), ConceptNode('grey.nn'))
-log.info("atomeeseModel: %s", atomeeseModel)
+atomeseModel = AndLink(ConceptNode('hare.nn'), ConceptNode('grey.nn'))
+log.info("atomeseModel: %s", atomeseModel)
 
-expectedValue = createExpectedResult(atomeeseModel, boundingBox, 1.0)
+expectedValue = createExpectedResult(atomeseModel, boundingBox, 1.0)
 log.info('expectedValue: %s', expectedValue)
 
 predictedValue = execute_atom(atomspace, ExecutionOutputLink(
     GroundedSchemaNode('py:runNeuralNetwork'), 
-    ListLink(atomeeseModel, boundingBox)
+    ListLink(atomeseModel, boundingBox)
     ))
 log.info('predictedValue: %s', predictedValue)
 
-# TODO: there is no Atomeese construction to call Python procedure 
+# TODO: there is no Atomese construction to call Python procedure 
 # but don't expect any result, i.e. call ```void foo()```
 evaluate_atom(atomspace, EvaluationLink(
     GroundedPredicateNode('py:trainNeuralNetwork'), 
-    ListLink(atomeeseModel, predictedValue, expectedValue)
+    ListLink(atomeseModel, predictedValue, expectedValue)
     ))
 log.info('train step finished')

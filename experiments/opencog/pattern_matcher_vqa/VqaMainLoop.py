@@ -54,25 +54,17 @@ def initializeAtomspace():
     scheme_eval(atomspace, "(use-modules (opencog query))")
     return atomspace
 
-
-def predicate(boundingBox, predicateName):
+def runNeuralNetwork(boundingBox, conceptNode):
+    log.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
     featuresValue = boundingBox.get_value(PredicateNode('features'))
-    if (featuresValue is None):
+    if featuresValue is None:
+        log.debug('no features found, return FALSE')
         return TruthValue(0.0, 1.0)
     features = np.array(featuresValue.to_list())
+    predicateName = conceptNode.name
     probability = GetFeatures.predicate(features, predicateName)
+    log.debug('word: %s, result: %s', predicateName, str(probability))
     return TruthValue(probability, 1.0)
-
-
-def hare(boundingBox):
-    return predicate(boundingBox, 'hare')
-
-
-def grey(boundingBox):
-    # TODO: correct predicate name, at the moment hare is used because
-    # it is only predicateName which recognized by used NN
-    return predicate(boundingBox, 'hare')
-
 
 def answerQuestion(record):
     log.debug('processing question: %s', record.question)
@@ -86,7 +78,7 @@ def answerQuestion(record):
     boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
     
     relexFormula = questionConverter.parseQuestion(record.question)
-    queryInScheme = questionConverter.convertToOpencogSchema(relexFormula)
+    queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
     log.debug('Scheme query: %s', queryInScheme)
 
     evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
@@ -129,9 +121,9 @@ def main():
     
     log.info('VqaMainLoop started')
     
-    question2atomeeseLibraryPath = str(currentDir) + '/../question2atomeese/target/question2atomeese-1.0-SNAPSHOT.jar'
+    question2atomeseLibraryPath = str(currentDir) + '/../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar'
     jpype.startJVM(jpype.getDefaultJVMPath(), 
-                   '-Djava.class.path=' + str(question2atomeeseLibraryPath))
+                   '-Djava.class.path=' + str(question2atomeseLibraryPath))
     global questionConverter
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     

@@ -8,8 +8,8 @@ GetFeatures.getFeatures and forms an Atomspace with only ConceptNode
 representing image as bounding box. Features are placed into bounding box 
 as FloatValue.
 
-(2) Script gets a question parses it using question2atomeese Java library. 
-question2atomeese returns PatternMatcher query on Scheme language. After 
+(2) Script gets a question parses it using question2atomese Java library. 
+question2atomese returns PatternMatcher query on Scheme language. After 
 that the query is executed and PatternMatcher calls GroundingPredicates on 
 bounding box from Atomspace.
 
@@ -26,5 +26,5 @@ For Ubuntu run:
 sudo apt-get install python3-jpype
 ```
 
-question2atomeese Java library should be built.
-See [../question2atomeese/README.md](../question2atomeese/README.md)
+question2atomese Java library should be built.
+See [../question2atomese/README.md](../question2atomese/README.md)

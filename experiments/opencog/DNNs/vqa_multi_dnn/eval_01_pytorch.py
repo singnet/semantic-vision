@@ -7,21 +7,17 @@ import numpy as np
 from torch.autograd import Variable
 import os, sys, time, re
 import math
+from netsvocabulary import NetsVocab
 
 
-# FOR RUNNING ON K4
-# pathVocabFile = '/home/shared/datasets/yesno_predadj_words.txt'
-# pathFeaturesParsed = '/home/shared/datasets/VisualQA/Attention-on-Attention-data/val2014_parsed_features'
-# pathQuestFile = '/home/shared/datasets/val2014_questions_parsed.txt'
-# pathImgs = '/home/shared/datasets/val2014'
+pathVocabFile = '/mnt/fileserver/shared/datasets/at-on-at-data/yesno_predadj_words.txt'
+pathImgs = '/mnt/fileserver/shared/datasets/at-on-at-data/images/val2014'
+pathFeaturesParsed = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_parsed_features'
+pathQuestFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
+pathSaveModel = './saved_models_01'
+pathPickledFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
 
-#
-pathVocabFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/yesno_predadj_words.txt'
-
-pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/val2014'
-pathFeaturesParsed = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_parsed_features'
-pathQuestFile = '/home/mvp/Desktop/SingularityNET/datasets/VisualQA/balanced_real_images/val2014_questions_parsed.txt'
 FILE_PREFIX = 'COCO_val2014_'
 
 # pathImgs = '/home/mvp/Desktop/SingularityNET/my_exp/Attention-on-Attention-for-VQA/data/train2014'
@@ -32,23 +28,15 @@ FILE_PREFIX = 'COCO_val2014_'
 
 IMAGE_ID_FIELD_NAME = 'imageId'
 id_len = 12
+eps = 1e-16
 
-
-pathSaveModel = './saved_models_01/99.16_67.65'
-
+isLoadPickledFeatures = True
 isReduceSet = False
 
 input_size = 2048
 nBBox = 36
 featOffset = 10
 
-
-# Load vocabulary
-vocab = []
-with open(pathVocabFile, 'r') as filehandle:
-    vocab = [current_place.rstrip() for current_place in filehandle.readlines()]
-
-Nnets = len(vocab)
 
 def getWords(groundedFormula):
     words = re.split(r', ', groundedFormula[groundedFormula.find("(") + 1:groundedFormula.find(")")])
@@ -58,38 +46,13 @@ def getWords(groundedFormula):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class NetsVocab(nn.Module):
-    def __init__(self):
-        super(NetsVocab, self).__init__()
-        self.models = nn.ModuleList([nn.Sequential(
-            nn.Linear(input_size, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-            ).to(device) for i in range(Nnets)])
-
-    def feed_forward(self, x, idx):
-        output = torch.ones(size=(nBBox,1)).to(device)
-        for k in idx:
-            logits = self.models[k](x)
-            # logits = model(x).view(-1)
-            predict = F.sigmoid(logits)
-            output = torch.mul(output, predict)
-        return output
-
-    def getParams(self, idx):
-        params=[]
-        for i in idx:
-            params.append({'params': self.models[i].parameters()})
-        return params
-
 print('Loading model...')
-nets = NetsVocab()
 checkpoint = torch.load(pathSaveModel + '/model_01_max_score_val.pth.tar')
 mean_loss = checkpoint['mean_loss']
 ep = checkpoint['epoch']
-nets.load_state_dict(checkpoint['state_dict'])
+
+nets = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+
 print("Mean loss value: {} (epoch {})" .format(mean_loss, checkpoint['epoch']))
 
 
@@ -108,8 +71,12 @@ imgIdList = df_quest[IMAGE_ID_FIELD_NAME].tolist()
 # Drop duplicates and sort
 imgIdSet = sorted(set(imgIdList))
 
-# !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
-data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=isReduceSet)
+
+if isLoadPickledFeatures is True:
+    data_feat = vqp.load_pickled_features(pathPickledFeatrues)
+else:
+    # !! FOR DEBUG LOAD ONLY 1% OF DATA !!! HARDCODED INSIDE vpq.load_parsed_features !!!!
+    data_feat =  vqp.load_parsed_features(pathFeaturesParsed, imgIdSet, filePrefix=FILE_PREFIX, reduce_set=isReduceSet)
 
 # df.to_csv('parsed_yes_no_predadj.tsv', sep='\t', header=True, index=None)
 
@@ -146,14 +113,7 @@ ans_stat = []
 num_yes_gt = 0
 num_yes_pred = 0
 for i in range(nQuest):
-    idx = []
     words = getWords(df_quest.loc[i, 'groundedFormula'])
-    nWords = len(words)
-    for w in words:
-        try:
-            idx.append( vocab.index(w) )
-        except ValueError:
-            continue
 
     # get img bbox features
     img_id = df_quest.loc[i, 'imageId']
@@ -172,13 +132,13 @@ for i in range(nQuest):
 
 
     # Feed each bbox feature in the batch (36) to selected nets and multiply output probabilities
-    output = nets.feed_forward(inputs, idx)
+    output = nets.feed_forward(nBBox, inputs, words)
 
     ans = np.asarray(ansListBin[i], dtype=np.float32)
     _, idx_max = torch.max(output, 0)
     imax = idx_max.data.cpu().numpy()
 
-    sum = torch.sum(output)
+    sum = torch.sum(output) + torch.Tensor([eps]).to(device)
     s = torch.div(output, sum)
     sum_sq = torch.sum(torch.mul(output, output))
     output = sum_sq / sum

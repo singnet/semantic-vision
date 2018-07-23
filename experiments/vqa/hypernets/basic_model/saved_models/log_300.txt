@@ -1,0 +1,285 @@
+epoch 0, time: 264.12
+	train_loss: 8.585, score: 36.756
+	eval loss: 4.389, score: 45.686 (92.661)
+epoch 1, time: 319.14
+	train_loss: 4.229, score: 47.646
+	eval loss: 3.938, score: 51.053 (92.661)
+epoch 2, time: 322.02
+	train_loss: 3.875, score: 52.442
+	eval loss: 3.748, score: 54.627 (92.661)
+epoch 3, time: 324.01
+	train_loss: 3.659, score: 55.660
+	eval loss: 3.627, score: 56.703 (92.662)
+epoch 4, time: 272.34
+	train_loss: 3.501, score: 58.002
+	eval loss: 3.546, score: 58.315 (92.661)
+epoch 5, time: 271.66
+	train_loss: 3.373, score: 59.990
+	eval loss: 3.500, score: 59.732 (92.661)
+epoch 6, time: 267.80
+	train_loss: 3.266, score: 61.615
+	eval loss: 3.453, score: 60.416 (92.661)
+epoch 7, time: 267.43
+	train_loss: 3.170, score: 63.136
+	eval loss: 3.445, score: 61.162 (92.661)
+epoch 8, time: 268.82
+	train_loss: 3.085, score: 64.611
+	eval loss: 3.410, score: 61.641 (92.661)
+epoch 9, time: 267.94
+	train_loss: 3.006, score: 65.804
+	eval loss: 3.402, score: 62.040 (92.661)
+epoch 10, time: 270.01
+	train_loss: 2.936, score: 67.015
+	eval loss: 3.396, score: 62.209 (92.661)
+epoch 11, time: 270.33
+	train_loss: 2.868, score: 68.086
+	eval loss: 3.396, score: 62.441 (92.662)
+epoch 12, time: 270.75
+	train_loss: 2.805, score: 69.206
+	eval loss: 3.403, score: 62.865 (92.661)
+epoch 13, time: 271.35
+	train_loss: 2.745, score: 70.154
+	eval loss: 3.405, score: 62.930 (92.661)
+epoch 14, time: 272.73
+	train_loss: 2.689, score: 71.064
+	eval loss: 3.420, score: 63.043 (92.661)
+epoch 15, time: 276.80
+	train_loss: 2.635, score: 72.080
+	eval loss: 3.428, score: 63.195 (92.662)
+epoch 16, time: 271.95
+	train_loss: 2.583, score: 72.924
+	eval loss: 3.453, score: 63.059 (92.661)
+epoch 17, time: 270.24
+	train_loss: 2.532, score: 73.822
+	eval loss: 3.492, score: 63.435 (92.661)
+epoch 18, time: 268.01
+	train_loss: 2.485, score: 74.609
+	eval loss: 3.484, score: 63.332 (92.662)
+epoch 19, time: 269.70
+	train_loss: 2.437, score: 75.397
+	eval loss: 3.507, score: 63.480 (92.661)
+epoch 20, time: 271.57
+	train_loss: 2.394, score: 76.139
+	eval loss: 3.541, score: 63.424 (92.661)
+epoch 21, time: 275.34
+	train_loss: 2.350, score: 76.837
+	eval loss: 3.564, score: 63.313 (92.661)
+epoch 22, time: 274.94
+	train_loss: 2.308, score: 77.530
+	eval loss: 3.608, score: 63.511 (92.661)
+epoch 23, time: 271.99
+	train_loss: 2.270, score: 78.203
+	eval loss: 3.630, score: 63.381 (92.661)
+epoch 24, time: 272.51
+	train_loss: 2.233, score: 78.812
+	eval loss: 3.638, score: 63.482 (92.661)
+epoch 25, time: 272.44
+	train_loss: 2.194, score: 79.387
+	eval loss: 3.671, score: 63.490 (92.661)
+epoch 26, time: 271.33
+	train_loss: 2.156, score: 80.022
+	eval loss: 3.688, score: 63.462 (92.661)
+epoch 27, time: 271.50
+	train_loss: 2.123, score: 80.479
+	eval loss: 3.730, score: 63.429 (92.661)
+epoch 28, time: 267.78
+	train_loss: 2.089, score: 81.051
+	eval loss: 3.756, score: 63.350 (92.661)
+epoch 29, time: 270.75
+	train_loss: 2.056, score: 81.587
+	eval loss: 3.770, score: 63.357 (92.662)
+epoch 30, time: 273.35
+	train_loss: 2.027, score: 82.008
+	eval loss: 3.807, score: 63.211 (92.661)
+epoch 31, time: 270.33
+	train_loss: 1.998, score: 82.381
+	eval loss: 3.810, score: 63.283 (92.661)
+epoch 32, time: 270.20
+	train_loss: 1.968, score: 82.814
+	eval loss: 3.898, score: 63.201 (92.661)
+epoch 33, time: 268.82
+	train_loss: 1.941, score: 83.244
+	eval loss: 3.887, score: 63.283 (92.662)
+epoch 34, time: 271.59
+	train_loss: 1.914, score: 83.632
+	eval loss: 3.875, score: 63.233 (92.661)
+epoch 35, time: 270.17
+	train_loss: 1.885, score: 83.985
+	eval loss: 3.929, score: 63.271 (92.661)
+epoch 36, time: 269.51
+	train_loss: 1.860, score: 84.392
+	eval loss: 3.958, score: 62.979 (92.661)
+epoch 37, time: 269.61
+	train_loss: 1.834, score: 84.682
+	eval loss: 4.006, score: 63.055 (92.661)
+epoch 38, time: 269.09
+	train_loss: 1.814, score: 84.955
+	eval loss: 4.009, score: 63.111 (92.662)
+epoch 39, time: 268.03
+	train_loss: 1.790, score: 85.233
+	eval loss: 4.037, score: 63.098 (92.661)
+epoch 40, time: 270.09
+	train_loss: 1.767, score: 85.557
+	eval loss: 4.058, score: 63.050 (92.662)
+epoch 41, time: 270.06
+	train_loss: 1.744, score: 85.884
+	eval loss: 4.075, score: 63.099 (92.661)
+epoch 42, time: 269.17
+	train_loss: 1.724, score: 86.122
+	eval loss: 4.138, score: 62.951 (92.661)
+epoch 43, time: 269.58
+	train_loss: 1.704, score: 86.292
+	eval loss: 4.147, score: 62.907 (92.661)
+epoch 44, time: 269.19
+	train_loss: 1.686, score: 86.523
+	eval loss: 4.135, score: 62.862 (92.661)
+epoch 45, time: 274.31
+	train_loss: 1.668, score: 86.755
+	eval loss: 4.208, score: 62.880 (92.661)
+epoch 46, time: 269.80
+	train_loss: 1.648, score: 86.946
+	eval loss: 4.248, score: 62.822 (92.661)
+epoch 47, time: 270.01
+	train_loss: 1.630, score: 87.147
+	eval loss: 4.237, score: 62.938 (92.661)
+epoch 48, time: 270.85
+	train_loss: 1.613, score: 87.354
+	eval loss: 4.231, score: 62.888 (92.661)
+epoch 49, time: 268.72
+	train_loss: 1.596, score: 87.561
+	eval loss: 4.283, score: 62.868 (92.661)
+epoch 50, time: 271.21
+	train_loss: 1.581, score: 87.649
+	eval loss: 4.255, score: 62.805 (92.661)
+epoch 51, time: 345.78
+	train_loss: 1.565, score: 87.841
+	eval loss: 4.354, score: 62.797 (92.661)
+epoch 52, time: 270.96
+	train_loss: 1.550, score: 87.992
+	eval loss: 4.337, score: 62.720 (92.661)
+epoch 53, time: 269.45
+	train_loss: 1.534, score: 88.113
+	eval loss: 4.379, score: 62.740 (92.661)
+epoch 54, time: 269.33
+	train_loss: 1.519, score: 88.250
+	eval loss: 4.381, score: 62.642 (92.661)
+epoch 55, time: 268.65
+	train_loss: 1.505, score: 88.375
+	eval loss: 4.393, score: 62.740 (92.661)
+epoch 56, time: 273.58
+	train_loss: 1.492, score: 88.517
+	eval loss: 4.445, score: 62.651 (92.661)
+epoch 57, time: 269.38
+	train_loss: 1.479, score: 88.619
+	eval loss: 4.439, score: 62.751 (92.661)
+epoch 58, time: 268.37
+	train_loss: 1.467, score: 88.735
+	eval loss: 4.429, score: 62.633 (92.661)
+epoch 59, time: 267.81
+	train_loss: 1.454, score: 88.843
+	eval loss: 4.446, score: 62.644 (92.662)
+epoch 60, time: 277.93
+	train_loss: 1.443, score: 88.908
+	eval loss: 4.463, score: 62.591 (92.661)
+epoch 61, time: 272.54
+	train_loss: 1.430, score: 89.039
+	eval loss: 4.466, score: 62.554 (92.661)
+epoch 62, time: 266.60
+	train_loss: 1.421, score: 89.096
+	eval loss: 4.530, score: 62.627 (92.661)
+epoch 63, time: 271.26
+	train_loss: 1.408, score: 89.186
+	eval loss: 4.528, score: 62.537 (92.661)
+epoch 64, time: 272.49
+	train_loss: 1.396, score: 89.279
+	eval loss: 4.550, score: 62.505 (92.661)
+epoch 65, time: 271.75
+	train_loss: 1.390, score: 89.347
+	eval loss: 4.574, score: 62.623 (92.661)
+epoch 66, time: 268.33
+	train_loss: 1.375, score: 89.433
+	eval loss: 4.572, score: 62.516 (92.661)
+epoch 67, time: 274.39
+	train_loss: 1.368, score: 89.500
+	eval loss: 4.572, score: 62.394 (92.661)
+epoch 68, time: 273.22
+	train_loss: 1.357, score: 89.553
+	eval loss: 4.583, score: 62.506 (92.661)
+epoch 69, time: 271.79
+	train_loss: 1.349, score: 89.641
+	eval loss: 4.578, score: 62.507 (92.661)
+epoch 70, time: 267.47
+	train_loss: 1.341, score: 89.683
+	eval loss: 4.589, score: 62.499 (92.661)
+epoch 71, time: 267.55
+	train_loss: 1.331, score: 89.740
+	eval loss: 4.587, score: 62.447 (92.661)
+epoch 72, time: 267.34
+	train_loss: 1.323, score: 89.801
+	eval loss: 4.575, score: 62.527 (92.661)
+epoch 73, time: 266.15
+	train_loss: 1.314, score: 89.884
+	eval loss: 4.707, score: 62.570 (92.661)
+epoch 74, time: 267.52
+	train_loss: 1.306, score: 89.914
+	eval loss: 4.643, score: 62.578 (92.662)
+epoch 75, time: 267.88
+	train_loss: 1.296, score: 90.009
+	eval loss: 4.684, score: 62.435 (92.661)
+epoch 76, time: 267.42
+	train_loss: 1.289, score: 90.043
+	eval loss: 4.685, score: 62.444 (92.662)
+epoch 77, time: 265.84
+	train_loss: 1.283, score: 90.051
+	eval loss: 4.677, score: 62.339 (92.662)
+epoch 78, time: 268.31
+	train_loss: 1.273, score: 90.152
+	eval loss: 4.663, score: 62.426 (92.661)
+epoch 79, time: 268.02
+	train_loss: 1.268, score: 90.159
+	eval loss: 4.709, score: 62.432 (92.661)
+epoch 80, time: 269.05
+	train_loss: 1.260, score: 90.211
+	eval loss: 4.696, score: 62.312 (92.661)
+epoch 81, time: 270.32
+	train_loss: 1.254, score: 90.260
+	eval loss: 4.683, score: 62.317 (92.661)
+epoch 82, time: 271.56
+	train_loss: 1.247, score: 90.291
+	eval loss: 4.719, score: 62.349 (92.661)
+epoch 83, time: 268.31
+	train_loss: 1.241, score: 90.327
+	eval loss: 4.772, score: 62.357 (92.661)
+epoch 84, time: 268.10
+	train_loss: 1.235, score: 90.371
+	eval loss: 4.797, score: 62.401 (92.661)
+epoch 85, time: 267.06
+	train_loss: 1.227, score: 90.409
+	eval loss: 4.738, score: 62.257 (92.661)
+epoch 86, time: 268.07
+	train_loss: 1.222, score: 90.426
+	eval loss: 4.744, score: 62.341 (92.661)
+epoch 87, time: 266.23
+	train_loss: 1.215, score: 90.501
+	eval loss: 4.736, score: 62.394 (92.661)
+epoch 88, time: 267.13
+	train_loss: 1.211, score: 90.480
+	eval loss: 4.718, score: 62.289 (92.661)
+epoch 89, time: 268.02
+	train_loss: 1.204, score: 90.517
+	eval loss: 4.779, score: 62.200 (92.661)
+epoch 90, time: 267.33
+	train_loss: 1.199, score: 90.562
+	eval loss: 4.811, score: 62.364 (92.662)
+epoch 91, time: 270.54
+	train_loss: 1.192, score: 90.626
+	eval loss: 4.810, score: 62.328 (92.661)
+epoch 92, time: 268.20
+	train_loss: 1.186, score: 90.629
+	eval loss: 4.833, score: 62.342 (92.661)
+epoch 93, time: 269.16
+	train_loss: 1.183, score: 90.678
+	eval loss: 4.812, score: 62.215 (92.662)
+epoch 94, time: 268.47
+	train_loss: 1.177, score: 90.703
+	eval loss: 4.802, score: 62.190 (92.661)

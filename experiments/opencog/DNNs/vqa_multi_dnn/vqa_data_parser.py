@@ -11,7 +11,7 @@ import _pickle as cPickle
 import numpy as np
 import math
 import pandas as pd
-
+import _pickle as pickle
 
 csv.field_size_limit(sys.maxsize)
 
@@ -33,6 +33,47 @@ test_parsed_path = 'data/test2015_parsed_features'
 feature_length = 2048
 num_fixed_boxes = 36
 num_spatial_features = 6
+
+
+def pickle_parsed_features(pathFeatures, imgIDSet, pathSave='_.pkl', filePrefix = 'COCO_train2014_', id_len = 12):
+    data = []
+
+    nImg = len(imgIDSet)
+
+    # Read parsed files and accumulate data
+    for i in range(nImg):
+        image_id = imgIDSet[i]
+        filePath = pathFeatures + '/' + filePrefix
+        nZeros = int((id_len - 1) - math.floor(math.log10(image_id)))
+        for _ in range(0, nZeros):
+            filePath = filePath + '0'
+
+        filePath = filePath + str(image_id) + '.tsv'
+
+        df = np.genfromtxt(filePath, delimiter='\t', skip_header=1)
+        data.append([image_id, df])
+
+        sys.stdout.write("\r \r Loading {0}"
+                         " parsed features: {1}%\ti = {2}/{3}".format(filePrefix,
+                                                                      (str(int(100 * float(i) / float(nImg)))), i,
+                                                                      nImg))
+        sys.stdout.flush()
+        time.sleep(0.01)
+
+    print("\nPickle loaded features...")
+    output = open(pathSave, 'wb')
+    pickle.dump(data, output, 2)
+    output.close()
+    print("Features are pickled!")
+
+
+def load_pickled_features(pathFeatures):
+    print("Loading features from %s"% pathFeatures)
+    input = open(pathFeatures, 'rb')
+    data = pickle.load(input)
+    input.close()
+    print("Features are loaded!")
+    return data
 
 # FEATURESNAMES = ['roi_x', 'roi_y' 'roi_width' 'roi_height' 'spatial_feature_6d' 'img_feature_d2048']
 def load_parsed_features(pathFeatures, imgIDSet, filePrefix = 'COCO_train2014_', id_len = 12, reduce_set=False):
