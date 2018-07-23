@@ -12,6 +12,7 @@
             (VariableList
              (VariableNode "$F1")
              (VariableNode "$F2"))
+            (AndLink
             (ListLink
              (ConceptNode "Gradient")
              (TimesLink
@@ -26,7 +27,7 @@
               (ListLink
                (ConceptNode "Gradient") (VariableNode "$F2"))
               (VariableNode "$F1"))
-             ))) 
+             )))) 
 
 (define SRC (ListLink (ConceptNode "Gradient")
           (TimesLink
