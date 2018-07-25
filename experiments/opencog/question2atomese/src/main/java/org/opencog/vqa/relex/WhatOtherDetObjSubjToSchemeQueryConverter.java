@@ -3,7 +3,7 @@ package org.opencog.vqa.relex;
 import relex.feature.FeatureNode;
 import relex.feature.RelationCallback;
 
-public class WhatDetOtherDetObjSubjToSchemeQueryConverter implements ToQueryConverter {
+public class WhatOtherDetObjSubjToSchemeQueryConverter implements ToQueryConverter {
 
     @Override
     public boolean isApplicable(RelexFormula formula) {
@@ -25,7 +25,7 @@ public class WhatDetOtherDetObjSubjToSchemeQueryConverter implements ToQueryConv
                 "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"%2$s\")) )\n" + 
                 "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
                 "  )\n" +
-                "  (Variable \"$X\")\n" +
+                "  (ListLink (Variable \"$B\") (Variable \"$X\") (ConceptNode \"%2$s\"))\n" +
                 ")\n"
                 , visitor.attribute, visitor.object);
     }

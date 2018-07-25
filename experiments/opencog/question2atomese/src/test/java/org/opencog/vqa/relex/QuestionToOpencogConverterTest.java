@@ -43,7 +43,7 @@ public class QuestionToOpencogConverterTest {
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"sky\")) )\n" + 
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
                             "  )\n" +
-                            "  (Variable \"$X\")\n" +
+                            "  (ListLink (Variable \"$B\") (Variable \"$X\") (ConceptNode \"sky\"))\n" +
                             ")\n"
                             , scheme);
     }

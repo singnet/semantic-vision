@@ -18,7 +18,7 @@ public class QuestionToOpencogConverter {
         this.relationExtractor.setMaxParses(1);
         this.toQueryConverters = ImmutableList.of(
                 new YesNoPredadjToSchemeQueryConverter(),
-                new WhatDetOtherDetObjSubjToSchemeQueryConverter()
+                new WhatOtherDetObjSubjToSchemeQueryConverter()
             );
     }
     
