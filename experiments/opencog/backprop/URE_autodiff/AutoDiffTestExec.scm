@@ -13,28 +13,34 @@
              (VariableNode "$F1")
              (VariableNode "$F2"))
             (AndLink
-            (ListLink
+            (NumericOutputLink
              (ConceptNode "Gradient")
              (TimesLink
               (VariableNode "$F1")
               (VariableNode "$F2")))
             (PlusLink
              (TimesLink
-              (ListLink
+              (NumericOutputLink
                (ConceptNode "Gradient") (VariableNode "$F1"))
               (VariableNode "$F2"))
              (TimesLink
-              (ListLink
+              (NumericOutputLink
                (ConceptNode "Gradient") (VariableNode "$F2"))
               (VariableNode "$F1"))
              )))) 
 
-(define SRC (ListLink (ConceptNode "Gradient")
+(define SRC (NumericOutputLink (ConceptNode "Gradient")
           (TimesLink
            (PlusLink
             (NumberNode 3)(NumberNode 3))
            (PlusLink
             (NumberNode 3)(NumberNode 3)))))
+
+(ExecutionLink
+   (SchemaNode "URE:maximum-iterations")
+   (ConceptNode "my-rule-base")
+   (NumberNode "10000")
+   )
 
 (Inheritance (Concept "my-rule-base") (Concept "URE"))
 
