@@ -203,12 +203,9 @@ class Result:
         self.object = object
         self.attributeProbability = bb.get_value(attribute).to_list()[0]
         self.objectProbability = bb.get_value(object).to_list()[0]
-        self.prediction = self.attributeProbability * self.objectProbability
         
     def __lt__(self, other):
-        if abs(self.prediction - other.prediction) > 0.0001:
-            return self.prediction < other.prediction
-        elif abs(self.objectProbability - other.objectProbability) > 0.0001:
+        if abs(self.objectProbability - other.objectProbability) > 0.000001:
             return self.objectProbability < other.objectProbability
         else:
             return self.attributeProbability < other.attributeProbability
@@ -217,12 +214,11 @@ class Result:
         return other.__lt__(self);
 
     def __str__(self):
-        return '{} is {}({}) {}({}), score = {}'.format(self.bb.name,
+        return '{} is {} {}({}), score = {}'.format(self.bb.name,
                                    self.attribute.name,
-                                   self.attributeProbability,
                                    self.object.name,
                                    self.objectProbability,
-                                   self.prediction)
+                                   self.attributeProbability)
 
 def answerOtherQuestion(queryInScheme):
     evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
