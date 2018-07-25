@@ -114,6 +114,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
         return TruthValue(0.0, 1.0)
     features = np.array(featuresValue.to_list())
     word = conceptNode.name
+    global netsVocabulary
     model = netsVocabulary.getModelByWord(word)
     if model is None:
         log.debug('no model found, return FALSE')
