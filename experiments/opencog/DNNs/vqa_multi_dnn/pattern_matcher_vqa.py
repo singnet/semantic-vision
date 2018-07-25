@@ -122,6 +122,9 @@ def runNeuralNetwork(boundingBox, conceptNode):
     # TODO: F.sigmoid should part of NN
     result = F.sigmoid(model(torch.Tensor(features)))
     log.debug('word: %s, result: %s', word, str(result))
+    # Return matching values from PatternMatcher by adding 
+    # them to bounding box and concept node
+    # TODO: how to return predicted values properly?
     boundingBox.set_value(conceptNode, FloatValue(result.item()))
     conceptNode.set_value(boundingBox, FloatValue(result.item()))
     return TruthValue(result.item(), 1.0)
@@ -140,8 +143,6 @@ def popAtomspace():
 
 # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
 def addBoundingBoxesIntoAtomspace(record):
-    global boundingBoxesTmp
-    boundingBoxesTmp = []
     featuresFileName = getFeaturesFileName(record.imageId)
     boundingBoxNumber = 0
     for boundingBoxFeatures in loadFeatures(featuresFileName):
@@ -151,7 +152,6 @@ def addBoundingBoxesIntoAtomspace(record):
         InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
         boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
         boundingBoxNumber += 1
-        boundingBoxesTmp.append(boundingBoxInstance)
 
 def answerQuestion(record):
     log.debug('processing question: %s', record.question)
@@ -195,33 +195,55 @@ def answerYesNoQuestion(queryInScheme):
     answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
     return answer
 
+class Result:
+    
+    def __init__(self, bb, attribute, object):
+        self.bb = bb
+        self.attribute = attribute
+        self.object = object
+        self.attributeProbability = bb.get_value(attribute).to_list()[0]
+        self.objectProbability = bb.get_value(object).to_list()[0]
+        self.prediction = self.attributeProbability * self.objectProbability
+        
+    def __lt__(self, other):
+        if abs(self.prediction - other.prediction) > 0.0001:
+            return self.prediction < other.prediction
+        elif abs(self.objectProbability - other.objectProbability) > 0.0001:
+            return self.objectProbability < other.objectProbability
+        else:
+            return self.attributeProbability < other.attributeProbability
+
+    def __gt__(self, other):
+        return other.__lt__(self);
+
+    def __str__(self):
+        return '{} is {}({}) {}({}), score = {}'.format(self.bb.name,
+                                   self.attribute.name,
+                                   self.attributeProbability,
+                                   self.object.name,
+                                   self.objectProbability,
+                                   self.prediction)
+
 def answerOtherQuestion(queryInScheme):
     evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
     start = datetime.datetime.now()
     global atomspace
-    result = scheme_eval_h(atomspace, evaluateStatement)
+    resultsData = scheme_eval_h(atomspace, evaluateStatement)
     delta = datetime.datetime.now() - start
-    log.debug('The result of pattern matching is: %s, time: %s microseconds',
-              result, delta.microseconds)
+    log.debug('The resultsData of pattern matching is: %s, time: %s microseconds',
+              resultsData, delta.microseconds)
     
-    max = 0
-    max_atom = None
-    max_bb = None
-    global boundingBoxesTmp
-    for atom in result.out:
-        for bb in boundingBoxesTmp:
-            v = atom.get_value(bb)
-            if v is None:
-                continue
-            f = v.to_list()[0]
-            if f >= 0.5:
-                log.info('{} x {}: {}'.format(atom, bb, atom.get_value(bb)))
-            if f > max and f < 1:
-                max = f
-                max_atom = atom
-                max_bb = bb
-    log.info('{} x {}: {}'.format(max_atom, max_bb, max_atom.get_value(max_bb)))
-    answer = None # TODO: get answer from matching results
+    results = []
+    for resultData in resultsData.out:
+        out = resultData.out
+        results.append(Result(out[0], out[1], out[2]))
+    results.sort(reverse = True)
+    
+    for result in results:
+        log.debug(str(result))
+    
+    maxResult = results[0]
+    answer = maxResult.attribute.name
     return answer
 
 def initializeLogger():
