@@ -1,8 +1,8 @@
 import logging
 import torch
 
-from .dataset import Dictionary
-from .model import build_baseline_model
+from hypernetimpl.dataset import Dictionary
+from hypernetimpl.model import build_baseline_model
 from pycparser.ply.yacc import pickle_protocol
 
 #pathToDictionary = '/mnt/fileserver/shared/datasets/at-on-at-data/dictionary.pkl'

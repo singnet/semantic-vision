@@ -1,47 +1,19 @@
-import importlib.util
-import os
 import logging
 import jpype
 import numpy as np
 import datetime
 import opencog.logger
 import argparse
-import torch
-import zipfile
-import math
-import torch.nn.functional as F
 
 from opencog.atomspace import AtomSpace, TruthValue, types
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
-from hypernet.HyperNetNeuralNetworkRunner import HyperNetNeuralNetworkRunner
+from utils import *
+from multidnn import NetsVocabularyNeuralNetworkRunner
+from hypernet import HyperNetNeuralNetworkRunner
 
 ### Reusable code (no dependency on global vars)
-
-def importModuleFromFile(moduleName, fileName):
-    currentDir = os.path.dirname(os.path.realpath(__file__))
-    moduleSpec = importlib.util.spec_from_file_location(moduleName, 
-                                  str(currentDir) + '/' + fileName)
-    module = importlib.util.module_from_spec(moduleSpec)
-    moduleSpec.loader.exec_module(module)
-    return module
-
-def addLeadingZeros(number, requriedLength):
-    result = ''
-    nZeros = int((requriedLength - 1) - math.floor(math.log10(int(number))))
-    for _ in range(0, nZeros):
-        result += '0'
-    return result + str(number)
-
-def loadDataFromZipOrFolder(folderOrZip, fileName, loadProcedure):
-    if (os.path.isdir(folderOrZip)):
-        with open(folderOrZip + '/' + fileName) as file:
-            return loadProcedure(file)
-    else:
-        with zipfile.ZipFile(folderOrZip, 'r') as archive:
-            with archive.open(fileName) as file:
-                return loadProcedure(file)
 
 def initializeRootAndOpencogLogger(opencogLogLevel, pythonLogLevel):
     opencog.logger.log.set_level(opencogLogLevel)
@@ -124,25 +96,6 @@ class StatisticsAnswerHandler(AnswerHandler):
 class NeuralNetworkRunner:
     def runNeuralNetwork(self, features, word):
         pass
-
-class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
-    
-    def __init__(self, modelsFileName):
-        self.logger = logging.getLogger('NetsVocabularyNeuralNetworkRunner')
-        self.netsVocabulary = self.loadNets(modelsFileName)
-
-    def loadNets(self, modelsFileName):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        checkpoint = torch.load(modelsFileName, map_location=device.type)
-        return netsvocabularyModule.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
-    
-    def runNeuralNetwork(self, features, word):
-        model = self.netsVocabulary.getModelByWord(word)
-        if model is None:
-            self.logger.debug('no model found, return FALSE')
-            return torch.zeros(1)
-        # TODO: F.sigmoid should part of NN
-        return F.sigmoid(model(torch.Tensor(features)))
 
 ### Pipeline code
 
@@ -291,8 +244,7 @@ class PatternMatcherVqaPipeline:
     
 ### MAIN
 
-currentDir = os.path.dirname(os.path.realpath(__file__))
-question2atomeseLibraryPath = (str(currentDir) +
+question2atomeseLibraryPath = (currentDir(__file__) +
     '/../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
@@ -334,12 +286,9 @@ initializeRootAndOpencogLogger(args.opencogLogLevel, args.pythonLogLevel)
 logger = logging.getLogger('PatternMatcherVqaTest')
 logger.info('VqaMainLoop started')
 
-# import netsvocabulary
-netsvocabularyModule = importModuleFromFile('netsvocabulary',
-                      '../DNNs/vqa_multi_dnn/netsvocabulary.py')
 # import record
 recordModule = importModuleFromFile('record',
-                      '../question2atomese/record.py')
+              currentDir(__file__) + '/../question2atomese/record.py')
 
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))
