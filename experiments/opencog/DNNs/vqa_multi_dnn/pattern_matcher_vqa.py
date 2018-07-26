@@ -105,7 +105,11 @@ class Record:
                          self.groundedFormula)
         return map(str.strip, words)
 
-class TsvFileFeatureLoader:
+class FeatureLoader:
+    def loadFeaturesByImageId(self, imageId):
+        pass
+
+class TsvFileFeatureLoader(FeatureLoader):
     
     def __init__(self, featuresPath, featuresPrefix):
         self.featuresPath = featuresPath
@@ -129,6 +133,24 @@ class TsvFileFeatureLoader:
     def loadFeaturesByImageId(self, imageId):
         return self.loadFeaturesByFileName(self.getFeaturesFileName(imageId))
 
+class AnswerHandler:
+    def onAnswer(self, record, answer):
+        pass
+    
+class StatisticsAnswerHandler(AnswerHandler):
+    
+    def __init__(self):
+        self.questionsAnswered = 0
+        self.correctAnswers = 0
+
+    def onAnswer(self, record, answer):
+        self.questionsAnswered += 1
+        if answer == record.answer:
+            self.correctAnswers += 1
+        log.debug('Correct answers %s%%', self.correctAnswerPercent())
+
+    def correctAnswerPercent(self):
+        return self.correctAnswers / self.questionsAnswered * 100
 
 ### Pipeline code
 
@@ -155,126 +177,125 @@ def runNeuralNetwork(boundingBox, conceptNode):
     conceptNode.set_value(boundingBox, FloatValue(result.item()))
     return TruthValue(result.item(), 1.0)
 
-# TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
-def addBoundingBoxesIntoAtomspace(record):
-    boundingBoxNumber = 0
-    global featureLoader
-    for boundingBoxFeatures in featureLoader.loadFeaturesByImageId(record.imageId):
-        imageFeatures = FloatValue(boundingBoxFeatures)
-        boundingBoxInstance = ConceptNode(
-            'BoundingBox-' + str(boundingBoxNumber))
-        InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
-        boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
-        boundingBoxNumber += 1
-
-def answerQuestion(record):
-    log.debug('processing question: %s', record.question)
-    global atomspace
-    atomspace = pushAtomspace(atomspace)
-    try:
-        
-        addBoundingBoxesIntoAtomspace(record)
-        
-        relexFormula = questionConverter.parseQuestion(record.question)
-        queryInScheme = questionConverter.convertToOpencogScheme(relexFormula)
-        if queryInScheme is None:
-            log.debug('Question was not parsed')
-            return
-        log.debug('Scheme query: %s', queryInScheme)
+class PatternMatcherVqaPipeline:
     
-        if record.questionType == 'yes/no':
-            answer = answerYesNoQuestion(queryInScheme)
-        else:
-            answer = answerOtherQuestion(queryInScheme)
-        
-        global questionsAnswered, correctAnswers
-        questionsAnswered += 1
-        if answer == record.answer:
-            correctAnswers += 1
-        
-        log.debug('Correct answers %s%%', correctAnswerPercent())
-        print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
-            answer, record.answer, record.imageId))
-        
-    finally:
-        atomspace = popAtomspace(atomspace)
+    def __init__(self, featureLoader, questionConverter, atomspace,
+                 netsVocabulary, answerHandler):
+        self.featureLoader = featureLoader
+        self.questionConverter = questionConverter
+        self.atomspace = atomspace
+        self.netsVocabulary = netsVocabulary
+        self.answerHandler = answerHandler
 
-def answerYesNoQuestion(queryInScheme):
-    evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
-    start = datetime.datetime.now()
-    global atomspace
-    result = scheme_eval_v(atomspace, evaluateStatement)
-    delta = datetime.datetime.now() - start
-    log.debug('The result of pattern matching is: %s, time: %s microseconds',
-              result, delta.microseconds)
-    answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
-    return answer
-
-class Result:
+    # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
+    def addBoundingBoxesIntoAtomspace(self, record):
+        boundingBoxNumber = 0
+        for boundingBoxFeatures in self.featureLoader.loadFeaturesByImageId(record.imageId):
+            imageFeatures = FloatValue(boundingBoxFeatures)
+            boundingBoxInstance = ConceptNode(
+                'BoundingBox-' + str(boundingBoxNumber))
+            InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
+            boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
+            boundingBoxNumber += 1
     
-    def __init__(self, bb, attribute, object):
-        self.bb = bb
-        self.attribute = attribute
-        self.object = object
-        self.attributeProbability = bb.get_value(attribute).to_list()[0]
-        self.objectProbability = bb.get_value(object).to_list()[0]
-        
-    def __lt__(self, other):
-        if abs(self.objectProbability - other.objectProbability) > 0.000001:
-            return self.objectProbability < other.objectProbability
-        else:
-            return self.attributeProbability < other.attributeProbability
-
-    def __gt__(self, other):
-        return other.__lt__(self);
-
-    def __str__(self):
-        return '{} is {} {}({}), score = {}'.format(self.bb.name,
-                                   self.attribute.name,
-                                   self.object.name,
-                                   self.objectProbability,
-                                   self.attributeProbability)
-
-def answerOtherQuestion(queryInScheme):
-    evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
-    start = datetime.datetime.now()
-    global atomspace
-    resultsData = scheme_eval_h(atomspace, evaluateStatement)
-    delta = datetime.datetime.now() - start
-    log.debug('The resultsData of pattern matching is: %s, time: %s microseconds',
-              resultsData, delta.microseconds)
-    
-    results = []
-    for resultData in resultsData.out:
-        out = resultData.out
-        results.append(Result(out[0], out[1], out[2]))
-    results.sort(reverse = True)
-    
-    for result in results:
-        log.debug(str(result))
-    
-    maxResult = results[0]
-    answer = maxResult.attribute.name
-    return answer
-
-def answerTestQuestion(question, imageId):
-    questionRecord = Record()
-    questionRecord.question = question
-    questionRecord.imageId = imageId
-    answerQuestion(questionRecord)
-
-def answerAllQuestions(questionsFileName):
-    questionFile = open(questionsFileName, 'r')
-    for line in questionFile:
+    def answerQuestion(self, record):
+        log.debug('processing question: %s', record.question)
+        self.atomspace = pushAtomspace(self.atomspace)
         try:
-            record = Record.fromString(line)
-            answerQuestion(record)
-        except ValueError as ve:
-            continue
-
-def correctAnswerPercent():
-    return correctAnswers / questionsAnswered * 100
-
+            
+            self.addBoundingBoxesIntoAtomspace(record)
+            
+            relexFormula = self.questionConverter.parseQuestion(record.question)
+            queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
+            if queryInScheme is None:
+                log.debug('Question was not parsed')
+                return
+            log.debug('Scheme query: %s', queryInScheme)
+        
+            if record.questionType == 'yes/no':
+                answer = self.answerYesNoQuestion(queryInScheme)
+            else:
+                answer = self.answerOtherQuestion(queryInScheme)
+            
+            self.answerHandler.onAnswer(record, answer)
+            
+            print('{}::{}::{}::{}::{}'.format(record.questionId, record.question, 
+                answer, record.answer, record.imageId))
+            
+        finally:
+            self.atomspace = popAtomspace(self.atomspace)
+    
+    def answerYesNoQuestion(self, queryInScheme):
+        evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
+        start = datetime.datetime.now()
+        result = scheme_eval_v(self.atomspace, evaluateStatement)
+        delta = datetime.datetime.now() - start
+        log.debug('The result of pattern matching is: %s, time: %s microseconds',
+                  result, delta.microseconds)
+        answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
+        return answer
+    
+    class OtherQuestionResult:
+        
+        def __init__(self, bb, attribute, object):
+            self.bb = bb
+            self.attribute = attribute
+            self.object = object
+            self.attributeProbability = bb.get_value(attribute).to_list()[0]
+            self.objectProbability = bb.get_value(object).to_list()[0]
+            
+        def __lt__(self, other):
+            if abs(self.objectProbability - other.objectProbability) > 0.000001:
+                return self.objectProbability < other.objectProbability
+            else:
+                return self.attributeProbability < other.attributeProbability
+    
+        def __gt__(self, other):
+            return other.__lt__(self);
+    
+        def __str__(self):
+            return '{} is {} {}({}), score = {}'.format(self.bb.name,
+                                       self.attribute.name,
+                                       self.object.name,
+                                       self.objectProbability,
+                                       self.attributeProbability)
+    
+    def answerOtherQuestion(self, queryInScheme):
+        evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
+        start = datetime.datetime.now()
+        resultsData = scheme_eval_h(self.atomspace, evaluateStatement)
+        delta = datetime.datetime.now() - start
+        log.debug('The resultsData of pattern matching is: %s, time: %s microseconds',
+                  resultsData, delta.microseconds)
+        
+        results = []
+        for resultData in resultsData.out:
+            out = resultData.out
+            results.append(self.OtherQuestionResult(out[0], out[1], out[2]))
+        results.sort(reverse = True)
+        
+        for result in results:
+            log.debug(str(result))
+        
+        maxResult = results[0]
+        answer = maxResult.attribute.name
+        return answer
+    
+    def answerTestQuestion(self, question, imageId):
+        questionRecord = Record()
+        questionRecord.question = question
+        questionRecord.imageId = imageId
+        self.answerQuestion(questionRecord)
+    
+    def answerAllQuestions(self, questionsFileName):
+        questionFile = open(questionsFileName, 'r')
+        for line in questionFile:
+            try:
+                record = Record.fromString(line)
+                self.answerQuestion(record)
+            except ValueError as ve:
+                continue
+    
 ### MAIN
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
@@ -314,29 +335,31 @@ args = parser.parse_args()
 
 # global variables
 log = initializeLogger(args.opencogLogLevel, args.pythonLogLevel)
-featureLoader = TsvFileFeatureLoader(args.featuresPath, args.featuresPrefix)
-questionConverter = None
-atomspace = None
 netsVocabulary = None
-questionsAnswered = 0
-correctAnswers = 0
 
 log.info('VqaMainLoop started')
 
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))
 try:
+    
+    featureLoader = TsvFileFeatureLoader(args.featuresPath, args.featuresPrefix)
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
-    
     atomspace = initializeAtomspace(args.atomspaceFileName)
-    
     netsVocabulary = loadNets(args.modelsFileName)
+    statisticsAnswerHandler = StatisticsAnswerHandler()
     
-    answerAllQuestions(args.questionsFileName)
+    pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
+                                              questionConverter,
+                                              atomspace,
+                                              netsVocabulary,
+                                              statisticsAnswerHandler)
+    pmVqaPipeline.answerAllQuestions(args.questionsFileName)
+    
     print('Questions answered: {}, correct answers: {}% ({})'
-          .format(questionsAnswered,
-                  correctAnswerPercent(),
-                  correctAnswers))
+          .format(statisticsAnswerHandler.questionsAnswered,
+                  statisticsAnswerHandler.correctAnswerPercent(),
+                  statisticsAnswerHandler.correctAnswers))
 finally:
     jpype.shutdownJVM()
 
