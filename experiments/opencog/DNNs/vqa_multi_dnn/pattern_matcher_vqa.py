@@ -152,31 +152,48 @@ class StatisticsAnswerHandler(AnswerHandler):
     def correctAnswerPercent(self):
         return self.correctAnswers / self.questionsAnswered * 100
 
+class NeuralNetworkRunner:
+    def runNeuralNetwork(self, features, word):
+        pass
+
+class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
+    
+    def __init__(self, netsVocabulary):
+        self.logger = logging.getLogger('NetsVocabularyNeuralNetworkRunner')
+        self.netsVocabulary = netsVocabulary
+
+    def runNeuralNetwork(self, features, word):
+        model = self.netsVocabulary.getModelByWord(word)
+        if model is None:
+            self.logger.debug('no model found, return FALSE')
+            return torch.zeros(1)
+        # TODO: F.sigmoid should part of NN
+        return F.sigmoid(model(torch.Tensor(features)))
+
 ### Pipeline code
 
 def runNeuralNetwork(boundingBox, conceptNode):
     logger = logging.getLogger('runNeuralNetwork')
     logger.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
+    
     featuresValue = boundingBox.get_value(PredicateNode('features'))
     if featuresValue is None:
         logger.debug('no features found, return FALSE')
         return TruthValue(0.0, 1.0)
     features = np.array(featuresValue.to_list())
     word = conceptNode.name
-    global netsVocabulary
-    model = netsVocabulary.getModelByWord(word)
-    if model is None:
-        logger.debug('no model found, return FALSE')
-        return TruthValue(0.0, 1.0)
-    # TODO: F.sigmoid should part of NN
-    result = F.sigmoid(model(torch.Tensor(features)))
+    
+    global neuralNetworkRunner
+    resultTensor = neuralNetworkRunner.runNeuralNetwork(features, word)
+    result = resultTensor.item()
+    
     logger.debug('word: %s, result: %s', word, str(result))
     # Return matching values from PatternMatcher by adding 
     # them to bounding box and concept node
     # TODO: how to return predicted values properly?
-    boundingBox.set_value(conceptNode, FloatValue(result.item()))
-    conceptNode.set_value(boundingBox, FloatValue(result.item()))
-    return TruthValue(result.item(), 1.0)
+    boundingBox.set_value(conceptNode, FloatValue(result))
+    conceptNode.set_value(boundingBox, FloatValue(result))
+    return TruthValue(result, 1.0)
 
 class OtherDetSubjObjResult:
     
@@ -205,13 +222,11 @@ class OtherDetSubjObjResult:
 
 class PatternMatcherVqaPipeline:
     
-    def __init__(self, featureLoader, questionConverter, atomspace,
-                 netsVocabulary, answerHandler):
+    def __init__(self, featureLoader, questionConverter, atomspace, answerHandler):
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
         self.featureLoader = featureLoader
         self.questionConverter = questionConverter
         self.atomspace = atomspace
-        self.netsVocabulary = netsVocabulary
         self.answerHandler = answerHandler
 
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
@@ -338,7 +353,7 @@ parser.add_argument('--question2atomese-java-library',
 args = parser.parse_args()
 
 # global variables
-netsVocabulary = None
+neuralNetworkRunner = None
 
 initializeRootAndOpencogLogger(args.opencogLogLevel, args.pythonLogLevel)
 
@@ -352,13 +367,12 @@ try:
     featureLoader = TsvFileFeatureLoader(args.featuresPath, args.featuresPrefix)
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     atomspace = initializeAtomspace(args.atomspaceFileName)
-    netsVocabulary = loadNets(args.modelsFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
+    neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(loadNets(args.modelsFileName))
     
     pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
                                               questionConverter,
                                               atomspace,
-                                              netsVocabulary,
                                               statisticsAnswerHandler)
     pmVqaPipeline.answerQuestionsFromFile(args.questionsFileName)
     
