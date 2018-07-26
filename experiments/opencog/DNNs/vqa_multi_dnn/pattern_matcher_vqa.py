@@ -34,13 +34,12 @@ def loadDataFromZipOrFolder(folderOrZip, fileName, loadProcedure):
             with archive.open(fileName) as file:
                 return loadProcedure(file)
 
-def initializeLogger(opencogLogLevel, pythonLogLevel):
+def initializeRootAndOpencogLogger(opencogLogLevel, pythonLogLevel):
     opencog.logger.log.set_level(opencogLogLevel)
     
-    log = logging.getLogger('VqaMainLoop')
-    log.setLevel(pythonLogLevel)
-    log.addHandler(logging.StreamHandler())
-    return log
+    rootLogger = logging.getLogger()
+    rootLogger.setLevel(pythonLogLevel)
+    rootLogger.addHandler(logging.StreamHandler())
 
 def initializeAtomspace(atomspaceFileName = None):
     atomspace = scheme_eval_as('(cog-atomspace)')
@@ -140,6 +139,7 @@ class AnswerHandler:
 class StatisticsAnswerHandler(AnswerHandler):
     
     def __init__(self):
+        self.logger = logging.getLogger('StatisticsAnswerHandler')
         self.questionsAnswered = 0
         self.correctAnswers = 0
 
@@ -147,7 +147,7 @@ class StatisticsAnswerHandler(AnswerHandler):
         self.questionsAnswered += 1
         if answer == record.answer:
             self.correctAnswers += 1
-        log.debug('Correct answers %s%%', self.correctAnswerPercent())
+        self.logger.debug('Correct answers %s%%', self.correctAnswerPercent())
 
     def correctAnswerPercent(self):
         return self.correctAnswers / self.questionsAnswered * 100
@@ -155,21 +155,22 @@ class StatisticsAnswerHandler(AnswerHandler):
 ### Pipeline code
 
 def runNeuralNetwork(boundingBox, conceptNode):
-    log.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
+    logger = logging.getLogger('runNeuralNetwork')
+    logger.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
     featuresValue = boundingBox.get_value(PredicateNode('features'))
     if featuresValue is None:
-        log.debug('no features found, return FALSE')
+        logger.debug('no features found, return FALSE')
         return TruthValue(0.0, 1.0)
     features = np.array(featuresValue.to_list())
     word = conceptNode.name
     global netsVocabulary
     model = netsVocabulary.getModelByWord(word)
     if model is None:
-        log.debug('no model found, return FALSE')
+        logger.debug('no model found, return FALSE')
         return TruthValue(0.0, 1.0)
     # TODO: F.sigmoid should part of NN
     result = F.sigmoid(model(torch.Tensor(features)))
-    log.debug('word: %s, result: %s', word, str(result))
+    logger.debug('word: %s, result: %s', word, str(result))
     # Return matching values from PatternMatcher by adding 
     # them to bounding box and concept node
     # TODO: how to return predicted values properly?
@@ -177,10 +178,36 @@ def runNeuralNetwork(boundingBox, conceptNode):
     conceptNode.set_value(boundingBox, FloatValue(result.item()))
     return TruthValue(result.item(), 1.0)
 
+class OtherDetSubjObjResult:
+    
+    def __init__(self, bb, attribute, object):
+        self.bb = bb
+        self.attribute = attribute
+        self.object = object
+        self.attributeProbability = bb.get_value(attribute).to_list()[0]
+        self.objectProbability = bb.get_value(object).to_list()[0]
+        
+    def __lt__(self, other):
+        if abs(self.objectProbability - other.objectProbability) > 0.000001:
+            return self.objectProbability < other.objectProbability
+        else:
+            return self.attributeProbability < other.attributeProbability
+
+    def __gt__(self, other):
+        return other.__lt__(self);
+
+    def __str__(self):
+        return '{} is {} {}({}), score = {}'.format(self.bb.name,
+                                   self.attribute.name,
+                                   self.object.name,
+                                   self.objectProbability,
+                                   self.attributeProbability)
+
 class PatternMatcherVqaPipeline:
     
     def __init__(self, featureLoader, questionConverter, atomspace,
                  netsVocabulary, answerHandler):
+        self.logger = logging.getLogger('PatternMatcherVqaPipeline')
         self.featureLoader = featureLoader
         self.questionConverter = questionConverter
         self.atomspace = atomspace
@@ -199,7 +226,7 @@ class PatternMatcherVqaPipeline:
             boundingBoxNumber += 1
     
     def answerQuestion(self, record):
-        log.debug('processing question: %s', record.question)
+        self.logger.debug('processing question: %s', record.question)
         self.atomspace = pushAtomspace(self.atomspace)
         try:
             
@@ -208,9 +235,9 @@ class PatternMatcherVqaPipeline:
             relexFormula = self.questionConverter.parseQuestion(record.question)
             queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
             if queryInScheme is None:
-                log.debug('Question was not parsed')
+                self.logger.debug('Question was not parsed')
                 return
-            log.debug('Scheme query: %s', queryInScheme)
+            self.logger.debug('Scheme query: %s', queryInScheme)
         
             if record.questionType == 'yes/no':
                 answer = self.answerYesNoQuestion(queryInScheme)
@@ -230,52 +257,29 @@ class PatternMatcherVqaPipeline:
         start = datetime.datetime.now()
         result = scheme_eval_v(self.atomspace, evaluateStatement)
         delta = datetime.datetime.now() - start
-        log.debug('The result of pattern matching is: %s, time: %s microseconds',
-                  result, delta.microseconds)
+        self.logger.debug('The result of pattern matching is: '
+                          '%s, time: %s microseconds',
+                          result, delta.microseconds)
         answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
         return answer
-    
-    class OtherQuestionResult:
-        
-        def __init__(self, bb, attribute, object):
-            self.bb = bb
-            self.attribute = attribute
-            self.object = object
-            self.attributeProbability = bb.get_value(attribute).to_list()[0]
-            self.objectProbability = bb.get_value(object).to_list()[0]
-            
-        def __lt__(self, other):
-            if abs(self.objectProbability - other.objectProbability) > 0.000001:
-                return self.objectProbability < other.objectProbability
-            else:
-                return self.attributeProbability < other.attributeProbability
-    
-        def __gt__(self, other):
-            return other.__lt__(self);
-    
-        def __str__(self):
-            return '{} is {} {}({}), score = {}'.format(self.bb.name,
-                                       self.attribute.name,
-                                       self.object.name,
-                                       self.objectProbability,
-                                       self.attributeProbability)
     
     def answerOtherQuestion(self, queryInScheme):
         evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
         start = datetime.datetime.now()
         resultsData = scheme_eval_h(self.atomspace, evaluateStatement)
         delta = datetime.datetime.now() - start
-        log.debug('The resultsData of pattern matching is: %s, time: %s microseconds',
-                  resultsData, delta.microseconds)
+        self.logger.debug('The resultsData of pattern matching is: '
+                          '%s, time: %s microseconds',
+                          resultsData, delta.microseconds)
         
         results = []
         for resultData in resultsData.out:
             out = resultData.out
-            results.append(self.OtherQuestionResult(out[0], out[1], out[2]))
+            results.append(OtherDetSubjObjResult(out[0], out[1], out[2]))
         results.sort(reverse = True)
         
         for result in results:
-            log.debug(str(result))
+            self.logger.debug(str(result))
         
         maxResult = results[0]
         answer = maxResult.attribute.name
@@ -334,10 +338,12 @@ parser.add_argument('--question2atomese-java-library',
 args = parser.parse_args()
 
 # global variables
-log = initializeLogger(args.opencogLogLevel, args.pythonLogLevel)
 netsVocabulary = None
 
-log.info('VqaMainLoop started')
+initializeRootAndOpencogLogger(args.opencogLogLevel, args.pythonLogLevel)
+
+logger = logging.getLogger('PatternMatcherVqaTest')
+logger.info('VqaMainLoop started')
 
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))
@@ -363,4 +369,4 @@ try:
 finally:
     jpype.shutdownJVM()
 
-log.info('VqaMainLoop stopped')
+logger.info('VqaMainLoop stopped')
