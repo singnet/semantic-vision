@@ -7,34 +7,40 @@
 (use-modules (opencog exec))
 (use-modules (opencog rule-engine))
 
+
+
 (DefineLink(DefinedSchemaNode "GradientMul")
            (BindLink
             (VariableList
              (VariableNode "$F1")
              (VariableNode "$F2"))
             (AndLink
-            (ListLink
-             (ConceptNode "Gradient")
-             (TimesLink
-              (VariableNode "$F1")
-              (VariableNode "$F2")))
-            (PlusLink
-             (TimesLink
-              (ListLink
-               (ConceptNode "Gradient") (VariableNode "$F1"))
-              (VariableNode "$F2"))
-             (TimesLink
-              (ListLink
-               (ConceptNode "Gradient") (VariableNode "$F2"))
-              (VariableNode "$F1"))
-             )))) 
+             (ListLink
+              (ConceptNode "Gradient")
+              (AndLink
+               (VariableNode "$F1")
+               (VariableNode "$F2")))
+             (JoinLink
+              (AndLink
+               (ListLink
+                (ConceptNode "Gradient") (VariableNode "$F1"))
+               (VariableNode "$F2"))
+              (AndLink
+               (ListLink
+                (ConceptNode "Gradient") (VariableNode "$F2"))
+               (VariableNode "$F1")))))) 
 
 (define SRC (ListLink (ConceptNode "Gradient")
-          (TimesLink
-           (PlusLink
+          (AndLink
+           (JoinLink
             (NumberNode 3)(NumberNode 3))
-           (PlusLink
+           (JoinLink
             (NumberNode 3)(NumberNode 3)))))
+
+(ExecutionLink
+   (SchemaNode "URE:maximum-iterations")
+   (ConceptNode "my-rule-base")
+   (NumberNode "10000"))
 
 (Inheritance (Concept "my-rule-base") (Concept "URE"))
 
