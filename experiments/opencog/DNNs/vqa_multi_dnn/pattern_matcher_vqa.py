@@ -64,13 +64,6 @@ def popAtomspace(childAtomspace):
     set_type_ctor_atomspace(parentAtomspace)
     return parentAtomspace
 
-def loadNets(modelsFileName):
-    nets = None
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    checkpoint = torch.load(modelsFileName, map_location=device.type)
-    nets = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
-    return nets
-
 # TODO reuse class from question2atomese
 class Record:
 
@@ -158,10 +151,15 @@ class NeuralNetworkRunner:
 
 class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
     
-    def __init__(self, netsVocabulary):
+    def __init__(self, modelsFileName):
         self.logger = logging.getLogger('NetsVocabularyNeuralNetworkRunner')
-        self.netsVocabulary = netsVocabulary
+        self.netsVocabulary = self.loadNets(modelsFileName)
 
+    def loadNets(self, modelsFileName):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        checkpoint = torch.load(modelsFileName, map_location=device.type)
+        return NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+    
     def runNeuralNetwork(self, features, word):
         model = self.netsVocabulary.getModelByWord(word)
         if model is None:
@@ -283,9 +281,9 @@ class PatternMatcherVqaPipeline:
         start = datetime.datetime.now()
         resultsData = scheme_eval_h(self.atomspace, evaluateStatement)
         delta = datetime.datetime.now() - start
-        self.logger.debug('The resultsData of pattern matching is: '
-                          '%s, time: %s microseconds',
-                          resultsData, delta.microseconds)
+        self.logger.debug('The resultsData of pattern matching contains: '
+                          '%s records, time: %s microseconds',
+                          len(resultsData.out), delta.microseconds)
         
         results = []
         for resultData in resultsData.out:
@@ -368,7 +366,7 @@ try:
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     atomspace = initializeAtomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
-    neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(loadNets(args.modelsFileName))
+    neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.modelsFileName)
     
     pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
                                               questionConverter,
