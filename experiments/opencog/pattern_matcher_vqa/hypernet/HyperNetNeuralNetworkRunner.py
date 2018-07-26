@@ -24,7 +24,7 @@ class HyperNetNeuralNetworkRunner():
         model = model.to(device)
         model.w_embed.init_embedding(pathToGlove)
         model = torch.nn.DataParallel(model).to(device)
-        checkpoint = torch.load(pathToModel, map_location=device.type, pickle_protocol = 1)
+        checkpoint = torch.load(pathToModel, map_location=device.type)
         model.load_state_dict(checkpoint['state_dict'])
         
         return model
