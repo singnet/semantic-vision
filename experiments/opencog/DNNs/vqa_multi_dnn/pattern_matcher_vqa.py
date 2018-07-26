@@ -285,13 +285,13 @@ class PatternMatcherVqaPipeline:
         answer = maxResult.attribute.name
         return answer
     
-    def answerTestQuestion(self, question, imageId):
+    def answerSingleQuestion(self, question, imageId):
         questionRecord = Record()
         questionRecord.question = question
         questionRecord.imageId = imageId
         self.answerQuestion(questionRecord)
     
-    def answerAllQuestions(self, questionsFileName):
+    def answerQuestionsFromFile(self, questionsFileName):
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
             try:
@@ -360,7 +360,7 @@ try:
                                               atomspace,
                                               netsVocabulary,
                                               statisticsAnswerHandler)
-    pmVqaPipeline.answerAllQuestions(args.questionsFileName)
+    pmVqaPipeline.answerQuestionsFromFile(args.questionsFileName)
     
     print('Questions answered: {}, correct answers: {}% ({})'
           .format(statisticsAnswerHandler.questionsAnswered,
