@@ -26,7 +26,7 @@ One optional argument is required to answer complex questions:
 
 - ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../../question2atomese/question2atomese.sh); see [README.md](../../question2atomese/README.md)
 ```
-$ python DNNs/vqa_multi_dnn/pattern_matcher_vqa.py --help
+$ python pattern_matcher_vqa.py --help
 usage: pattern_matcher_vqa.py [-h] --questions QUESTIONSFILENAME --models
                               MODELSFILENAME --features FEATURESPATH
                               [--features-prefix FEATURESPREFIX] --atomspace
