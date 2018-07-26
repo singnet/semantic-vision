@@ -71,39 +71,6 @@ def popAtomspace(childAtomspace):
     set_type_ctor_atomspace(parentAtomspace)
     return parentAtomspace
 
-# TODO reuse class from question2atomese
-class Record:
-
-    def __init__(self):
-        self.question = None
-        self.questionType = None
-        self.questionId = None
-        self.imageId = None
-        self.answer = None
-        self.formula = None
-        self.groundedFormula = None
-
-    def toString(self):
-        return '{}::{}::{}::{}::{}::{}::{}'.format(self.questionId, 
-                                                   self.questionType, 
-                                                   self.question, self.imageId, 
-                                                   self.answer, self.formula, 
-                                                   self.groundedFormula);
-    
-    @staticmethod
-    def fromString(string):
-        record = Record()
-        (record.questionId, record.questionType, 
-         record.question, record.imageId, record.answer,
-         record.formula, record.groundedFormula) = string.strip().split('::')
-        return record
-    
-    def getWords(self):
-        # parse '_test(A, B);next(B, A)'
-        words = re.split('\)[^\(]+\(|, |^[^\(]+\(|\)[^\(]+$', 
-                         self.groundedFormula)
-        return map(str.strip, words)
-
 class FeatureLoader:
     def loadFeaturesByImageId(self, imageId):
         pass
@@ -306,7 +273,7 @@ class PatternMatcherVqaPipeline:
         return answer
     
     def answerSingleQuestion(self, question, imageId):
-        questionRecord = Record()
+        questionRecord = recordModule.Record()
         questionRecord.question = question
         questionRecord.imageId = imageId
         self.answerQuestion(questionRecord)
@@ -315,7 +282,7 @@ class PatternMatcherVqaPipeline:
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
             try:
-                record = Record.fromString(line)
+                record = recordModule.Record.fromString(line)
                 self.answerQuestion(record)
             except ValueError as ve:
                 continue
@@ -368,6 +335,9 @@ logger.info('VqaMainLoop started')
 # import netsvocabulary
 netsvocabularyModule = importModuleFromFile('netsvocabulary',
                       '../DNNs/vqa_multi_dnn/netsvocabulary.py')
+# import record
+recordModule = importModuleFromFile('record',
+                      '../question2atomese/record.py')
 
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))
