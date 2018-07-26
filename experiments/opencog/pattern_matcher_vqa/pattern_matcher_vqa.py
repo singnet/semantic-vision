@@ -1,3 +1,4 @@
+import importlib.util
 import os
 import logging
 import jpype
@@ -14,9 +15,15 @@ from opencog.atomspace import AtomSpace, TruthValue, types
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
-from netsvocabulary import NetsVocab
-
 ### Reusable code (no dependency on global vars)
+
+def importModuleFromFile(moduleName, fileName):
+    currentDir = os.path.dirname(os.path.realpath(__file__))
+    moduleSpec = importlib.util.spec_from_file_location(moduleName, 
+                                  str(currentDir) + '/' + fileName)
+    module = importlib.util.module_from_spec(moduleSpec)
+    moduleSpec.loader.exec_module(module)
+    return module
 
 def addLeadingZeros(number, requriedLength):
     result = ''
@@ -158,7 +165,7 @@ class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
     def loadNets(self, modelsFileName):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         checkpoint = torch.load(modelsFileName, map_location=device.type)
-        return NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+        return netsvocabularyModule.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
     
     def runNeuralNetwork(self, features, word):
         model = self.netsVocabulary.getModelByWord(word)
@@ -317,7 +324,7 @@ class PatternMatcherVqaPipeline:
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 question2atomeseLibraryPath = (str(currentDir) +
-    '/../../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
+    '/../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
    'and answer questions using OpenCog PatternMatcher')
@@ -357,6 +364,10 @@ initializeRootAndOpencogLogger(args.opencogLogLevel, args.pythonLogLevel)
 
 logger = logging.getLogger('PatternMatcherVqaTest')
 logger.info('VqaMainLoop started')
+
+# import netsvocabulary
+netsvocabularyModule = importModuleFromFile('netsvocabulary',
+                      '../DNNs/vqa_multi_dnn/netsvocabulary.py')
 
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))
