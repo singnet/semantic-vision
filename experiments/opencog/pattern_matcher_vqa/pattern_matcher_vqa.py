@@ -15,6 +15,8 @@ from opencog.atomspace import AtomSpace, TruthValue, types
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
+from hypernet.HyperNetNeuralNetworkRunner import HyperNetNeuralNetworkRunner
+
 ### Reusable code (no dependency on global vars)
 
 def importModuleFromFile(moduleName, fileName):
@@ -348,6 +350,10 @@ try:
     atomspace = initializeAtomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
     neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.modelsFileName)
+#     neuralNetworkRunner = HyperNetNeuralNetworkRunner(
+#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/dictionary.pkl',
+#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/glove6b_init_300d.npy',
+#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/model_01_max_score_val.pth.tar')
     
     pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
                                               questionConverter,
