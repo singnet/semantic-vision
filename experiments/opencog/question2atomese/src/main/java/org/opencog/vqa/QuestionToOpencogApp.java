@@ -128,7 +128,9 @@ public class QuestionToOpencogApp {
         } finally {
             linesStream.close();
             printWriter.flush();
-            atomspaceWriter.flush();
+            if (atomspaceWriter != null) {
+                atomspaceWriter.flush();
+            }
         }
     }
 
