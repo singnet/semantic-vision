@@ -253,6 +253,11 @@ question2atomeseLibraryPath = (currentDir(__file__) +
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
    'and answer questions using OpenCog PatternMatcher')
+parser.add_argument('--kind', '-k', dest='kindOfModel',
+    action='store', type=str, required=True,
+    choices=['MULTIDNN', 'HYPERNET'],
+    help='model kind: (1) MULTIDNN requires --model parameter only; '
+    '(2) HYPERNET requires --model, --words and --embedding parameters')
 parser.add_argument('--questions', '-q', dest='questionsFileName',
     action='store', type=str, required=True,
     help='parsed questions file name')
@@ -262,6 +267,12 @@ parser.add_argument('--models', '-m', dest='modelsFileName',
 parser.add_argument('--features', '-f', dest='featuresPath',
     action='store', type=str, required=True,
     help='features path (it can be either zip archive or folder name)')
+parser.add_argument('--words', '-w', dest='wordsFileName',
+    action='store', type=str,
+    help='words dictionary')
+parser.add_argument('--embeddings', '-e', dest='wordEmbeddingsFileName',
+    action='store', type=str,
+    help='word embeddings')
 parser.add_argument('--features-prefix', dest='featuresPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
     help='features prefix to be merged with path to open feature')
@@ -302,11 +313,12 @@ try:
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     atomspace = initializeAtomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
-    neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.modelsFileName)
-#     neuralNetworkRunner = HyperNetNeuralNetworkRunner(
-#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/dictionary.pkl',
-#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/glove6b_init_300d.npy',
-#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/model_01_max_score_val.pth.tar.state_dict')
+    
+    if (args.kindOfModel == 'MULTIDNN'):
+        neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.modelsFileName)
+    elif (args.kindOfModel == 'HYPERNET'):
+        neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.wordsFileName,
+                        args.wordEmbeddingsFileName, args.modelsFileName)
     
     pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
                                               questionConverter,

@@ -18,19 +18,25 @@ Three arguments are required to run ```pattern_matcher_vqa.py```:
 
 - QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../../question2atomese/get_questions.py); see [README.md](../../question2atomese/README.md)
 
-- MODELSFILENAME - file which contains pretrained words model; it can be prepared using [train_01_pytorch.py](./train_01_pytorch.py) script
+- MODELSFILENAME - file which contains pretrained words model; two types of models are supported: "Multi DNN" and "Hypernet"
 
 - FEATURESPATH - folder or .zip file which contains features of bounding boxes
+
+- WORDSFILENAME - file which contains words dictionary; required for "Hypernet" model only; "Multi DNN" contains dictionary in model file
+
+- WORDEMBEDDINGSFILENAME - file which contains words embeddings model; required for "Hypernet" model only; "Multi DNN" doesn't use word embeddings
 
 One optional argument is required to answer complex questions:
 
 - ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../../question2atomese/question2atomese.sh); see [README.md](../../question2atomese/README.md)
 ```
 $ python pattern_matcher_vqa.py --help
-usage: pattern_matcher_vqa.py [-h] --questions QUESTIONSFILENAME --models
-                              MODELSFILENAME --features FEATURESPATH
-                              [--features-prefix FEATURESPREFIX] --atomspace
-                              ATOMSPACEFILENAME
+usage: pattern_matcher_vqa.py [-h] --kind {MULTIDNN,HYPERNET} --questions
+                              QUESTIONSFILENAME --models MODELSFILENAME
+                              --features FEATURESPATH [--words WORDSFILENAME]
+                              [--embeddings WORDEMBEDDINGSFILENAME]
+                              [--features-prefix FEATURESPREFIX]
+                              [--atomspace ATOMSPACEFILENAME]
                               [--opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}]
                               [--python-log-level {INFO,DEBUG,ERROR}]
                               [--question2atomese-java-library Q2AJARFILENNAME]
@@ -39,6 +45,10 @@ Load pretrained words models and answer questions using OpenCog PatternMatcher
 
 optional arguments:
   -h, --help            show this help message and exit
+  --kind {MULTIDNN,HYPERNET}, -k {MULTIDNN,HYPERNET}
+                        model kind: (1) MULTIDNN requires --model parameter
+                        only; (2) HYPERNET requires --model, --words and
+                        --embedding parameters
   --questions QUESTIONSFILENAME, -q QUESTIONSFILENAME
                         parsed questions file name
   --models MODELSFILENAME, -m MODELSFILENAME
@@ -46,6 +56,10 @@ optional arguments:
   --features FEATURESPATH, -f FEATURESPATH
                         features path (it can be either zip archive or folder
                         name)
+  --words WORDSFILENAME, -w WORDSFILENAME
+                        words dictionary
+  --embeddings WORDEMBEDDINGSFILENAME, -e WORDEMBEDDINGSFILENAME
+                        word embeddings
   --features-prefix FEATURESPREFIX
                         features prefix to be merged with path to open feature
   --atomspace ATOMSPACEFILENAME, -a ATOMSPACEFILENAME
