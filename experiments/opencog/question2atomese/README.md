@@ -203,8 +203,7 @@ optional arguments:
 
 Run question2atomese app:
 ```
-RELEX=<path-to-relex-src-dir> ./question2atomese.sh -i questions.txt \
-	-a atomspace.scm > parsed_questions.txt
+./question2atomese.sh -i questions.txt -o parsed_questions.txt -a atomspace.scm
 ```
 
 question2atomese usage:
