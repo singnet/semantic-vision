@@ -10,6 +10,7 @@ from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
 from utils import *
+from interface import FeatureLoader, AnswerHandler
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
 
@@ -45,10 +46,6 @@ def popAtomspace(childAtomspace):
     set_type_ctor_atomspace(parentAtomspace)
     return parentAtomspace
 
-class FeatureLoader:
-    def loadFeaturesByImageId(self, imageId):
-        pass
-
 class TsvFileFeatureLoader(FeatureLoader):
     
     def __init__(self, featuresPath, featuresPrefix):
@@ -72,10 +69,6 @@ class TsvFileFeatureLoader(FeatureLoader):
         
     def loadFeaturesByImageId(self, imageId):
         return self.loadFeaturesByFileName(self.getFeaturesFileName(imageId))
-
-class AnswerHandler:
-    def onAnswer(self, record, answer):
-        pass
     
 class StatisticsAnswerHandler(AnswerHandler):
     
@@ -96,10 +89,6 @@ class StatisticsAnswerHandler(AnswerHandler):
 
     def correctAnswerPercent(self):
         return self.correctAnswers / self.questionsAnswered * 100
-
-class NeuralNetworkRunner:
-    def runNeuralNetwork(self, features, word):
-        pass
 
 ### Pipeline code
 

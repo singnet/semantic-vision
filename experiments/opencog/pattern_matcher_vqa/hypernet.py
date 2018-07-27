@@ -4,12 +4,13 @@ from torch.autograd import Variable
 
 from hypernetimpl.dataset import Dictionary
 from hypernetimpl.model import build_baseline_model
+from interface import NeuralNetworkRunner
 
 #pathToDictionary = '/mnt/fileserver/shared/datasets/at-on-at-data/dictionary.pkl'
 #pathToGlove = '/mnt/fileserver/shared/datasets/at-on-at-data/glove6b_init_300d.npy'
 #pathToModel = '/mnt/fileserver/users/daddywesker/work/TaigaExperiments/32/03_experiment_with_more_layers/01_plus1_prob_layer/model_01_max_score_val.pth.tar'
 
-class HyperNetNeuralNetworkRunner():
+class HyperNetNeuralNetworkRunner(NeuralNetworkRunner):
     
     def __init__(self, pathToDictionary, pathToGlove, pathToModel):
         self.logger = logging.getLogger('HyperNetNeuralNetworkRunner')

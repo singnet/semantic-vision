@@ -3,8 +3,9 @@ import torch
 import torch.nn.functional as F
 
 from utils import *
+from interface import NeuralNetworkRunner
 
-class NetsVocabularyNeuralNetworkRunner():
+class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
     
     def __init__(self, modelsFileName):
         self.logger = logging.getLogger('NetsVocabularyNeuralNetworkRunner')
