@@ -181,7 +181,7 @@ class PatternMatcherVqaPipeline:
             relexFormula = self.questionConverter.parseQuestion(record.question)
             queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
             if queryInScheme is None:
-                self.logger.debug('Question was not parsed')
+                self.logger.error('Question was not parsed')
                 return
             self.logger.debug('Scheme query: %s', queryInScheme)
         
@@ -243,7 +243,8 @@ class PatternMatcherVqaPipeline:
             try:
                 record = recordModule.Record.fromString(line)
                 self.answerQuestion(record)
-            except ValueError as ve:
+            except BaseException as e:
+                logger.error('Unexpected exception %s', e)
                 continue
     
 ### MAIN
