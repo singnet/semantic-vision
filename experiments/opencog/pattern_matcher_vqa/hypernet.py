@@ -26,6 +26,7 @@ class HyperNetNeuralNetworkRunner():
         checkpoint = torch.load(pathToModel, map_location=self.device.type)
         #model.load_state_dict(checkpoint['state_dict'])
         model.load_state_dict(checkpoint)
+        model.train(False)
         
         return model
 

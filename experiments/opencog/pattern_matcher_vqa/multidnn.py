@@ -13,7 +13,9 @@ class NetsVocabularyNeuralNetworkRunner():
     def loadNets(self, modelsFileName):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         checkpoint = torch.load(modelsFileName, map_location=device.type)
-        return netsvocabularyModule.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+        netsVocabulary = netsvocabularyModule.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+        netsVocabulary.train(False)
+        return netsVocabulary
     
     def runNeuralNetwork(self, features, word):
         model = self.netsVocabulary.getModelByWord(word)
