@@ -100,27 +100,31 @@ class NeuralNetworkRunner:
 ### Pipeline code
 
 def runNeuralNetwork(boundingBox, conceptNode):
-    logger = logging.getLogger('runNeuralNetwork')
-    logger.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
-    
-    featuresValue = boundingBox.get_value(PredicateNode('features'))
-    if featuresValue is None:
-        logger.debug('no features found, return FALSE')
+    try:
+        logger = logging.getLogger('runNeuralNetwork')
+        logger.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
+        
+        featuresValue = boundingBox.get_value(PredicateNode('features'))
+        if featuresValue is None:
+            logger.debug('no features found, return FALSE')
+            return TruthValue(0.0, 1.0)
+        features = np.array(featuresValue.to_list())
+        word = conceptNode.name
+        
+        global neuralNetworkRunner
+        resultTensor = neuralNetworkRunner.runNeuralNetwork(features, word)
+        result = resultTensor.item()
+        
+        logger.debug('word: %s, result: %s', word, str(result))
+        # Return matching values from PatternMatcher by adding 
+        # them to bounding box and concept node
+        # TODO: how to return predicted values properly?
+        boundingBox.set_value(conceptNode, FloatValue(result))
+        conceptNode.set_value(boundingBox, FloatValue(result))
+        return TruthValue(result, 1.0)
+    except BaseException as e:
+        logger.error('Unexpected exception %s', e)
         return TruthValue(0.0, 1.0)
-    features = np.array(featuresValue.to_list())
-    word = conceptNode.name
-    
-    global neuralNetworkRunner
-    resultTensor = neuralNetworkRunner.runNeuralNetwork(features, word)
-    result = resultTensor.item()
-    
-    logger.debug('word: %s, result: %s', word, str(result))
-    # Return matching values from PatternMatcher by adding 
-    # them to bounding box and concept node
-    # TODO: how to return predicted values properly?
-    boundingBox.set_value(conceptNode, FloatValue(result))
-    conceptNode.set_value(boundingBox, FloatValue(result))
-    return TruthValue(result, 1.0)
 
 class OtherDetSubjObjResult:
     
@@ -302,7 +306,7 @@ try:
 #     neuralNetworkRunner = HyperNetNeuralNetworkRunner(
 #         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/dictionary.pkl',
 #         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/glove6b_init_300d.npy',
-#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/model_01_max_score_val.pth.tar')
+#         '/mnt/fileserver/shared/vital/pattern_matcher_vqa_hypernet/model_01_max_score_val.pth.tar.state_dict')
     
     pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
                                               questionConverter,
