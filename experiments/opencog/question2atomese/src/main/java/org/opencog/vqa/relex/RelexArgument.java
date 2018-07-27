@@ -22,7 +22,12 @@ public class RelexArgument {
     }
     
     public String getName() {
-        return RelexUtils.getFeatureNodeName(featureNode);
+        String name = "XXXX";
+        try {
+            name = RelexUtils.getFeatureNodeName(featureNode);
+        } catch (IllegalArgumentException e) {
+        }
+        return name;
     }
 
     public FeatureNode getFeatureNode() {

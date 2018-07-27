@@ -8,7 +8,10 @@ class RelexUtils {
 
     public static String getFeatureNodeName(FeatureNode featureNode) {
         FeatureNode name = featureNode.get("name");
-        checkArgument(name != null, "FeatureNode doesn't have name attribute set");
+        if (name == null) {
+            checkArgument(name != null, "FeatureNode doesn't have name attribute set");
+        }
+        
         return name.getValue();
     }
 
