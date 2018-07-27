@@ -16,7 +16,7 @@ them into PyTorch tensor and passes to the NN model to calculate the probability
 
 Three arguments are required to run ```pattern_matcher_vqa.py```:
 
-- QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../../question2atomese/get_questions.py); see [README.md](../../question2atomese/README.md)
+- QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../question2atomese/get_questions.py); see [README.md](../question2atomese/README.md)
 
 - MODELSFILENAME - file which contains pretrained words model; two types of models are supported: "Multi DNN" and "Hypernet"
 
@@ -28,7 +28,7 @@ Three arguments are required to run ```pattern_matcher_vqa.py```:
 
 One optional argument is required to answer complex questions:
 
-- ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../../question2atomese/question2atomese.sh); see [README.md](../../question2atomese/README.md)
+- ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../question2atomese/question2atomese.sh); see [README.md](../question2atomese/README.md)
 ```
 $ python pattern_matcher_vqa.py --help
 usage: pattern_matcher_vqa.py [-h] --kind {MULTIDNN,HYPERNET} --questions
