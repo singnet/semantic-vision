@@ -106,7 +106,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
         
         featuresValue = boundingBox.get_value(PredicateNode('features'))
         if featuresValue is None:
-            logger.debug('no features found, return FALSE')
+            logger.error('no features found, return FALSE')
             return TruthValue(0.0, 1.0)
         features = np.array(featuresValue.to_list())
         word = conceptNode.name
