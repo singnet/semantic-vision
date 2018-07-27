@@ -3,7 +3,7 @@
 This folder contains Java code to parse questions in natural language and convert them into OpenCog Pattern Matcher queries in Scheme programming language.
 Primary project design goal is to parse [VQA questions dataset](http://www.visualqa.org) and use it in [Pattern Matcher VQA pipeline](../pattern_matcher_vqa), so it also includes scripts to convert VQA data into internal format.
 Question2Atomese uses [OpenCog RelEx library](https://github.com/opencog/relex) for natural language processing and uses its results.
-RelEx in turn uses [Link Grammar library](https://github.com/opencog/link-grammar), so th full pipeline is:
+RelEx in turn uses [Link Grammar library](https://github.com/opencog/link-grammar), so the full pipeline is:
 
 ```
 "Is the room dark?" 
