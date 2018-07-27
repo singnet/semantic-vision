@@ -106,7 +106,7 @@ class NeuralNetworkRunner:
 def runNeuralNetwork(boundingBox, conceptNode):
     try:
         logger = logging.getLogger('runNeuralNetwork')
-        logger.debug('runNeuralNetwork: %s, %s', str(boundingBox), str(conceptNode))
+        logger.debug('runNeuralNetwork: %s, %s', boundingBox.name, conceptNode.name)
         
         featuresValue = boundingBox.get_value(PredicateNode('features'))
         if featuresValue is None:
@@ -119,7 +119,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
         resultTensor = neuralNetworkRunner.runNeuralNetwork(features, word)
         result = resultTensor.item()
         
-        logger.debug('word: %s, result: %s', word, str(result))
+        logger.debug('bb: %s, word: %s, result: %s', boundingBox.name, word, str(result))
         # Return matching values from PatternMatcher by adding 
         # them to bounding box and concept node
         # TODO: how to return predicted values properly?
