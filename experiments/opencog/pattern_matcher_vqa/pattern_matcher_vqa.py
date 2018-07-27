@@ -81,8 +81,12 @@ class StatisticsAnswerHandler(AnswerHandler):
     
     def __init__(self):
         self.logger = logging.getLogger('StatisticsAnswerHandler')
+        self.processedQuestions = 0
         self.questionsAnswered = 0
         self.correctAnswers = 0
+
+    def onNewQuestion(self, record):
+        self.processedQuestions += 1
 
     def onAnswer(self, record, answer):
         self.questionsAnswered += 1
@@ -173,6 +177,7 @@ class PatternMatcherVqaPipeline:
     
     def answerQuestion(self, record):
         self.logger.debug('processing question: %s', record.question)
+        self.answerHandler.onNewQuestion(record)
         self.atomspace = pushAtomspace(self.atomspace)
         try:
             
@@ -327,8 +332,9 @@ try:
                                               statisticsAnswerHandler)
     pmVqaPipeline.answerQuestionsFromFile(args.questionsFileName)
     
-    print('Questions answered: {}, correct answers: {}% ({})'
-          .format(statisticsAnswerHandler.questionsAnswered,
+    print('Questions processed: {}, answered: {}, correct answers: {}% ({})'
+          .format(statisticsAnswerHandler.processedQuestions,
+                  statisticsAnswerHandler.questionsAnswered,
                   statisticsAnswerHandler.correctAnswerPercent(),
                   statisticsAnswerHandler.correctAnswers))
 finally:
