@@ -252,7 +252,7 @@ question2atomeseLibraryPath = (currentDir(__file__) +
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
    'and answer questions using OpenCog PatternMatcher')
-parser.add_argument('--kind', '-k', dest='kindOfModel',
+parser.add_argument('--model-kind', '-k', dest='kindOfModel',
     action='store', type=str, required=True,
     choices=['MULTIDNN', 'HYPERNET'],
     help='model kind: (1) MULTIDNN requires --model parameter only; '
@@ -260,21 +260,24 @@ parser.add_argument('--kind', '-k', dest='kindOfModel',
 parser.add_argument('--questions', '-q', dest='questionsFileName',
     action='store', type=str, required=True,
     help='parsed questions file name')
-parser.add_argument('--models', '-m', dest='modelsFileName',
-    action='store', type=str, required=True,
-    help='models file name')
-parser.add_argument('--features', '-f', dest='featuresPath',
-    action='store', type=str, required=True,
-    help='features path (it can be either zip archive or folder name)')
-parser.add_argument('--words', '-w', dest='wordsFileName',
+parser.add_argument('--multidnn-model', dest='multidnnModelFileName',
+    action='store', type=str,
+    help='Multi DNN model file name')
+parser.add_argument('--hypernet-model', dest='hypernetModelFileName',
+    action='store', type=str,
+    help='Hypernet model file name')
+parser.add_argument('--hypernet-words', '-w', dest='hypernetWordsFileName',
     action='store', type=str,
     help='words dictionary')
-parser.add_argument('--embeddings', '-e', dest='wordEmbeddingsFileName',
+parser.add_argument('--hypernet-embeddings', '-e',dest='hypernetWordEmbeddingsFileName',
     action='store', type=str,
     help='word embeddings')
-parser.add_argument('--features-prefix', dest='featuresPrefix',
+parser.add_argument('--precalculated-features', '-f', dest='precalculatedFeaturesPath',
+    action='store', type=str, required=True,
+    help='precalculated features path (it can be either zip archive or folder name)')
+parser.add_argument('--precalculated-features-prefix', dest='precalculatedFeaturesPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
-    help='features prefix to be merged with path to open feature')
+    help='precalculated features prefix to be merged with path to open feature')
 parser.add_argument('--atomspace', '-a', dest='atomspaceFileName',
     action='store', type=str,
     help='Scheme program to fill atomspace with facts')
@@ -304,16 +307,17 @@ jpype.startJVM(jpype.getDefaultJVMPath(),
                '-Djava.class.path=' + str(args.q2aJarFilenName))
 try:
     
-    featureLoader = TsvFileFeatureLoader(args.featuresPath, args.featuresPrefix)
+    featureLoader = TsvFileFeatureLoader(args.precalculatedFeaturesPath,
+                                         args.precalculatedFeaturesPrefix)
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     atomspace = initializeAtomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
     
     if (args.kindOfModel == 'MULTIDNN'):
-        neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.modelsFileName)
+        neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.multidnnModelFileName)
     elif (args.kindOfModel == 'HYPERNET'):
-        neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.wordsFileName,
-                        args.wordEmbeddingsFileName, args.modelsFileName)
+        neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.hypernetWordsFileName,
+                        args.hypernetWordEmbeddingsFileName, args.hypernetModelFileName)
     
     pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
                                               questionConverter,
