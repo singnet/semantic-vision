@@ -11,12 +11,11 @@ from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
 from utils import *
-from interface import FeatureLoader, AnswerHandler
+from interface import FeatureExtractor, AnswerHandler
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
 
 sys.path.insert(0, currentDir(__file__) + '/../question2atomese')
-
 from record import Record
 
 ### Reusable code (no dependency on global vars)
@@ -51,7 +50,7 @@ def popAtomspace(childAtomspace):
     set_type_ctor_atomspace(parentAtomspace)
     return parentAtomspace
 
-class TsvFileFeatureLoader(FeatureLoader):
+class TsvFileFeatureLoader(FeatureExtractor):
     
     def __init__(self, featuresPath, featuresPrefix):
         self.featuresPath = featuresPath
@@ -72,7 +71,7 @@ class TsvFileFeatureLoader(FeatureLoader):
         return loadDataFromZipOrFolder(self.featuresPath, featureFileName, 
             lambda fileHandle: self.loadFeaturesUsingFileHandle(fileHandle))
         
-    def loadFeaturesByImageId(self, imageId):
+    def getFeaturesByImageId(self, imageId):
         return self.loadFeaturesByFileName(self.getFeaturesFileName(imageId))
     
 class StatisticsAnswerHandler(AnswerHandler):
@@ -161,7 +160,7 @@ class PatternMatcherVqaPipeline:
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
     def addBoundingBoxesIntoAtomspace(self, record):
         boundingBoxNumber = 0
-        for boundingBoxFeatures in self.featureLoader.loadFeaturesByImageId(record.imageId):
+        for boundingBoxFeatures in self.featureLoader.getFeaturesByImageId(record.imageId):
             imageFeatures = FloatValue(boundingBoxFeatures)
             boundingBoxInstance = ConceptNode(
                 'BoundingBox-' + str(boundingBoxNumber))
