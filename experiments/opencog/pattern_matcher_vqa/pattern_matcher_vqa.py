@@ -1,3 +1,4 @@
+import sys
 import logging
 import jpype
 import numpy as np
@@ -13,6 +14,10 @@ from utils import *
 from interface import FeatureLoader, AnswerHandler
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
+
+sys.path.insert(0, currentDir(__file__) + '/../question2atomese')
+
+from record import Record
 
 ### Reusable code (no dependency on global vars)
 
@@ -226,7 +231,7 @@ class PatternMatcherVqaPipeline:
         return answer
     
     def answerSingleQuestion(self, question, imageId):
-        questionRecord = recordModule.Record()
+        questionRecord = Record()
         questionRecord.question = question
         questionRecord.imageId = imageId
         self.answerQuestion(questionRecord)
@@ -235,7 +240,7 @@ class PatternMatcherVqaPipeline:
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
             try:
-                record = recordModule.Record.fromString(line)
+                record = Record.fromString(line)
                 self.answerQuestion(record)
             except BaseException as e:
                 logger.error('Unexpected exception %s', e)
@@ -295,10 +300,6 @@ initializeRootAndOpencogLogger(args.opencogLogLevel, args.pythonLogLevel)
 
 logger = logging.getLogger('PatternMatcherVqaTest')
 logger.info('VqaMainLoop started')
-
-# import record
-recordModule = importModuleFromFile('record',
-              currentDir(__file__) + '/../question2atomese/record.py')
 
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))

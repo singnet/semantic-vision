@@ -1,9 +1,13 @@
+import sys
 import logging
 import torch
 import torch.nn.functional as F
 
 from utils import *
 from interface import NeuralNetworkRunner
+
+sys.path.insert(0, currentDir(__file__) + '/../DNNs/vqa_multi_dnn')
+from netsvocabulary import NetsVocab
 
 class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
     
@@ -14,7 +18,7 @@ class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
     def loadNets(self, modelsFileName):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         checkpoint = torch.load(modelsFileName, map_location=device.type)
-        netsVocabulary = netsvocabularyModule.NetsVocab.fromStateDict(device, checkpoint['state_dict'])
+        netsVocabulary = NetsVocab.fromStateDict(device, checkpoint['state_dict'])
         netsVocabulary.train(False)
         return netsVocabulary
     
@@ -25,7 +29,3 @@ class NetsVocabularyNeuralNetworkRunner(NeuralNetworkRunner):
             return torch.zeros(1)
         # TODO: F.sigmoid should part of NN
         return F.sigmoid(model(torch.Tensor(features)))
-
-# import netsvocabulary
-netsvocabularyModule = importModuleFromFile('netsvocabulary',
-          currentDir(__file__) + '/../DNNs/vqa_multi_dnn/netsvocabulary.py')
