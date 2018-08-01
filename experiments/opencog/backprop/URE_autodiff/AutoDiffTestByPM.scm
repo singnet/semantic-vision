@@ -51,3 +51,21 @@
 
 (GetLink (VariableNode "$X"))
 
+(define replace-plus (BindLink
+ (VariableList (Variable "$X") (Variable "$Y"))
+ (AndLink
+  (NumericOutputLink (ConceptNode "+")
+                   (Variable "$X") (Variable "$Y")))
+ (PlusLink (Variable "$X")(Variable "$Y"))))
+
+(define replace-times (BindLink
+ (VariableList (Variable "$X") (Variable "$Y"))
+ (AndLink
+  (NumericOutputLink (ConceptNode "*")
+                   (Variable "$X") (Variable "$Y")))
+ (TimesLink (Variable "$X")(Variable "$Y"))))
+
+; to run this example you have to consecutive call:
+; (my-forward-chainer SRC)
+; (cog-execute! replace-plus)
+; (cog-execute! replace-times)
