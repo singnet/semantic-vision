@@ -1,0 +1,498 @@
+diff --git a/caffe/src/caffe/layers/argmax_layer.cpp b/caffe/src/caffe/layers/argmax_layer.cpp
+index 5d3a535..9d295cb 100755
+--- a/caffe/src/caffe/layers/argmax_layer.cpp
++++ b/caffe/src/caffe/layers/argmax_layer.cpp
+@@ -96,7 +96,7 @@ void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+ }
+ 
+ #ifdef CPU_ONLY
+-STUB_GPU_FORWARD(ArgMaxLayer);
++STUB_GPU_FORWARD(ArgMaxLayer, Forward);
+ #endif
+ 
+ INSTANTIATE_CLASS(ArgMaxLayer);
+diff --git a/lib/fast_rcnn/config.py b/lib/fast_rcnn/config.py
+index 4cfec77..8b0ff6b 100755
+--- a/lib/fast_rcnn/config.py
++++ b/lib/fast_rcnn/config.py
+@@ -166,7 +166,7 @@ __C.TEST.SVM = False
+ __C.TEST.BBOX_REG = True
+ 
+ # Propose boxes
+-__C.TEST.HAS_RPN = False
++__C.TEST.HAS_RPN = True
+ 
+ # Test using these proposals
+ __C.TEST.PROPOSAL_METHOD = 'selective_search'
+@@ -227,7 +227,7 @@ __C.MATLAB = 'matlab'
+ __C.EXP_DIR = 'default'
+ 
+ # Use GPU implementation of non-maximum suppression
+-__C.USE_GPU_NMS = True
++__C.USE_GPU_NMS = False
+ 
+ # Default GPU device id
+ __C.GPU_ID = 0
+diff --git a/lib/fast_rcnn/nms_wrapper.py b/lib/fast_rcnn/nms_wrapper.py
+index e271e90..fd2cb94 100755
+--- a/lib/fast_rcnn/nms_wrapper.py
++++ b/lib/fast_rcnn/nms_wrapper.py
+@@ -6,7 +6,6 @@
+ # ----------------------------------------------------------
+ 
+ from fast_rcnn.config import cfg
+-from nms.gpu_nms import gpu_nms
+ from nms.cpu_nms import cpu_nms, cpu_soft_nms
+ import numpy as np
+ 
+@@ -26,6 +25,7 @@ def nms(dets, thresh, force_cpu=False):
+     if dets.shape[0] == 0:
+         return []
+     if cfg.USE_GPU_NMS and not force_cpu:
++        from nms.gpu_nms import gpu_nms
+         return gpu_nms(dets, thresh, device_id=cfg.GPU_ID)
+     else:
+         return cpu_nms(dets, thresh)
+diff --git a/lib/fast_rcnn/test.py b/lib/fast_rcnn/test.py
+index 60154fc..f8e9469 100755
+--- a/lib/fast_rcnn/test.py
++++ b/lib/fast_rcnn/test.py
+@@ -15,7 +15,7 @@ import numpy as np
+ import cv2
+ import caffe
+ from fast_rcnn.nms_wrapper import nms, soft_nms
+-import cPickle
++import pickle
+ from utils.blob import im_list_to_blob
+ import os
+ from utils.cython_bbox import bbox_overlaps
+@@ -219,7 +219,7 @@ def vis_detections(im, class_name, dets, thresh=0.3, filename='vis.png'):
+ def vis_multiple(im, class_names, all_boxes, filename='vis.png'):
+     """Visual debugging of detections."""
+     
+-    print filename
++    print(filename)
+     import matplotlib.pyplot as plt
+     im = im[:, :, (2, 1, 0)]
+     plt.cla()
+@@ -259,7 +259,7 @@ def vis_relations(im, class_names, box_proposals, scores, filename='vis.png'):
+ 
+     n = box_proposals.shape[0]
+     assert scores.shape[0] == n*n
+-    print filename
++    print(filename)
+     import matplotlib.pyplot as plt
+     im = im[:, :, (2, 1, 0)]
+     plt.cla()
+@@ -339,7 +339,7 @@ def test_net(net, imdb, max_per_image=400, thresh=-np.inf, vis=False, load_cache
+     output_dir = get_output_dir(imdb, net)
+     det_file = os.path.join(output_dir, 'detections.pkl')
+     if load_cache and os.path.exists(det_file):
+-        print 'Loading pickled detections from %s' % det_file
++        print('Loading pickled detections from %s' % det_file)
+         with open(det_file, 'rb') as f:
+             all_boxes = cPickle.load(f)
+     
+@@ -397,14 +397,14 @@ def test_net(net, imdb, max_per_image=400, thresh=-np.inf, vis=False, load_cache
+                         
+             _t['misc'].toc()
+ 
+-            print 'im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
++            print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
+                   .format(i + 1, num_images, _t['im_detect'].average_time,
+-                          _t['misc'].average_time)
++                          _t['misc'].average_time))
+ 
+         with open(det_file, 'wb') as f:
+             cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
+ 
+-    print 'Evaluating detections'
++    print('Evaluating detections')
+     imdb.evaluate_detections(all_boxes, output_dir)
+     
+     
+@@ -424,7 +424,7 @@ def test_net_with_gt_boxes(net, imdb, max_per_image=400, thresh=-np.inf, vis=Fal
+     det_file = os.path.join(output_dir, 'attribute_detections.pkl')
+     rel_file = os.path.join(output_dir, 'relation_detections.pkl')
+     if load_cache and os.path.exists(det_file):
+-        print 'Loading pickled detections from %s' % det_file
++        print('Loading pickled detections from %s' % det_file)
+         with open(det_file, 'rb') as f:
+             all_boxes = cPickle.load(f)
+         with open(rel_file, 'rb') as f:
+@@ -476,12 +476,12 @@ def test_net_with_gt_boxes(net, imdb, max_per_image=400, thresh=-np.inf, vis=Fal
+                         
+             _t['misc'].toc()
+ 
+-            print 'im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
++            print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
+                   .format(i + 1, num_images, _t['im_detect'].average_time,
+-                          _t['misc'].average_time)
++                          _t['misc'].average_time))
+ 
+         with open(det_file, 'wb') as f:
+             cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
+ 
+-    print 'Evaluating attribute and / or relation detections'
++    print('Evaluating attribute and / or relation detections')
+     imdb.evaluate_attributes(all_boxes, output_dir)    
+diff --git a/lib/rpn/generate_anchors.py b/lib/rpn/generate_anchors.py
+index 1125a80..fb686df 100644
+--- a/lib/rpn/generate_anchors.py
++++ b/lib/rpn/generate_anchors.py
+@@ -44,7 +44,7 @@ def generate_anchors(base_size=16, ratios=[0.5, 1, 2],
+     base_anchor = np.array([1, 1, base_size, base_size]) - 1
+     ratio_anchors = _ratio_enum(base_anchor, ratios)
+     anchors = np.vstack([_scale_enum(ratio_anchors[i, :], scales)
+-                         for i in xrange(ratio_anchors.shape[0])])
++                         for i in range(ratio_anchors.shape[0])])
+     return anchors
+ 
+ def _whctrs(anchor):
+@@ -100,6 +100,6 @@ if __name__ == '__main__':
+     import time
+     t = time.time()
+     a = generate_anchors()
+-    print time.time() - t
+-    print a
++    print(time.time() - t)
++    print(a)
+     from IPython import embed; embed()
+diff --git a/lib/rpn/proposal_layer.py b/lib/rpn/proposal_layer.py
+index 16f1b35..0661e5f 100755
+--- a/lib/rpn/proposal_layer.py
++++ b/lib/rpn/proposal_layer.py
+@@ -9,7 +9,7 @@ import caffe
+ import numpy as np
+ import yaml
+ from fast_rcnn.config import cfg
+-from generate_anchors import generate_anchors
++from .generate_anchors import generate_anchors
+ from fast_rcnn.bbox_transform import bbox_transform_inv, clip_boxes
+ from fast_rcnn.nms_wrapper import nms
+ 
+@@ -32,9 +32,9 @@ class ProposalLayer(caffe.Layer):
+         self._num_anchors = self._anchors.shape[0]
+ 
+         if DEBUG:
+-            print 'feat_stride: {}'.format(self._feat_stride)
+-            print 'anchors:'
+-            print self._anchors
++            print('feat_stride: {}'.format(self._feat_stride))
++            print('anchors:')
++            print(self._anchors)
+ 
+         # rois blob: holds R regions of interest, each is a 5-tuple
+         # (n, x1, y1, x2, y2) specifying an image batch index n and a
+@@ -75,14 +75,14 @@ class ProposalLayer(caffe.Layer):
+         im_info = bottom[2].data[0, :]
+ 
+         if DEBUG:
+-            print 'im_size: ({}, {})'.format(im_info[0], im_info[1])
+-            print 'scale: {}'.format(im_info[2])
++            print('im_size: ({}, {})'.format(im_info[0], im_info[1]))
++            print('scale: {}'.format(im_info[2]))
+ 
+         # 1. Generate proposals from bbox deltas and shifted anchors
+         height, width = scores.shape[-2:]
+ 
+         if DEBUG:
+-            print 'score map size: {}'.format(scores.shape)
++            print('score map size: {}'.format(scores.shape))
+ 
+         # Enumerate all shifts
+         shift_x = np.arange(0, width) * self._feat_stride
+@@ -160,14 +160,14 @@ class ProposalLayer(caffe.Layer):
+         top[0].reshape(*(blob.shape))
+         top[0].data[...] = blob
+         if DEBUG_SHAPE:
+-            print 'ProposalLayer top[0] size: {}'.format(top[0].data.shape)
++            print('ProposalLayer top[0] size: {}'.format(top[0].data.shape))
+ 
+         # [Optional] output scores blob
+         if len(top) > 1:
+             top[1].reshape(*(scores.shape))
+             top[1].data[...] = scores
+             if DEBUG_SHAPE:
+-                print 'ProposalLayer top[0] size: {}'.format(top[0].data.shape)
++                print('ProposalLayer top[0] size: {}'.format(top[0].data.shape))
+ 
+     def backward(self, top, propagate_down, bottom):
+         """This layer does not propagate gradients."""
+diff --git a/lib/setup.py b/lib/setup.py
+index 0f4615f..ce439b0 100644
+--- a/lib/setup.py
++++ b/lib/setup.py
+@@ -43,8 +43,9 @@ def locate_cuda():
+         default_path = pjoin(os.sep, 'usr', 'local', 'cuda', 'bin')
+         nvcc = find_in_path('nvcc', os.environ['PATH'] + os.pathsep + default_path)
+         if nvcc is None:
+-            raise EnvironmentError('The nvcc binary could not be '
+-                'located in your $PATH. Either add it to your path, or set $CUDAHOME')
++            #raise EnvironmentError('The nvcc binary could not be '
++                #'located in your $PATH. Either add it to your path, or set $CUDAHOME')
++            return None
+         home = os.path.dirname(os.path.dirname(nvcc))
+ 
+     cudaconfig = {'home':home, 'nvcc':nvcc,
+@@ -122,23 +123,6 @@ ext_modules = [
+         extra_compile_args={'gcc': ["-Wno-cpp", "-Wno-unused-function"]},
+         include_dirs = [numpy_include]
+     ),
+-    Extension('nms.gpu_nms',
+-        ['nms/nms_kernel.cu', 'nms/gpu_nms.pyx'],
+-        library_dirs=[CUDA['lib64']],
+-        libraries=['cudart'],
+-        language='c++',
+-        runtime_library_dirs=[CUDA['lib64']],
+-        # this syntax is specific to this build system
+-        # we're only going to use certain compiler args with nvcc and not with
+-        # gcc the implementation of this trick is in customize_compiler() below
+-        extra_compile_args={'gcc': ["-Wno-unused-function"],
+-                            'nvcc': ['-arch=sm_35',
+-                                     '--ptxas-options=-v',
+-                                     '-c',
+-                                     '--compiler-options',
+-                                     "'-fPIC'"]},
+-        include_dirs = [numpy_include, CUDA['include']]
+-    ),
+     Extension(
+         'pycocotools._mask',
+         sources=['pycocotools/maskApi.c', 'pycocotools/_mask.pyx'],
+@@ -147,6 +131,26 @@ ext_modules = [
+             'gcc': ['-Wno-cpp', '-Wno-unused-function', '-std=c99']},
+     ),
+ ]
++if CUDA is not None:
++    ext_modules.append(
++        Extension('nms.gpu_nms',
++            ['nms/nms_kernel.cu', 'nms/gpu_nms.pyx'],
++            library_dirs=[CUDA['lib64']],
++            libraries=['cudart'],
++            language='c++',
++            runtime_library_dirs=[CUDA['lib64']],
++            # this syntax is specific to this build system
++            # we're only going to use certain compiler args with nvcc and not with
++            # gcc the implementation of this trick is in customize_compiler() below
++            extra_compile_args={'gcc': ["-Wno-unused-function"],
++                                'nvcc': ['-arch=sm_35',
++                                         '--ptxas-options=-v',
++                                         '-c',
++                                         '--compiler-options',
++                                         "'-fPIC'"]},
++            include_dirs = [numpy_include, CUDA['include']]
++        )
++    )
+ 
+ setup(
+     name='fast_rcnn',
+diff --git a/lib/utils/blob.py b/lib/utils/blob.py
+index 1c31642..9b75442 100644
+--- a/lib/utils/blob.py
++++ b/lib/utils/blob.py
+@@ -19,7 +19,7 @@ def im_list_to_blob(ims):
+     num_images = len(ims)
+     blob = np.zeros((num_images, max_shape[0], max_shape[1], 3),
+                     dtype=np.float32)
+-    for i in xrange(num_images):
++    for i in range(num_images):
+         im = ims[i]
+         blob[i, 0:im.shape[0], 0:im.shape[1], :] = im
+     # Move channels (axis 3) to axis 1
+diff --git a/tools/generate_tsv.py b/tools/generate_tsv.py
+index 8b4597d..d295f39 100755
+--- a/tools/generate_tsv.py
++++ b/tools/generate_tsv.py
+@@ -15,7 +15,7 @@ from fast_rcnn.config import cfg, cfg_from_file
+ from fast_rcnn.test import im_detect,_get_blobs
+ from fast_rcnn.nms_wrapper import nms
+ from utils.timer import Timer
+-
++import math
+ import caffe
+ import argparse
+ import pprint
+@@ -28,6 +28,8 @@ from multiprocessing import Process
+ import random
+ import json
+ 
++import pandas as pd
++
+ csv.field_size_limit(sys.maxsize)
+ 
+ 
+@@ -35,8 +37,8 @@ FIELDNAMES = ['image_id', 'image_w','image_h','num_boxes', 'boxes', 'features']
+ 
+ # Settings for the number of features per image. To re-create pretrained features with 36 features
+ # per image, set both values to 36. 
+-MIN_BOXES = 10
+-MAX_BOXES = 100
++MIN_BOXES = 36
++MAX_BOXES = 36
+ 
+ def load_image_ids(split_name):
+     ''' Load a list of (path,image_id tuples). Modify this to suit your data locations. '''
+@@ -55,12 +57,85 @@ def load_image_ids(split_name):
+           image_id = int(item['id'])
+           filepath = os.path.join('/data/test2015/', item['file_name'])
+           split.append((filepath,image_id))
++    elif split_name == 'coco_trainval2014':
++        id_len = 12
++
++        # pathQuestFileTrain = '/mnt/fileserver/shared/datasets/at-on-at-data/train2014_questions_parsed.txt'
++        # pathImgsTrain = '/mnt/fileserver/shared/datasets/at-on-at-data/images/train2014'
++        # FILE_PREFIX = 'COCO_train2014_'
++        # df_quest = pd.read_csv(pathQuestFileTrain, header=0, sep='\s*\::', engine='python')
++        #
++        # for i in range(df_quest.shape[0]):
++        #     img_id = df_quest.loc[i, 'imageId']
++        #     filePath = pathImgsTrain + '/' + FILE_PREFIX
++        #     nZeros = int((id_len - 1) - math.floor(math.log10(img_id)))
++        #     for _ in range(0, nZeros):
++        #         filePath = filePath + '0'
++        #
++        #     filePath = filePath + str(img_id) + '.jpg'
++        #
++        #     split.append((filePath, img_id))
++
++
++
++        pathQuestFileVal = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
++        pathImgsVal = '/mnt/fileserver/shared/datasets/at-on-at-data/images/val2014'
++        FILE_PREFIX = 'COCO_val2014_'
++        df_quest = pd.read_csv(pathQuestFileVal, header=0, sep='\s*\::', engine='python')
++        df_quest = df_quest.sort_values(['imageId'], ascending=[True])
++        df_quest = df_quest.drop_duplicates(['imageId'])
++        df_quest = df_quest.reset_index(drop=True)
++        for i in range(df_quest.shape[0]):
++            img_id = df_quest.loc[i, 'imageId']
++            filePath = pathImgsVal + '/' + FILE_PREFIX
++            nZeros = int((id_len - 1) - math.floor(math.log10(img_id)))
++            for _ in range(0, nZeros):
++                filePath = filePath + '0'
++
++            filePath = filePath + str(img_id) + '.jpg'
++
++            split.append((filePath, img_id))
++    elif split_name == 'coco_val2014':
++        pathQuestFile = '/mnt/fileserver/shared/datasets/at-on-at-data/val2014_questions_parsed.txt'
++        pathImgs = '/mnt/fileserver/shared/datasets/at-on-at-data/images/val2014'
++        FILE_PREFIX = 'COCO_val2014_'
++        id_len = 12
++        df = pd.read_csv(pathQuestFile, header=0, sep='\s*\::', engine='python')
++        df_quest = df.loc[(df['questionType'] == 'yes/no') & (df['relexFormula'] == '_predadj(A, B)')]
++        df_quest = df_quest.sort_values(['imageId'], ascending=[True])
++        # df_quest = df_quest.reset_index(drop=True)
++        df_quest = df_quest.drop_duplicates(['imageId'])
++        df_quest = df_quest.reset_index(drop=True)
++        df_quest['imageId'].tolist()
++        for i in range(df_quest.shape[0]):
++            img_id = df_quest.loc[i, 'imageId']
++            filePath = pathImgs + '/' + FILE_PREFIX
++            nZeros = int((id_len - 1) - math.floor(math.log10(img_id)))
++            for _ in range(0, nZeros):
++                filePath = filePath + '0'
++
++            filePath = filePath + str(img_id) + '.jpg'
++
++            split.append((filePath, img_id))
+     elif split_name == 'genome':
+       with open('/data/visualgenome/image_data.json') as f:
+         for item in json.load(f):
+           image_id = int(item['image_id'])
+           filepath = os.path.join('/data/visualgenome/', item['url'].split('rak248/')[-1])
+-          split.append((filepath,image_id))      
++          split.append((filepath,image_id))
++    elif split_name == 'demo':
++        filepath = '../data/demo/000456.jpg'
++        image_id = 456
++        split.append((filepath, image_id))
++
++        filepath = '../data/demo/000542.jpg'
++        image_id = 542
++        split.append((filepath, image_id))
++
++        filepath = '../data/demo/001150.jpg'
++        image_id = 1150
++        split.append((filepath, image_id))
++
+     else:
+       print 'Unknown split'
+     return split
+@@ -113,18 +188,23 @@ def parse_args():
+                         default='0', type=str)
+     parser.add_argument('--def', dest='prototxt',
+                         help='prototxt file defining the network',
+-                        default=None, type=str)
++                        default='../models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt', type=str)
++
+     parser.add_argument('--net', dest='caffemodel',
+                         help='model to use',
+-                        default=None, type=str)
++                        default='/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel', type=str)
++
+     parser.add_argument('--out', dest='outfile',
+                         help='output filepath',
+-                        default=None, type=str)
++                        default='../data/demo/coco_trainval_features.tsv', type=str)
++
+     parser.add_argument('--cfg', dest='cfg_file',
+                         help='optional config file', default=None, type=str)
++
+     parser.add_argument('--split', dest='data_split',
+                         help='dataset to use',
+-                        default='karpathy_train', type=str)
++                        default='demo', type=str)
++
+     parser.add_argument('--set', dest='set_cfgs',
+                         help='set config keys', default=None,
+                         nargs=argparse.REMAINDER)
+@@ -148,12 +228,14 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
+                 found_ids.add(int(item['image_id']))
+     missing = wanted_ids - found_ids
+     if len(missing) == 0:
+-        print 'GPU {:d}: already completed {:d}'.format(gpu_id, len(image_ids))
++        print 'GPU {0}: already completed {1}'.format(gpu_id, len(image_ids))
+     else:
+-        print 'GPU {:d}: missing {:d}/{:d}'.format(gpu_id, len(missing), len(image_ids))
++        print 'GPU {0}: missing {1}/{2}'.format(gpu_id, len(missing), len(image_ids))
+     if len(missing) > 0:
+-        caffe.set_mode_gpu()
+-        caffe.set_device(gpu_id)
++        #caffe.set_mode_gpu()
++        #caffe.set_device(gpu_id)
++        caffe.set_mode_cpu()
++
+         net = caffe.Net(prototxt, caffe.TEST, weights=weights)
+         with open(outfile, 'ab') as tsvfile:
+             writer = csv.DictWriter(tsvfile, delimiter = '\t', fieldnames = FIELDNAMES)   
+@@ -219,15 +301,18 @@ if __name__ == '__main__':
+     
+     caffe.init_log()
+     caffe.log('Using devices %s' % str(gpus))
+-    procs = []    
+-    
+-    for i,gpu_id in enumerate(gpus):
+-        outfile = '%s.%d' % (args.outfile, gpu_id)
+-        p = Process(target=generate_tsv,
+-                    args=(gpu_id, args.prototxt, args.caffemodel, image_ids[i], outfile))
+-        p.daemon = True
+-        p.start()
+-        procs.append(p)
+-    for p in procs:
+-        p.join()            
++    procs = []
++
++    for i, gpu_id in enumerate(gpus):
++        generate_tsv(gpu_id, args.prototxt, args.caffemodel, image_ids[i], args.outfile)
++
++    # for i,gpu_id in enumerate(gpus):
++    #     outfile = '%s.%d' % (args.outfile, gpu_id)
++    #     p = Process(target=generate_tsv,
++    #                 args=(gpu_id, args.prototxt, args.caffemodel, image_ids[i], outfile))
++    #     p.daemon = True
++    #     p.start()
++    #     procs.append(p)
++    # for p in procs:
++    #     p.join()
+                   

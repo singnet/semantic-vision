@@ -14,18 +14,33 @@ them into PyTorch tensor and passes to the NN model to calculate the probability
 
 ### Command line arguments
 
-Three arguments are required to run ```pattern_matcher_vqa.py```:
+The following arguments are required to run ```pattern_matcher_vqa.py```:
 
+--model-kind - two kinds of models are supported: "Multi DNN" and "Hypernet"
 - QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../question2atomese/get_questions.py); see [README.md](../question2atomese/README.md)
+--features-extractor-kind - two kinds of features extractors are supported:
+ PRECALCULATED (loading precalculated features from file) and IMAGE (extracting features from image)
+
+Required for "Multi DNN" model:
 - MULTIDNNMODELFILENAME - pretrained "Multi DNN" model file
+
+Required for "Hypernet" model:
 - HYPERNETMODELFILENAME - pretrained "Hypernet" model file
-- FEATURESPATH - folder or .zip file which contains features of bounding boxes
 - HYPERNETWORDSFILENAME - file which contains words dictionary; required for "Hypernet" model only; "Multi DNN" contains dictionary in model file
 - HYPERNETWORDEMBEDDINGSFILENAME - file which contains words embeddings model; required for "Hypernet" model only; "Multi DNN" doesn't use word embeddings
 
-One optional argument is required to answer complex questions:
+Required for precalculated feature extractor:
+- FEATURESPATH - folder or .zip file which contains features of bounding boxes
+- PRECALCULATEDFEATURESPREFIX - file prefix to merge with image id and FEATURESPATH to get full file name
 
+Required for image feature extractor:
+- IMAGESPATH - folder or .zip file which contains images
+- IMAGESPREFIX - file prefix to merge with image id and IMAGESPATH to get full file name
+(Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See (./feature/README.md)[./feature/README.md] for instructions.
+
+One optional argument is required to answer complex questions:
 - ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../question2atomese/question2atomese.sh); see [README.md](../question2atomese/README.md)
+
 ```
 $ python pattern_matcher_vqa.py --help
 usage: pattern_matcher_vqa.py [-h] --model-kind {MULTIDNN,HYPERNET}

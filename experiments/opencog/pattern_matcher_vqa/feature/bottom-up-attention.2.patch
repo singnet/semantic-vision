@@ -1,0 +1,122 @@
+diff --git a/caffe/src/caffe/layers/argmax_layer.cpp b/caffe/src/caffe/layers/argmax_layer.cpp
+index 5d3a535..9d295cb 100755
+--- a/caffe/src/caffe/layers/argmax_layer.cpp
++++ b/caffe/src/caffe/layers/argmax_layer.cpp
+@@ -96,7 +96,7 @@ void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+ }
+ 
+ #ifdef CPU_ONLY
+-STUB_GPU_FORWARD(ArgMaxLayer);
++STUB_GPU_FORWARD(ArgMaxLayer, Forward);
+ #endif
+ 
+ INSTANTIATE_CLASS(ArgMaxLayer);
+diff --git a/lib/fast_rcnn/config.py b/lib/fast_rcnn/config.py
+index 4cfec77..8b0ff6b 100755
+--- a/lib/fast_rcnn/config.py
++++ b/lib/fast_rcnn/config.py
+@@ -166,7 +166,7 @@ __C.TEST.SVM = False
+ __C.TEST.BBOX_REG = True
+ 
+ # Propose boxes
+-__C.TEST.HAS_RPN = False
++__C.TEST.HAS_RPN = True
+ 
+ # Test using these proposals
+ __C.TEST.PROPOSAL_METHOD = 'selective_search'
+@@ -227,7 +227,7 @@ __C.MATLAB = 'matlab'
+ __C.EXP_DIR = 'default'
+ 
+ # Use GPU implementation of non-maximum suppression
+-__C.USE_GPU_NMS = True
++__C.USE_GPU_NMS = False
+ 
+ # Default GPU device id
+ __C.GPU_ID = 0
+diff --git a/lib/fast_rcnn/nms_wrapper.py b/lib/fast_rcnn/nms_wrapper.py
+index e271e90..fd2cb94 100755
+--- a/lib/fast_rcnn/nms_wrapper.py
++++ b/lib/fast_rcnn/nms_wrapper.py
+@@ -6,7 +6,6 @@
+ # ----------------------------------------------------------
+ 
+ from fast_rcnn.config import cfg
+-from nms.gpu_nms import gpu_nms
+ from nms.cpu_nms import cpu_nms, cpu_soft_nms
+ import numpy as np
+ 
+@@ -26,6 +25,7 @@ def nms(dets, thresh, force_cpu=False):
+     if dets.shape[0] == 0:
+         return []
+     if cfg.USE_GPU_NMS and not force_cpu:
++        from nms.gpu_nms import gpu_nms
+         return gpu_nms(dets, thresh, device_id=cfg.GPU_ID)
+     else:
+         return cpu_nms(dets, thresh)
+diff --git a/lib/setup.py b/lib/setup.py
+index 0f4615f..ce439b0 100644
+--- a/lib/setup.py
++++ b/lib/setup.py
+@@ -43,8 +43,9 @@ def locate_cuda():
+         default_path = pjoin(os.sep, 'usr', 'local', 'cuda', 'bin')
+         nvcc = find_in_path('nvcc', os.environ['PATH'] + os.pathsep + default_path)
+         if nvcc is None:
+-            raise EnvironmentError('The nvcc binary could not be '
+-                'located in your $PATH. Either add it to your path, or set $CUDAHOME')
++            #raise EnvironmentError('The nvcc binary could not be '
++                #'located in your $PATH. Either add it to your path, or set $CUDAHOME')
++            return None
+         home = os.path.dirname(os.path.dirname(nvcc))
+ 
+     cudaconfig = {'home':home, 'nvcc':nvcc,
+@@ -122,23 +123,6 @@ ext_modules = [
+         extra_compile_args={'gcc': ["-Wno-cpp", "-Wno-unused-function"]},
+         include_dirs = [numpy_include]
+     ),
+-    Extension('nms.gpu_nms',
+-        ['nms/nms_kernel.cu', 'nms/gpu_nms.pyx'],
+-        library_dirs=[CUDA['lib64']],
+-        libraries=['cudart'],
+-        language='c++',
+-        runtime_library_dirs=[CUDA['lib64']],
+-        # this syntax is specific to this build system
+-        # we're only going to use certain compiler args with nvcc and not with
+-        # gcc the implementation of this trick is in customize_compiler() below
+-        extra_compile_args={'gcc': ["-Wno-unused-function"],
+-                            'nvcc': ['-arch=sm_35',
+-                                     '--ptxas-options=-v',
+-                                     '-c',
+-                                     '--compiler-options',
+-                                     "'-fPIC'"]},
+-        include_dirs = [numpy_include, CUDA['include']]
+-    ),
+     Extension(
+         'pycocotools._mask',
+         sources=['pycocotools/maskApi.c', 'pycocotools/_mask.pyx'],
+@@ -147,6 +131,26 @@ ext_modules = [
+             'gcc': ['-Wno-cpp', '-Wno-unused-function', '-std=c99']},
+     ),
+ ]
++if CUDA is not None:
++    ext_modules.append(
++        Extension('nms.gpu_nms',
++            ['nms/nms_kernel.cu', 'nms/gpu_nms.pyx'],
++            library_dirs=[CUDA['lib64']],
++            libraries=['cudart'],
++            language='c++',
++            runtime_library_dirs=[CUDA['lib64']],
++            # this syntax is specific to this build system
++            # we're only going to use certain compiler args with nvcc and not with
++            # gcc the implementation of this trick is in customize_compiler() below
++            extra_compile_args={'gcc': ["-Wno-unused-function"],
++                                'nvcc': ['-arch=sm_35',
++                                         '--ptxas-options=-v',
++                                         '-c',
++                                         '--compiler-options',
++                                         "'-fPIC'"]},
++            include_dirs = [numpy_include, CUDA['include']]
++        )
++    )
+ 
+ setup(
+     name='fast_rcnn',
