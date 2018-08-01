@@ -25,7 +25,7 @@ class ImageFeatureExtractor(FeatureExtractor):
         return caffe.Net(self.prototxt, caffe.TEST, weights=self.weights)
     
     def getImageFileName(self, imageId):
-        return self.imagePrefix + addLeadingZeros(imageId, 12) + '.JPG'
+        return self.imagePrefix + addLeadingZeros(imageId, 12) + '.jpg'
 
     def loadImageUsingFileHandle(self, fileHandle):
         data = np.asarray(bytearray(fileHandle.read()), dtype=np.uint8)

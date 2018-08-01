@@ -151,9 +151,9 @@ class OtherDetSubjObjResult:
 
 class PatternMatcherVqaPipeline:
     
-    def __init__(self, featureLoader, questionConverter, atomspace, answerHandler):
+    def __init__(self, featureExtractor, questionConverter, atomspace, answerHandler):
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
-        self.featureLoader = featureLoader
+        self.featureExtractor = featureExtractor
         self.questionConverter = questionConverter
         self.atomspace = atomspace
         self.answerHandler = answerHandler
@@ -161,7 +161,7 @@ class PatternMatcherVqaPipeline:
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
     def addBoundingBoxesIntoAtomspace(self, record):
         boundingBoxNumber = 0
-        for boundingBoxFeatures in self.featureLoader.getFeaturesByImageId(record.imageId):
+        for boundingBoxFeatures in self.featureExtractor.getFeaturesByImageId(record.imageId):
             imageFeatures = FloatValue(boundingBoxFeatures)
             boundingBoxInstance = ConceptNode(
                 'BoundingBox-' + str(boundingBoxNumber))
@@ -273,12 +273,23 @@ parser.add_argument('--hypernet-words', '-w', dest='hypernetWordsFileName',
 parser.add_argument('--hypernet-embeddings', '-e',dest='hypernetWordEmbeddingsFileName',
     action='store', type=str,
     help='word embeddings')
-parser.add_argument('--precalculated-features', '-f', dest='precalculatedFeaturesPath',
+parser.add_argument('--features-extractor-kind', dest='kindOfFeaturesExtractor',
     action='store', type=str, required=True,
+    choices=['PRECALCULATED', 'IMAGE'],
+    help='features extractor type: (1) PRECALCULATED loads precalculated features; '
+    '(2) IMAGE extract features from images on the fly')
+parser.add_argument('--precalculated-features', '-f', dest='precalculatedFeaturesPath',
+    action='store', type=str,
     help='precalculated features path (it can be either zip archive or folder name)')
 parser.add_argument('--precalculated-features-prefix', dest='precalculatedFeaturesPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
     help='precalculated features prefix to be merged with path to open feature')
+parser.add_argument('--images', '-i', dest='imagesPath',
+    action='store', type=str,
+    help='path to images, required only when featur')
+parser.add_argument('--images-prefix', dest='imagesPrefix',
+    action='store', type=str, default='val2014/COCO_val2014_',
+    help='image file prefix to be merged with path to open image')
 parser.add_argument('--atomspace', '-a', dest='atomspaceFileName',
     action='store', type=str,
     help='Scheme program to fill atomspace with facts')
@@ -308,15 +319,20 @@ jpype.startJVM(jpype.getDefaultJVMPath(),
                '-Djava.class.path=' + str(args.q2aJarFilenName))
 try:
     
-    featureExtractor = ImageFeatureExtractor(
-        '/home/vital/projects/vqa/bottom-up-attention/models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt',
-        '/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
-        'test',
-        'test'
-        )
-    
-    featureLoader = TsvFileFeatureLoader(args.precalculatedFeaturesPath,
+    if args.kindOfFeaturesExtractor == 'IMAGE':
+        featureExtractor = ImageFeatureExtractor(
+            '/home/vital/projects/vqa/bottom-up-attention/models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt',
+            '/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
+            args.imagesPath,
+            args.imagesPrefix
+            )
+    elif args.kindOfFeaturesExtractor == 'PRECALCULATED':
+        featureExtractor = TsvFileFeatureLoader(args.precalculatedFeaturesPath,
                                          args.precalculatedFeaturesPrefix)
+    else:
+        raise ValueError('Unexpected args.kindOfFeaturesExtractor value: {}'
+                         .format(args.kindOfFeaturesExtractor))
+
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     atomspace = initializeAtomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
@@ -326,8 +342,10 @@ try:
     elif (args.kindOfModel == 'HYPERNET'):
         neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.hypernetWordsFileName,
                         args.hypernetWordEmbeddingsFileName, args.hypernetModelFileName)
+    else:
+        raise ValueError('Unexpected args.kindOfModel value: {}'.format(args.kindOfModel))
     
-    pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
+    pmVqaPipeline = PatternMatcherVqaPipeline(featureExtractor,
                                               questionConverter,
                                               atomspace,
                                               statisticsAnswerHandler)

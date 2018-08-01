@@ -34,9 +34,11 @@ usage: pattern_matcher_vqa.py [-h] --model-kind {MULTIDNN,HYPERNET}
                               [--hypernet-model HYPERNETMODELFILENAME]
                               [--hypernet-words HYPERNETWORDSFILENAME]
                               [--hypernet-embeddings HYPERNETWORDEMBEDDINGSFILENAME]
-                              --precalculated-features
-                              PRECALCULATEDFEATURESPATH
+                              --features-extractor-kind {PRECALCULATED,IMAGE}
+                              [--precalculated-features PRECALCULATEDFEATURESPATH]
                               [--precalculated-features-prefix PRECALCULATEDFEATURESPREFIX]
+                              [--images IMAGESPATH]
+                              [--images-prefix IMAGESPREFIX]
                               [--atomspace ATOMSPACEFILENAME]
                               [--opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}]
                               [--python-log-level {INFO,DEBUG,ERROR}]
@@ -60,12 +62,20 @@ optional arguments:
                         words dictionary
   --hypernet-embeddings HYPERNETWORDEMBEDDINGSFILENAME, -e HYPERNETWORDEMBEDDINGSFILENAME
                         word embeddings
+  --features-extractor-kind {PRECALCULATED,IMAGE}
+                        features extractor type: (1) PRECALCULATED loads
+                        precalculated features; (2) IMAGE extract features
+                        from images on the fly
   --precalculated-features PRECALCULATEDFEATURESPATH, -f PRECALCULATEDFEATURESPATH
                         precalculated features path (it can be either zip
                         archive or folder name)
   --precalculated-features-prefix PRECALCULATEDFEATURESPREFIX
                         precalculated features prefix to be merged with path
                         to open feature
+  --images IMAGESPATH, -i IMAGESPATH
+                        path to images, required only when featur
+  --images-prefix IMAGESPREFIX
+                        image file prefix to be merged with path to open image
   --atomspace ATOMSPACEFILENAME, -a ATOMSPACEFILENAME
                         Scheme program to fill atomspace with facts
   --opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}
