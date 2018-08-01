@@ -1,11 +1,7 @@
 import sys
 import numpy as np
 import cv2
-# TODO: replace by configuration parameter
-sys.path.insert(0, '/home/vital/projects/vqa/bottom-up-attention/caffe/python')
 import caffe
-# TODO: replace by configuration parameter
-sys.path.insert(0, '/home/vital/projects/vqa/bottom-up-attention/lib')
 from fast_rcnn.test import im_detect,_get_blobs
 from fast_rcnn.nms_wrapper import nms
 from fast_rcnn.config import cfg
@@ -42,7 +38,7 @@ class ImageFeatureExtractor(FeatureExtractor):
             lambda fileHandle: self.loadImageUsingFileHandle(fileHandle))
         
     def getFeaturesByImageId(self, imageId):
-        return self.getFeaturesByImagePath(self.loadImageByFileName(self.getImageFileName(imageId)))
+        return self.getFeaturesByImagePath(self.getImageFileName(imageId))
     
     def getFeaturesByImagePath(self, imagePath):
         image = self.loadImageByFileName(imagePath)

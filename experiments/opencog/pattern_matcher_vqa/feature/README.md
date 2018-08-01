@@ -15,12 +15,13 @@ Build caffe:
 git clone https://github.com/peteanderson80/bottom-up-attention.git
 cd bottom-up-attention
 patch -p 1 < ../bottom-up-attention.2.patch
-export LD_LIBRARY_PATH=$(dirname $(which conda))/../lib
+export LD_LIBRARY_PATH=$(dirname $(which python))/../lib:$LD_LIBRARY_PATH
 cd caffe
 cp ../../Makefile.config .
 make
 make pycaffe
 cd ../lib
+export PYTHONPATH=$(pwd):$(pwd)/../caffe/python:$PYTHONPATH
 make
 
 ## Python 3
@@ -38,10 +39,11 @@ Build caffe:
 git clone https://github.com/peteanderson80/bottom-up-attention.git
 cd bottom-up-attention
 patch -p 1 < ../bottom-up-attention.3.patch
-export LD_LIBRARY_PATH=$(dirname $(which conda))/../lib
+export LD_LIBRARY_PATH=$(dirname $(which python))/../lib:$LD_LIBRARY_PATH
 cd caffe
 cp ../../Makefile.config .
 make
 make pycaffe
 cd ../lib
+export PYTHONPATH=$(pwd):$(pwd)/../caffe/python:$PYTHONPATH
 make
