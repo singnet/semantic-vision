@@ -3,7 +3,7 @@ import logging
 import torch
 import torch.nn.functional as F
 
-from utils import *
+from util import *
 from interface import NeuralNetworkRunner
 
 sys.path.insert(0, currentDir(__file__) + '/../DNNs/vqa_multi_dnn')

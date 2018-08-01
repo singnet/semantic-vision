@@ -10,10 +10,11 @@ from opencog.atomspace import AtomSpace, TruthValue, types
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
-from utils import *
+from util import *
 from interface import FeatureExtractor, AnswerHandler
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
+from feature.image import ImageFeatureExtractor
 
 sys.path.insert(0, currentDir(__file__) + '/../question2atomese')
 from record import Record
@@ -306,6 +307,13 @@ logger.info('VqaMainLoop started')
 jpype.startJVM(jpype.getDefaultJVMPath(), 
                '-Djava.class.path=' + str(args.q2aJarFilenName))
 try:
+    
+    featureExtractor = ImageFeatureExtractor(
+        '/home/vital/projects/vqa/bottom-up-attention/models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt',
+        '/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
+        'test',
+        'test'
+        )
     
     featureLoader = TsvFileFeatureLoader(args.precalculatedFeaturesPath,
                                          args.precalculatedFeaturesPrefix)
