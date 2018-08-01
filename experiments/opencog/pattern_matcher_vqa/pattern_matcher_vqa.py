@@ -10,13 +10,13 @@ from opencog.atomspace import AtomSpace, TruthValue, types
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
-from utils import *
-from interface import FeatureLoader, AnswerHandler
+from util import *
+from interface import FeatureExtractor, AnswerHandler
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
+from feature.image import ImageFeatureExtractor
 
 sys.path.insert(0, currentDir(__file__) + '/../question2atomese')
-
 from record import Record
 
 ### Reusable code (no dependency on global vars)
@@ -51,7 +51,7 @@ def popAtomspace(childAtomspace):
     set_type_ctor_atomspace(parentAtomspace)
     return parentAtomspace
 
-class TsvFileFeatureLoader(FeatureLoader):
+class TsvFileFeatureLoader(FeatureExtractor):
     
     def __init__(self, featuresPath, featuresPrefix):
         self.featuresPath = featuresPath
@@ -72,7 +72,7 @@ class TsvFileFeatureLoader(FeatureLoader):
         return loadDataFromZipOrFolder(self.featuresPath, featureFileName, 
             lambda fileHandle: self.loadFeaturesUsingFileHandle(fileHandle))
         
-    def loadFeaturesByImageId(self, imageId):
+    def getFeaturesByImageId(self, imageId):
         return self.loadFeaturesByFileName(self.getFeaturesFileName(imageId))
     
 class StatisticsAnswerHandler(AnswerHandler):
@@ -121,7 +121,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
         conceptNode.set_value(boundingBox, FloatValue(result))
         return TruthValue(result, 1.0)
     except BaseException as e:
-        logger.error('Unexpected exception %s', e)
+        logger.exception('Unexpected exception %s', e)
         return TruthValue(0.0, 1.0)
 
 class OtherDetSubjObjResult:
@@ -151,9 +151,9 @@ class OtherDetSubjObjResult:
 
 class PatternMatcherVqaPipeline:
     
-    def __init__(self, featureLoader, questionConverter, atomspace, answerHandler):
+    def __init__(self, featureExtractor, questionConverter, atomspace, answerHandler):
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
-        self.featureLoader = featureLoader
+        self.featureExtractor = featureExtractor
         self.questionConverter = questionConverter
         self.atomspace = atomspace
         self.answerHandler = answerHandler
@@ -161,7 +161,7 @@ class PatternMatcherVqaPipeline:
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
     def addBoundingBoxesIntoAtomspace(self, record):
         boundingBoxNumber = 0
-        for boundingBoxFeatures in self.featureLoader.loadFeaturesByImageId(record.imageId):
+        for boundingBoxFeatures in self.featureExtractor.getFeaturesByImageId(record.imageId):
             imageFeatures = FloatValue(boundingBoxFeatures)
             boundingBoxInstance = ConceptNode(
                 'BoundingBox-' + str(boundingBoxNumber))
@@ -243,7 +243,7 @@ class PatternMatcherVqaPipeline:
                 record = Record.fromString(line)
                 self.answerQuestion(record)
             except BaseException as e:
-                logger.error('Unexpected exception %s', e)
+                logger.exception('Unexpected exception %s', e)
                 continue
     
 ### MAIN
@@ -253,7 +253,7 @@ question2atomeseLibraryPath = (currentDir(__file__) +
 
 parser = argparse.ArgumentParser(description='Load pretrained words models '
    'and answer questions using OpenCog PatternMatcher')
-parser.add_argument('--kind', '-k', dest='kindOfModel',
+parser.add_argument('--model-kind', '-k', dest='kindOfModel',
     action='store', type=str, required=True,
     choices=['MULTIDNN', 'HYPERNET'],
     help='model kind: (1) MULTIDNN requires --model parameter only; '
@@ -261,21 +261,35 @@ parser.add_argument('--kind', '-k', dest='kindOfModel',
 parser.add_argument('--questions', '-q', dest='questionsFileName',
     action='store', type=str, required=True,
     help='parsed questions file name')
-parser.add_argument('--models', '-m', dest='modelsFileName',
-    action='store', type=str, required=True,
-    help='models file name')
-parser.add_argument('--features', '-f', dest='featuresPath',
-    action='store', type=str, required=True,
-    help='features path (it can be either zip archive or folder name)')
-parser.add_argument('--words', '-w', dest='wordsFileName',
+parser.add_argument('--multidnn-model', dest='multidnnModelFileName',
+    action='store', type=str,
+    help='Multi DNN model file name')
+parser.add_argument('--hypernet-model', dest='hypernetModelFileName',
+    action='store', type=str,
+    help='Hypernet model file name')
+parser.add_argument('--hypernet-words', '-w', dest='hypernetWordsFileName',
     action='store', type=str,
     help='words dictionary')
-parser.add_argument('--embeddings', '-e', dest='wordEmbeddingsFileName',
+parser.add_argument('--hypernet-embeddings', '-e',dest='hypernetWordEmbeddingsFileName',
     action='store', type=str,
     help='word embeddings')
-parser.add_argument('--features-prefix', dest='featuresPrefix',
+parser.add_argument('--features-extractor-kind', dest='kindOfFeaturesExtractor',
+    action='store', type=str, required=True,
+    choices=['PRECALCULATED', 'IMAGE'],
+    help='features extractor type: (1) PRECALCULATED loads precalculated features; '
+    '(2) IMAGE extract features from images on the fly')
+parser.add_argument('--precalculated-features', '-f', dest='precalculatedFeaturesPath',
+    action='store', type=str,
+    help='precalculated features path (it can be either zip archive or folder name)')
+parser.add_argument('--precalculated-features-prefix', dest='precalculatedFeaturesPrefix',
     action='store', type=str, default='val2014_parsed_features/COCO_val2014_',
-    help='features prefix to be merged with path to open feature')
+    help='precalculated features prefix to be merged with path to open feature')
+parser.add_argument('--images', '-i', dest='imagesPath',
+    action='store', type=str,
+    help='path to images, required only when featur')
+parser.add_argument('--images-prefix', dest='imagesPrefix',
+    action='store', type=str, default='val2014/COCO_val2014_',
+    help='image file prefix to be merged with path to open image')
 parser.add_argument('--atomspace', '-a', dest='atomspaceFileName',
     action='store', type=str,
     help='Scheme program to fill atomspace with facts')
@@ -305,18 +319,33 @@ jpype.startJVM(jpype.getDefaultJVMPath(),
                '-Djava.class.path=' + str(args.q2aJarFilenName))
 try:
     
-    featureLoader = TsvFileFeatureLoader(args.featuresPath, args.featuresPrefix)
+    if args.kindOfFeaturesExtractor == 'IMAGE':
+        featureExtractor = ImageFeatureExtractor(
+            '/home/vital/projects/vqa/bottom-up-attention/models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt',
+            '/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
+            args.imagesPath,
+            args.imagesPrefix
+            )
+    elif args.kindOfFeaturesExtractor == 'PRECALCULATED':
+        featureExtractor = TsvFileFeatureLoader(args.precalculatedFeaturesPath,
+                                         args.precalculatedFeaturesPrefix)
+    else:
+        raise ValueError('Unexpected args.kindOfFeaturesExtractor value: {}'
+                         .format(args.kindOfFeaturesExtractor))
+
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     atomspace = initializeAtomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
     
     if (args.kindOfModel == 'MULTIDNN'):
-        neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.modelsFileName)
+        neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.multidnnModelFileName)
     elif (args.kindOfModel == 'HYPERNET'):
-        neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.wordsFileName,
-                        args.wordEmbeddingsFileName, args.modelsFileName)
+        neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.hypernetWordsFileName,
+                        args.hypernetWordEmbeddingsFileName, args.hypernetModelFileName)
+    else:
+        raise ValueError('Unexpected args.kindOfModel value: {}'.format(args.kindOfModel))
     
-    pmVqaPipeline = PatternMatcherVqaPipeline(featureLoader,
+    pmVqaPipeline = PatternMatcherVqaPipeline(featureExtractor,
                                               questionConverter,
                                               atomspace,
                                               statisticsAnswerHandler)

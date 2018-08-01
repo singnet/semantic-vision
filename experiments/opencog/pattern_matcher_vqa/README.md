@@ -17,25 +17,28 @@ them into PyTorch tensor and passes to the NN model to calculate the probability
 Three arguments are required to run ```pattern_matcher_vqa.py```:
 
 - QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../question2atomese/get_questions.py); see [README.md](../question2atomese/README.md)
-
-- MODELSFILENAME - file which contains pretrained words model; two types of models are supported: "Multi DNN" and "Hypernet"
-
+- MULTIDNNMODELFILENAME - pretrained "Multi DNN" model file
+- HYPERNETMODELFILENAME - pretrained "Hypernet" model file
 - FEATURESPATH - folder or .zip file which contains features of bounding boxes
-
-- WORDSFILENAME - file which contains words dictionary; required for "Hypernet" model only; "Multi DNN" contains dictionary in model file
-
-- WORDEMBEDDINGSFILENAME - file which contains words embeddings model; required for "Hypernet" model only; "Multi DNN" doesn't use word embeddings
+- HYPERNETWORDSFILENAME - file which contains words dictionary; required for "Hypernet" model only; "Multi DNN" contains dictionary in model file
+- HYPERNETWORDEMBEDDINGSFILENAME - file which contains words embeddings model; required for "Hypernet" model only; "Multi DNN" doesn't use word embeddings
 
 One optional argument is required to answer complex questions:
 
 - ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../question2atomese/question2atomese.sh); see [README.md](../question2atomese/README.md)
 ```
 $ python pattern_matcher_vqa.py --help
-usage: pattern_matcher_vqa.py [-h] --kind {MULTIDNN,HYPERNET} --questions
-                              QUESTIONSFILENAME --models MODELSFILENAME
-                              --features FEATURESPATH [--words WORDSFILENAME]
-                              [--embeddings WORDEMBEDDINGSFILENAME]
-                              [--features-prefix FEATURESPREFIX]
+usage: pattern_matcher_vqa.py [-h] --model-kind {MULTIDNN,HYPERNET}
+                              --questions QUESTIONSFILENAME
+                              [--multidnn-model MULTIDNNMODELFILENAME]
+                              [--hypernet-model HYPERNETMODELFILENAME]
+                              [--hypernet-words HYPERNETWORDSFILENAME]
+                              [--hypernet-embeddings HYPERNETWORDEMBEDDINGSFILENAME]
+                              --features-extractor-kind {PRECALCULATED,IMAGE}
+                              [--precalculated-features PRECALCULATEDFEATURESPATH]
+                              [--precalculated-features-prefix PRECALCULATEDFEATURESPREFIX]
+                              [--images IMAGESPATH]
+                              [--images-prefix IMAGESPREFIX]
                               [--atomspace ATOMSPACEFILENAME]
                               [--opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}]
                               [--python-log-level {INFO,DEBUG,ERROR}]
@@ -45,23 +48,34 @@ Load pretrained words models and answer questions using OpenCog PatternMatcher
 
 optional arguments:
   -h, --help            show this help message and exit
-  --kind {MULTIDNN,HYPERNET}, -k {MULTIDNN,HYPERNET}
+  --model-kind {MULTIDNN,HYPERNET}, -k {MULTIDNN,HYPERNET}
                         model kind: (1) MULTIDNN requires --model parameter
                         only; (2) HYPERNET requires --model, --words and
                         --embedding parameters
   --questions QUESTIONSFILENAME, -q QUESTIONSFILENAME
                         parsed questions file name
-  --models MODELSFILENAME, -m MODELSFILENAME
-                        models file name
-  --features FEATURESPATH, -f FEATURESPATH
-                        features path (it can be either zip archive or folder
-                        name)
-  --words WORDSFILENAME, -w WORDSFILENAME
+  --multidnn-model MULTIDNNMODELFILENAME
+                        Multi DNN model file name
+  --hypernet-model HYPERNETMODELFILENAME
+                        Hypernet model file name
+  --hypernet-words HYPERNETWORDSFILENAME, -w HYPERNETWORDSFILENAME
                         words dictionary
-  --embeddings WORDEMBEDDINGSFILENAME, -e WORDEMBEDDINGSFILENAME
+  --hypernet-embeddings HYPERNETWORDEMBEDDINGSFILENAME, -e HYPERNETWORDEMBEDDINGSFILENAME
                         word embeddings
-  --features-prefix FEATURESPREFIX
-                        features prefix to be merged with path to open feature
+  --features-extractor-kind {PRECALCULATED,IMAGE}
+                        features extractor type: (1) PRECALCULATED loads
+                        precalculated features; (2) IMAGE extract features
+                        from images on the fly
+  --precalculated-features PRECALCULATEDFEATURESPATH, -f PRECALCULATEDFEATURESPATH
+                        precalculated features path (it can be either zip
+                        archive or folder name)
+  --precalculated-features-prefix PRECALCULATEDFEATURESPREFIX
+                        precalculated features prefix to be merged with path
+                        to open feature
+  --images IMAGESPATH, -i IMAGESPATH
+                        path to images, required only when featur
+  --images-prefix IMAGESPREFIX
+                        image file prefix to be merged with path to open image
   --atomspace ATOMSPACEFILENAME, -a ATOMSPACEFILENAME
                         Scheme program to fill atomspace with facts
   --opencog-log-level {FINE,DEBUG,INFO,ERROR,NONE}

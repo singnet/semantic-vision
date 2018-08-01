@@ -28,7 +28,7 @@ class ChainAnswerHandler(AnswerHandler):
     def notifyAll(self, methodToCall):
         map(methodToCall, answerHandlerList)
 
-class FeatureLoader(ABC):
+class FeatureExtractor(ABC):
     
-    def loadFeaturesByImageId(self, imageId):
+    def getFeaturesByImageId(self, imageId):
         pass
