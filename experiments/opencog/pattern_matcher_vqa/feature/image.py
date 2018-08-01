@@ -42,7 +42,10 @@ class ImageFeatureExtractor(FeatureExtractor):
             lambda fileHandle: self.loadImageUsingFileHandle(fileHandle))
         
     def getFeaturesByImageId(self, imageId):
-        image = self.loadImageByFileName(self.getImageFileName(imageId))
+        return self.getFeaturesByImagePath(self.loadImageByFileName(self.getImageFileName(imageId)))
+    
+    def getFeaturesByImagePath(self, imagePath):
+        image = self.loadImageByFileName(imagePath)
         scores, boxes, attr_scores, rel_scores = im_detect(self.net, image)
         
         # Keep the original boxes, don't worry about the regresssion bbox outputs
