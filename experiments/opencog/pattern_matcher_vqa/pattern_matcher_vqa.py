@@ -121,7 +121,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
         conceptNode.set_value(boundingBox, FloatValue(result))
         return TruthValue(result, 1.0)
     except BaseException as e:
-        logger.error('Unexpected exception %s', e)
+        logger.exception('Unexpected exception %s', e)
         return TruthValue(0.0, 1.0)
 
 class OtherDetSubjObjResult:
@@ -243,7 +243,7 @@ class PatternMatcherVqaPipeline:
                 record = Record.fromString(line)
                 self.answerQuestion(record)
             except BaseException as e:
-                logger.error('Unexpected exception %s', e)
+                logger.exception('Unexpected exception %s', e)
                 continue
     
 ### MAIN
