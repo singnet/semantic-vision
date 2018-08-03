@@ -36,7 +36,7 @@ Required for precalculated feature extractor:
 Required for image feature extractor:
 - IMAGESPATH - folder or .zip file which contains images
 - IMAGESPREFIX - file prefix to merge with image id and IMAGESPATH to get full file name
-(Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See (./feature/README.md)[./feature/README.md] for instructions.
+(Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See [./feature/README.md](./feature/README.md) for instructions.
 
 One optional argument is required to answer complex questions:
 - ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../question2atomese/question2atomese.sh); see [README.md](../question2atomese/README.md)
