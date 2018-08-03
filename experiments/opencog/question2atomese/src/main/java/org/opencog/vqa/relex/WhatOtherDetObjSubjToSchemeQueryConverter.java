@@ -14,6 +14,10 @@ public class WhatOtherDetObjSubjToSchemeQueryConverter implements ToQueryConvert
     public String getSchemeQuery(RelexFormula relexFormula) {
         RelexVisitor visitor = new RelexVisitor();
         relexFormula.getRelexSentence().foreach(visitor);
+        // $X - an attribute value which answers the question
+        // $B - bounding box
+        // visitor.object - object which attribute value is under the question
+        // visitor.attribute - an attribute name, for instance "color"
         return String.format("(BindLink\n" + 
                 "  (VariableList\n" +
                 "    (TypedVariableLink (VariableNode \"$B\") (TypeNode \"ConceptNode\"))\n" +

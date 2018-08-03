@@ -14,6 +14,9 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
     public String getSchemeQuery(RelexFormula relexFormula) {
         RelexVisitor visitor = new RelexVisitor();
         relexFormula.getRelexSentence().foreach(visitor);
+        // $X - is a bounding box
+        // visitor.object - object which is supposed to be in some state
+        // visitor.state - the question is whether object is in this state
         return String.format("(SatisfactionLink\n" +
                 "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
                 "  (AndLink\n" +

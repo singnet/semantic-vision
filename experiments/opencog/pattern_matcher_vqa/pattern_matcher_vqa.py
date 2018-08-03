@@ -40,6 +40,8 @@ def initializeAtomspace(atomspaceFileName = None):
     return atomspace
 
 def pushAtomspace(parentAtomspace):
+    # TODO: cannot push/pop atomspace via Python API, 
+    # workarouding it using Scheme API
     scheme_eval(parentAtomspace, '(cog-push-atomspace)')
     childAtomspace = scheme_eval_as('(cog-atomspace)')
     set_type_ctor_atomspace(childAtomspace)
@@ -172,6 +174,8 @@ class PatternMatcherVqaPipeline:
     def answerQuestion(self, record):
         self.logger.debug('processing question: %s', record.question)
         self.answerHandler.onNewQuestion(record)
+        # Push/pop atomspace each time to not pollute it by temporary
+        # bounding boxes
         self.atomspace = pushAtomspace(self.atomspace)
         try:
             
@@ -200,11 +204,15 @@ class PatternMatcherVqaPipeline:
     def answerYesNoQuestion(self, queryInScheme):
         evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
         start = datetime.datetime.now()
+        # TODO: evaluates AND operations as crisp logic values
+        # if clause has tv->mean() > 0.5 then return tv->mean() == 1.0
         result = scheme_eval_v(self.atomspace, evaluateStatement)
         delta = datetime.datetime.now() - start
         self.logger.debug('The result of pattern matching is: '
                           '%s, time: %s microseconds',
                           result, delta.microseconds)
+        # TODO: Python value API improvements: convert single value to
+        # appropriate type directly?
         answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
         return answer
     
@@ -321,6 +329,7 @@ try:
     
     if args.kindOfFeaturesExtractor == 'IMAGE':
         featureExtractor = ImageFeatureExtractor(
+            # TODO: replace by arguments
             '/home/vital/projects/vqa/bottom-up-attention/models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt',
             '/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
             args.imagesPath,
