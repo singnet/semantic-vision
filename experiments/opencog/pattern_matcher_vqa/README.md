@@ -12,35 +12,82 @@ PatternMatcher and neural networks for separate words.
 (3) Predicate procedure has two arguments. First is bounding box ConceptNode and second is word ConceptNode. Predicate returns truth value which answers question whether word can be recognized on bounding box. Predicate procedure extracts features from bounding box, converts
 them into PyTorch tensor and passes to the NN model to calculate the probability the predicate takes true. NN model is queried from the set of models by word.
 
-### Command line arguments
+### Supported types of models and questions
 
-The following arguments are required to run ```pattern_matcher_vqa.py```:
+Pattern matcher VQA pipeline supports:
 
---model-kind - two kinds of models are supported: "Multi DNN" and "Hypernet"
-- QUESTIONSFILENAME - file which contains parsed questions in format which is described in [record.py module](../question2atomese/record.py); this file can be generated from visualqa.org data using [get_questions.py](../question2atomese/get_questions.py); see [README.md](../question2atomese/README.md)
---features-extractor-kind - two kinds of features extractors are supported:
- PRECALCULATED (loading precalculated features from file) and IMAGE (extracting features from image)
+- two kinds of NN models:
+  - MULTIDNN - separate NN corresponds to each word, NN inputs only bounding box features
+  - HYPERNET - one NN inputs bounding box features and word embedding
 
-Required for "Multi DNN" model:
-- MULTIDNNMODELFILENAME - pretrained "Multi DNN" model file
+- two kinds of image features extractors:
+  - PRECALCULATED - precalculated bounding boxes and features for VQA dataset is read from file
+  - IMAGE - separate NN is used to extract bounding boxes from image and features for each bounding box. To use this mode (Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See [./feature/README.md](https://github.com/singnet/semantic-vision/tree/master/experiments/opencog/pattern_matcher_vqa/feature) for instructions.
 
-Required for "Hypernet" model:
-- HYPERNETMODELFILENAME - pretrained "Hypernet" model file
-- HYPERNETWORDSFILENAME - file which contains words dictionary; required for "Hypernet" model only; "Multi DNN" contains dictionary in model file
-- HYPERNETWORDEMBEDDINGSFILENAME - file which contains words embeddings model; required for "Hypernet" model only; "Multi DNN" doesn't use word embeddings
+User can independently set kind of NN model and kind of features extractor, they can be combined by four different ways.
 
-Required for precalculated feature extractor:
-- FEATURESPATH - folder or .zip file which contains features of bounding boxes
-- PRECALCULATEDFEATURESPREFIX - file prefix to merge with image id and FEATURESPATH to get full file name
+Pattern matcher VQA pipeline at the moment supports two kinds of questions:
+- ```_predadj(A, B)``` questions: for instance "Are the zebras fat?" will be parsed as ```_predadj(zebra, fat)```.
+- ```_det(A, B);_obj(C, D);_subj(C, A)```: for instance "What color is the ball?" will be parsed as ```_det(color, _$qVar);_obj(be, ball);_subj(be, color)```. This kind of questions require atomspace database, which contains facts like ```(Inheritance (Concept "red") (Concept "color"))```.
 
-Required for image feature extractor:
-- IMAGESPATH - folder or .zip file which contains images
-- IMAGESPREFIX - file prefix to merge with image id and IMAGESPATH to get full file name
-(Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See [./feature/README.md](./feature/README.md) for instructions.
+### Usage example
 
+Input questions:
+```
+$ cat /home/vital/projects/vqa/test_question.txt
+11760004::yes/no::Are the zebras fat?::11760::yes::_predadj(A, B)::_predadj(zebra, fat)
+527510002::other::What color is the plane?::527510::silver::_det(A, B);_obj(C, D);_subj(C, A)::_det(color, _$qVar);_obj(be, plane);_subj(be, color)
+299838003::other::What color is the ball?::299838::yellow::_det(A, B);_obj(C, D);_subj(C, A)::_det(color, _$qVar);_obj(be, ball);_subj(be, color)
+```
+
+Executing script:
+```
+python pattern_matcher_vqa.py \
+    --questions /home/vital/projects/vqa/test_question.txt \
+    --atomspace /home/vital/projects/vqa/other_det_obj_subj.scm \
+    --model-kind MULTIDNN \
+    --multidnn-model /home/vital/projects/vqa/model_01_max_score_val.pth.tar \
+    --features-extractor-kind PRECALCULATED \
+    --precalculated-features /home/vital/projects/vqa/downloaded/val2014_parsed_features.zip \
+    --precalculated-features-prefix val2014_parsed_features/COCO_val2014_ \
+    --python-log-level INFO \
+    --opencog-log-level NONE
+
+11760004::Are the zebras fat?::yes::yes::11760
+527510002::What color is the plane?::white::silver::527510
+299838003::What color is the ball?::tan::yellow::299838
+Questions processed: 3, answered: 3, correct answers: 33.33333333333333% (1)
+```
+
+Answers are printed using format: ```questionId::question::answer::correct_answer::imageId``` .
+
+### Main arguments
+
+The following arguments are required to run ```pattern_matcher_vqa.py``` (see full command line parameters description below):
+
+- --model-kind {MULTIDNN,HYPERNET}: set NN model type
+- --questions QUESTIONSFILENAME: questions database filename. Questions are kept in files in format described by [record.py](https://github.com/singnet/semantic-vision/blob/master/experiments/opencog/question2atomese/record.py). Main fields which are used by pipeline are ```image_id``` and ```question```. [http://visualqa.org](http://visualqa.org) dataset can be converted to this format using [get_questions.p](https://github.com/singnet/semantic-vision/blob/master/experiments/opencog/question2atomese/get_questions.py) (see [README.md#prepare-questions-dataset](https://github.com/singnet/semantic-vision/blob/master/experiments/opencog/question2atomese/README.md#prepare-questions-dataset))
+- --features-extractor-kind {PRECALCULATED,IMAGE}: set kind of features extractor
 One optional argument is required to answer complex questions:
-- ATOMSPACEFILENAME - Scheme program to fill initial Atomspace; thi program can be generated using [question2atomese.sh](../question2atomese/question2atomese.sh); see [README.md](../question2atomese/README.md)
+- --atomspace ATOMSPACEFILENAME - database of facts to answer ```_det(A, B);_obj(C, D);_subj(C, A)``` questions. It is a Scheme program to fill initial Atomspace; this program can be generated using [question2atomese.sh](https://github.com/singnet/semantic-vision/blob/master/experiments/opencog/question2atomese/question2atomese.sh); see [question2atomese#parse-questions-using-relex](https://github.com/singnet/semantic-vision/tree/master/experiments/opencog/question2atomese#parse-questions-using-relex)
 
+MULTIDNN model parameters:
+- --multidnn-model MULTIDNNMODELFILENAME - pretrained "Multi DNN" model file
+
+HYPERNET model parameters:
+- --hypernet-model HYPERNETMODELFILENAME - pretrained "Hypernet" model file
+- --hypernet-words HYPERNETWORDSFILENAME - file which contains words dictionary; required for "Hypernet" model only; "Multi DNN" contains dictionary in model file
+- --hypernet-embeddings HYPERNETWORDEMBEDDINGSFILENAME - file which contains words embeddings model; required for "Hypernet" model only; "Multi DNN" doesn't use word embeddings
+
+PRECALCULATED features extractor parameters:
+- --precalculated-features PRECALCULATEDFEATURESPATH - folder or .zip file which contains features of bounding boxes
+- --precalculated-features-prefix PRECALCULATEDFEATURESPREFIX - file prefix to merge with image id and FEATURESPATH to get full file name; default is valid for val2014 dataset
+
+IMAGE feature extractor parameters:
+- --images IMAGESPATH - folder or .zip file which contains images; it can be downloaded from [visualqa.org](http://images.cocodataset.org/zips/val2014.zip) site
+- --images-prefix IMAGESPREFIX - file prefix to merge with image id and IMAGESPATH to get full file name; default is valid for val2014 dataset
+
+### Full list of parameters:
 ```
 $ python pattern_matcher_vqa.py --help
 usage: pattern_matcher_vqa.py [-h] --model-kind {MULTIDNN,HYPERNET}
