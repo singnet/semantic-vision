@@ -17,12 +17,12 @@ them into PyTorch tensor and passes to the NN model to calculate the probability
 Pattern matcher VQA pipeline supports:
 
 - two kinds of NN models:
--- MULTIDNN - separate NN corresponds to each word, NN inputs only bounding box features
--- HYPERNET - one NN inputs bounding box features and word embedding
+  - MULTIDNN - separate NN corresponds to each word, NN inputs only bounding box features
+  - HYPERNET - one NN inputs bounding box features and word embedding
 
 - two kinds of image features extractors:
--- PRECALCULATED - precalculated bounding boxes and features for VQA dataset is read from file
--- IMAGE - separate NN is used to extract bounding boxes from image and features for each bounding box. To use this mode (Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See [./feature/README.md](https://github.com/singnet/semantic-vision/tree/master/experiments/opencog/pattern_matcher_vqa/feature) for instructions.
+  - PRECALCULATED - precalculated bounding boxes and features for VQA dataset is read from file
+  - IMAGE - separate NN is used to extract bounding boxes from image and features for each bounding box. To use this mode (Bottom-up-attention libraries)[https://github.com/peteanderson80/bottom-up-attention.git] should be built and added into LD_LIBRARY_PATH and PYTHONPATH. See [./feature/README.md](https://github.com/singnet/semantic-vision/tree/master/experiments/opencog/pattern_matcher_vqa/feature) for instructions.
 
 User can independently set kind of NN model and kind of features extractor, they can be combined by four different ways.
 
@@ -59,7 +59,7 @@ python pattern_matcher_vqa.py \
 Questions processed: 3, answered: 3, correct answers: 33.33333333333333% (1)
 ```
 
-Answers are printed using format: questionId::question::answer::correct_answer::imageId .
+Answers are printed using format: ```questionId::question::answer::correct_answer::imageId``` .
 
 ### Main arguments
 
@@ -85,7 +85,7 @@ PRECALCULATED features extractor parameters:
 
 IMAGE feature extractor parameters:
 - --images IMAGESPATH - folder or .zip file which contains images; it can be downloaded from [visualqa.org](http://images.cocodataset.org/zips/val2014.zip) site
-- IMAGESPREFIX - file prefix to merge with image id and IMAGESPATH to get full file name; default is valid for val2014 dataset
+- --images-prefix IMAGESPREFIX - file prefix to merge with image id and IMAGESPATH to get full file name; default is valid for val2014 dataset
 
 ### Full list of parameters:
 ```
