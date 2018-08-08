@@ -14,7 +14,6 @@ from util import *
 from interface import FeatureExtractor, AnswerHandler
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
-from feature.image import ImageFeatureExtractor
 
 sys.path.insert(0, currentDir(__file__) + '/../question2atomese')
 from record import Record
@@ -328,10 +327,11 @@ jpype.startJVM(jpype.getDefaultJVMPath(),
 try:
     
     if args.kindOfFeaturesExtractor == 'IMAGE':
+        from feature.image import ImageFeatureExtractor
         featureExtractor = ImageFeatureExtractor(
             # TODO: replace by arguments
-            '/home/vital/projects/vqa/bottom-up-attention/models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt',
-            '/mnt/fileserver/users/mvp/models/bottom-up-attention/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
+            '/mnt/fileserver/shared/vital/image-features/test.prototxt',
+            '/mnt/fileserver/shared/vital/image-features/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel',
             args.imagesPath,
             args.imagesPrefix
             )
