@@ -16,7 +16,7 @@ public class QuestionToOpencogAppTest {
         InputStream inputStream = inputStreamFromString("458752002::other::What color is the players shirt?::458752::orange");
         ByteArrayOutputStream atomspaceStream = new ByteArrayOutputStream();
         
-        new QuestionToOpencogApp(inputStream, System.out, Optional.of(atomspaceStream)).run();
+        new QuestionToOpencogApp(inputStream, System.out, System.err, Optional.of(atomspaceStream)).run();
         
         assertEquals("(InheritanceLink (ConceptNode \"orange\") (ConceptNode \"color\"))\n", atomspaceStream.toString());
     }
@@ -26,7 +26,7 @@ public class QuestionToOpencogAppTest {
         InputStream inputStream = inputStreamFromString("579057010::other::What fruits are these?::579057::banana, orange and apples");
         ByteArrayOutputStream atomspaceStream = new ByteArrayOutputStream();
         
-        new QuestionToOpencogApp(inputStream, System.out, Optional.of(atomspaceStream)).run();
+        new QuestionToOpencogApp(inputStream, System.out, System.err, Optional.of(atomspaceStream)).run();
         
         assertEquals("(InheritanceLink (ConceptNode \"banana\") (ConceptNode \"fruit\"))\n"
                 + "(InheritanceLink (ConceptNode \"orange\") (ConceptNode \"fruit\"))\n"
@@ -38,7 +38,7 @@ public class QuestionToOpencogAppTest {
         InputStream inputStream = inputStreamFromString("418489000::other::What is this color of the shirt?::418489::red");
         ByteArrayOutputStream atomspaceStream = new ByteArrayOutputStream();
         
-        new QuestionToOpencogApp(inputStream, System.out, Optional.of(atomspaceStream)).run();
+        new QuestionToOpencogApp(inputStream, System.out, System.err, Optional.of(atomspaceStream)).run();
         
         assertEquals("", atomspaceStream.toString());
     }
