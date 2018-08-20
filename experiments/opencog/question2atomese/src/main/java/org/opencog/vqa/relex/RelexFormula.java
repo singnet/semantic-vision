@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Singular;
 import relex.ParsedSentence;
-import relex.feature.FeatureNode;
 
 public class RelexFormula {
 
@@ -41,25 +40,7 @@ public class RelexFormula {
     public String getGroundedFormula() {
         return predicates.stream().map(fn -> fn.toGroundedFormula()).collect(Collectors.joining(";"));
     }
-
-    public boolean isValid() {
-        return getNumSkippedWords() == 0 && getNumViolations() == 0;
-    }
-
-    public int getNumSkippedWords() {
-        return getMetaNums("num_skipped_words");
-    }
-
-    public int getNumViolations() {
-        return getMetaNums("num_violations");
-    }
-
-    private int getMetaNums(String propertyName) {
-        FeatureNode fn = relexSentence.getMetaData().get(propertyName);
-        if (fn == null) return 0;
-        return Integer.parseInt(fn.getValue());
-    }
-
+    
     @Override
     public String toString() {
         return getFullFormula();

@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,25 +38,21 @@ public class QuestionToOpencogApp {
 
     private static final String OPTION_INPUT = "input";
     private static final String OPTION_OUTPUT = "output";
-    private static final String OPTION_ERROR_OUTPUT = "error";
     private static final String OPTION_ATOMSPACE = "atomspace";
     
     private final BufferedReader bufferedReader;
     private final PrintWriter printWriter;
-    private final PrintWriter errorPrintWriter;
     private final PrintWriter atomspaceWriter;
-
+    
     private final QuestionToOpencogConverter questionToOpencogConverter;
     private final PhraseToWordsConverter phraseToWordsConverter;
 
     @VisibleForTesting
     QuestionToOpencogApp(InputStream inputStream,
             OutputStream outputStream,
-            OutputStream errorOutputStream,
             Optional<OutputStream> atomspaceWriter) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         this.printWriter = new PrintWriter(outputStream);
-        this.errorPrintWriter = new PrintWriter(errorOutputStream);
         if (atomspaceWriter.isPresent()) {
             this.atomspaceWriter = new PrintWriter(atomspaceWriter.get());
         } else {
@@ -69,12 +66,10 @@ public class QuestionToOpencogApp {
         Options options = new Options();
         InputStream inputStream = null;
         OutputStream outputStream = null;
-        OutputStream errorOutputStream = null;
         OutputStream atomspaceStream = null;
         try {
             options.addOption("i", OPTION_INPUT, true, "input filename, stdin if not provided");
             options.addOption("o", OPTION_OUTPUT, true, "output filename, stdout if not provided");
-            options.addOption("e", OPTION_ERROR_OUTPUT, true, "error output filename, stderr if not provided");
             options.addOption("a", OPTION_ATOMSPACE, true, "filename for atomspace which is calculated from questions");
             
             CommandLineParser argsParser = new DefaultParser();
@@ -86,16 +81,10 @@ public class QuestionToOpencogApp {
             outputStream = commandLine.hasOption(OPTION_OUTPUT) 
                     ? new FileOutputStream(commandLine.getOptionValue(OPTION_OUTPUT))
                     : System.out;
-
-
-            errorOutputStream = commandLine.hasOption(OPTION_ERROR_OUTPUT)
-                    ? new FileOutputStream(commandLine.getOptionValue(OPTION_ERROR_OUTPUT))
-                    : System.err;
             atomspaceStream = commandLine.hasOption(OPTION_ATOMSPACE)
                     ? new FileOutputStream(commandLine.getOptionValue(OPTION_ATOMSPACE))
                     : null;
-            new QuestionToOpencogApp(inputStream, outputStream, errorOutputStream,
-                    Optional.ofNullable(atomspaceStream)).run();
+            new QuestionToOpencogApp(inputStream, outputStream, Optional.ofNullable(atomspaceStream)).run();
         } catch (ParseException e) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("QuestionToOpencogApp", options);
@@ -104,7 +93,6 @@ public class QuestionToOpencogApp {
         } finally {
             closeStream(inputStream, System.in);
             closeStream(outputStream, System.out);
-            closeStream(errorOutputStream, System.err);
             closeStream(atomspaceStream, System.out);
         }
     }
@@ -135,17 +123,11 @@ public class QuestionToOpencogApp {
                         if (atomspaceWriter != null) {
                             extractFactForAtomspace(parsedRecord);
                         }
-
-                        if (parsedRecord.relexFormula.isValid()) {
-                            printWriter.println(parsedRecord.getRecord().save());
-                        } else {
-                            errorPrintWriter.println(parsedRecord.getInvalidRecord());
-                        }
+                        printWriter.println(parsedRecord.getRecord().save());
                     });
         } finally {
             linesStream.close();
             printWriter.flush();
-            errorPrintWriter.flush();
             if (atomspaceWriter != null) {
                 atomspaceWriter.flush();
             }
@@ -220,31 +202,6 @@ public class QuestionToOpencogApp {
         public RelexFormula getRelexFormula() {
             return relexFormula;
         }
-
-
-        public boolean isValid() {
-            return relexFormula.getNumSkippedWords() == 0 && relexFormula.getNumViolations() == 0;
-        }
-
-        public String getInvalidRecord() {
-            StringBuilder invalidRecord = new StringBuilder();
-            if (relexFormula.getNumViolations() > 0) {
-                invalidRecord.append("VIOLATION");
-            }
-            if (relexFormula.getNumSkippedWords() > 0) {
-                if (invalidRecord.length() != 0) {
-                    invalidRecord.append('|');
-                }
-                invalidRecord.append("SKIPPED");
-            }
-
-            invalidRecord.append("::");
-            invalidRecord.append(relexFormula.getRelexSentence().getOriginalSentence());
-
-            return invalidRecord.toString();
-
-        }
-
     }
     
     private String convertToOpencogScheme(ParsedQuestion parsedQuestion) {
