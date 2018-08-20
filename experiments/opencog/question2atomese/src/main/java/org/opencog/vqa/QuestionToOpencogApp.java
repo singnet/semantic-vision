@@ -176,10 +176,11 @@ public class QuestionToOpencogApp {
 
     private ParsedQuestion parseQuestion(QuestionRecord record) {
         RelexFormula relexFormula = questionToOpencogConverter.parseQuestion(record.getQuestion());
-        
+
         QuestionRecord recordWithFormula = record.toBuilder()
                 .shortFormula(relexFormula.getFullFormula())
                 .fullFormula(relexFormula.getGroundedFormula())
+                .formulaInvalidKeys(relexFormula.getInvalidKeys())
                 .build();
         
         return new ParsedQuestion(recordWithFormula, relexFormula);

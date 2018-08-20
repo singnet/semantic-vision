@@ -43,6 +43,29 @@ public class QuestionToOpencogAppTest {
         assertEquals("", atomspaceStream.toString());
     }
 
+    @Test
+    public void test_ParseValidSentence() {
+        test_ParseSentence("196608003::yes/no::Is the laptop on?::196608::no::None::None",
+                "196608003::yes/no::Is the laptop on?::196608::no::_subj(A, B)::_subj(be_on, laptop)");
+    }
+
+    @Test
+    public void test_ParseInvalidSentence() {
+        test_ParseSentence("158335000::number::How many cakes on in her hand?::158335::2::None::None",
+                "158335000::number::How many cakes on in her hand?::158335::2::SKIPPED");
+    }
+
+    private void test_ParseSentence(String sentence, String parsedSentence) {
+        InputStream inputStream = inputStreamFromString(sentence);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        new QuestionToOpencogApp(inputStream, outputStream, Optional.empty()).run();
+
+        String record = outputStream.toString();
+        System.out.printf("record: %s%n", record);
+        assertEquals(parsedSentence, outputStream.toString().trim());
+    }
+
     private static ByteArrayInputStream inputStreamFromString(String string) {
         return new ByteArrayInputStream(string.getBytes());
     }
