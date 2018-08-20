@@ -203,7 +203,7 @@ optional arguments:
 
 Run question2atomese app:
 ```
-./question2atomese.sh -i questions.txt -o parsed_questions.txt -a atomspace.scm -e error_questions.txt
+./question2atomese.sh -i questions.txt -o parsed_questions.txt -a atomspace.scm
 ```
 
 question2atomese usage:
@@ -214,7 +214,6 @@ usage: QuestionToOpencogApp
                         questions
  -i,--input <arg>       input filename, stdin if not provided
  -o,--output <arg>      output filename, stdout if not provided
- -e,--error  <arg>      error filename (questions which were not able to parse), stderr if not provided
  ```
 
 ## Sort question types by frequency
