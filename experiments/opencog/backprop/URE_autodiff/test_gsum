@@ -21,15 +21,19 @@
        (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F1")) (Variable "$EGX")))
        (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F2")) (Variable "$EGY"))))
 
-(EvaluationLink
- (Predicate "ExpandTo")
-                (List
-                 (NumericOutputLink (ConceptNode "Gradient") (NumericOutputLink (ConceptNode "+") (VariableNode "$F1") (VariableNode "$F2")))
-                 (NumericOutputLink (ConceptNode "+")
-                                    (VariableNode "$EGX")
-                                    (VariableNode "$EGY")))
-)))
+      (ExecutionOutputLink
+       (GroundedSchemaNode "scm: identity")
+       (List
+        (EvaluationLink
+         (Predicate "ExpandTo")
+         (List
+          (NumericOutputLink (ConceptNode "Gradient") (NumericOutputLink (ConceptNode "+") (VariableNode "$F1") (VariableNode "$F2")))
+          (NumericOutputLink (ConceptNode "+")
+                             (VariableNode "$EGX")
+                             (VariableNode "$EGY"))))))))
 
+(define (identity A)
+  A)
 ;(Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Number "3")) (Number "-3")))
 ;(Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Number "4")) (Number "-4")))
 
@@ -40,8 +44,11 @@
        (TypedVariable (VariableNode "$F0") (Type "NumberNode")))
       (And
        (NumericOutputLink (ConceptNode "Gradient") (Variable "$F0")))
-      (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F0"))
-                                               (Number "0")))))
+      (ExecutionOutputLink
+       (GroundedSchemaNode "scm: identity")
+       (List
+        (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F0"))
+                                                 (Number "0")))))))
 
 
 (define SRC
@@ -66,8 +73,7 @@
 (ExecutionLink
    (SchemaNode "URE:maximum-iterations")
    (ConceptNode "my-rule-base")
-   (NumberNode "100")
-   )
+   (NumberNode "1000"))
 
 (Inheritance (Concept "my-rule-base") (Concept "URE"))
 
