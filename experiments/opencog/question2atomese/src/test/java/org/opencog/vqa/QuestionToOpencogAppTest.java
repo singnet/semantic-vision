@@ -52,7 +52,7 @@ public class QuestionToOpencogAppTest {
     @Test
     public void test_ParseInvalidSentence() {
         test_ParseSentence("158335000::number::How many cakes on in her hand?::158335::2::None::None",
-                "158335000::number::How many cakes on in her hand?::158335::2::SKIPPED");
+                "158335000::number::How many cakes on in her hand?::158335::2::SKIPPED::None");
     }
 
     private void test_ParseSentence(String sentence, String parsedSentence) {
