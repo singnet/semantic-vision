@@ -58,15 +58,18 @@ class QuestionRecord {
     public String save()
     {
 
+        String end = null;
+        if (formulaInvalidKeys.isEmpty()) {
+            end = FIELD_DELIMITER + shortFormula + FIELD_DELIMITER + fullFormula;
+        } else {
+            end = FIELD_DELIMITER + formulaInvalidKeys + FIELD_DELIMITER + "None";
+        }
         return questionId
                 + FIELD_DELIMITER + questionType
                 + FIELD_DELIMITER + question
                 + FIELD_DELIMITER + imageId
                 + FIELD_DELIMITER + answer
-                + (formulaInvalidKeys.isEmpty()
-                        ? FIELD_DELIMITER + shortFormula
-                        + FIELD_DELIMITER + fullFormula
-                        : FIELD_DELIMITER + formulaInvalidKeys);
+                + end;
     }
 
     private static boolean isFormulaValid(String[] fields) {
