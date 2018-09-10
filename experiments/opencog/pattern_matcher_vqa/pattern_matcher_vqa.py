@@ -1,19 +1,22 @@
 import sys
 import logging
-import jpype
-import numpy as np
 import datetime
-import opencog.logger
 import argparse
 
-from opencog.atomspace import AtomSpace, TruthValue, types
+import jpype
+import numpy as np
+import opencog.logger
+
+from opencog.atomspace import TruthValue
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
 
 from util import *
-from interface import FeatureExtractor, AnswerHandler
+from interface import FeatureExtractor, AnswerHandler, NoModelException
 from multidnn import NetsVocabularyNeuralNetworkRunner
 from hypernet import HyperNetNeuralNetworkRunner
+from splitnet.splitmultidnnmodel import SplitMultidnnRunner
+
 
 sys.path.insert(0, currentDir(__file__) + '/../question2atomese')
 from record import Record
@@ -27,16 +30,18 @@ def initializeRootAndOpencogLogger(opencogLogLevel, pythonLogLevel):
     rootLogger.setLevel(pythonLogLevel)
     rootLogger.addHandler(logging.StreamHandler())
 
-def initializeAtomspace(atomspaceFileName = None):
+
+def initialize_atomspace(atomspaceFileName=None):
     atomspace = scheme_eval_as('(cog-atomspace)')
     scheme_eval(atomspace, '(use-modules (opencog))')
     scheme_eval(atomspace, '(use-modules (opencog exec))')
     scheme_eval(atomspace, '(use-modules (opencog query))')
+    scheme_eval(atomspace, '(use-modules (opencog logger))')
     scheme_eval(atomspace, '(add-to-load-path ".")')
     if atomspaceFileName is not None:
         scheme_eval(atomspace, '(load-from-path "' + atomspaceFileName + '")')
-
     return atomspace
+
 
 def pushAtomspace(parentAtomspace):
     # TODO: cannot push/pop atomspace via Python API, 
@@ -46,11 +51,13 @@ def pushAtomspace(parentAtomspace):
     set_type_ctor_atomspace(childAtomspace)
     return childAtomspace
 
+
 def popAtomspace(childAtomspace):
     scheme_eval(childAtomspace, '(cog-pop-atomspace)')
     parentAtomspace = scheme_eval_as('(cog-atomspace)')
     set_type_ctor_atomspace(parentAtomspace)
     return parentAtomspace
+
 
 class TsvFileFeatureLoader(FeatureExtractor):
     
@@ -75,7 +82,8 @@ class TsvFileFeatureLoader(FeatureExtractor):
         
     def getFeaturesByImageId(self, imageId):
         return self.loadFeaturesByFileName(self.getFeaturesFileName(imageId))
-    
+
+
 class StatisticsAnswerHandler(AnswerHandler):
     
     def __init__(self):
@@ -83,6 +91,8 @@ class StatisticsAnswerHandler(AnswerHandler):
         self.processedQuestions = 0
         self.questionsAnswered = 0
         self.correctAnswers = 0
+        self.dont_know = 0
+        self._dont_know_queries = []
 
     def onNewQuestion(self, record):
         self.processedQuestions += 1
@@ -91,10 +101,20 @@ class StatisticsAnswerHandler(AnswerHandler):
         self.questionsAnswered += 1
         if answer == record.answer:
             self.correctAnswers += 1
+        if answer is None:
+            self.dont_know += 1
+            self._dont_know_queries.append(record)
         self.logger.debug('Correct answers %s%%', self.correctAnswerPercent())
 
     def correctAnswerPercent(self):
         return self.correctAnswers / self.questionsAnswered * 100
+
+    def unanswered_percent(self):
+        return self.dont_know / self.questionsAnswered * 100
+
+    def get_unanswered(self):
+        return self._dont_know_queries
+
 
 ### Pipeline code
 
@@ -106,12 +126,18 @@ def runNeuralNetwork(boundingBox, conceptNode):
         featuresValue = boundingBox.get_value(PredicateNode('features'))
         if featuresValue is None:
             logger.error('no features found, return FALSE')
-            return TruthValue(0.0, 1.0)
+            return TruthValue(0.0, 0.0)
         features = np.array(featuresValue.to_list())
         word = conceptNode.name
-        
+
+        certainty = 1.0
         global neuralNetworkRunner
-        resultTensor = neuralNetworkRunner.runNeuralNetwork(features, word)
+        try:
+            resultTensor = neuralNetworkRunner.runNeuralNetwork(features, word)
+        except NoModelException as e:
+            import torch
+            resultTensor = torch.zeros(1)
+            certainty = 0.0
         result = resultTensor.item()
         
         logger.debug('bb: %s, word: %s, result: %s', boundingBox.name, word, str(result))
@@ -120,19 +146,20 @@ def runNeuralNetwork(boundingBox, conceptNode):
         # TODO: how to return predicted values properly?
         boundingBox.set_value(conceptNode, FloatValue(result))
         conceptNode.set_value(boundingBox, FloatValue(result))
-        return TruthValue(result, 1.0)
+        return TruthValue(result, certainty)
     except BaseException as e:
         logger.exception('Unexpected exception %s', e)
         return TruthValue(0.0, 1.0)
 
+
 class OtherDetSubjObjResult:
     
-    def __init__(self, bb, attribute, object):
-        self.bb = bb
+    def __init__(self, bounding_box, attribute, object):
+        self.bb = bounding_box
         self.attribute = attribute
         self.object = object
-        self.attributeProbability = bb.get_value(attribute).to_list()[0]
-        self.objectProbability = bb.get_value(object).to_list()[0]
+        self.attributeProbability = bounding_box.get_value(attribute).to_list()[0]
+        self.objectProbability = bounding_box.get_value(object).to_list()[0]
         
     def __lt__(self, other):
         if abs(self.objectProbability - other.objectProbability) > 0.000001:
@@ -149,6 +176,7 @@ class OtherDetSubjObjResult:
                                    self.object.name,
                                    self.objectProbability,
                                    self.attributeProbability)
+
 
 class PatternMatcherVqaPipeline:
     
@@ -186,7 +214,6 @@ class PatternMatcherVqaPipeline:
                 self.logger.error('Question was not parsed')
                 return
             self.logger.debug('Scheme query: %s', queryInScheme)
-        
             if record.questionType == 'yes/no':
                 answer = self.answerYesNoQuestion(queryInScheme)
             else:
@@ -214,8 +241,16 @@ class PatternMatcherVqaPipeline:
         # appropriate type directly?
         answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
         return answer
-    
+
     def answerOtherQuestion(self, queryInScheme):
+        """
+        Find answer for question with formula _det(A, B);_obj(C, D);_subj(C, A)
+
+        :param queryInScheme: str
+            query to pattern matcher or ure
+        :return: str or None
+            str if answer was found None otherwise
+        """
         evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
         start = datetime.datetime.now()
         resultsData = scheme_eval_h(self.atomspace, evaluateStatement)
@@ -228,11 +263,12 @@ class PatternMatcherVqaPipeline:
         for resultData in resultsData.out:
             out = resultData.out
             results.append(OtherDetSubjObjResult(out[0], out[1], out[2]))
-        results.sort(reverse = True)
+        results.sort(reverse=True)
         
         for result in results:
             self.logger.debug(str(result))
-        
+        if not results:
+            return None
         maxResult = results[0]
         answer = maxResult.attribute.name
         return answer
@@ -262,8 +298,8 @@ parser = argparse.ArgumentParser(description='Load pretrained words models '
    'and answer questions using OpenCog PatternMatcher')
 parser.add_argument('--model-kind', '-k', dest='kindOfModel',
     action='store', type=str, required=True,
-    choices=['MULTIDNN', 'HYPERNET'],
-    help='model kind: (1) MULTIDNN requires --model parameter only; '
+    choices=['MULTIDNN', 'HYPERNET', 'SPLITMULTIDNN'],
+    help='model kind: (1) MULTIDNN and SPLITMULTIDNN requires --model parameter only; '
     '(2) HYPERNET requires --model, --words and --embedding parameters')
 parser.add_argument('--questions', '-q', dest='questionsFileName',
     action='store', type=str, required=True,
@@ -343,11 +379,13 @@ try:
                          .format(args.kindOfFeaturesExtractor))
 
     questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
-    atomspace = initializeAtomspace(args.atomspaceFileName)
+    atomspace = initialize_atomspace(args.atomspaceFileName)
     statisticsAnswerHandler = StatisticsAnswerHandler()
     
     if (args.kindOfModel == 'MULTIDNN'):
         neuralNetworkRunner = NetsVocabularyNeuralNetworkRunner(args.multidnnModelFileName)
+    elif (args.kindOfModel == 'SPLITMULTIDNN'):
+        neuralNetworkRunner = SplitMultidnnRunner(args.multidnnModelFileName)
     elif (args.kindOfModel == 'HYPERNET'):
         neuralNetworkRunner = HyperNetNeuralNetworkRunner(args.hypernetWordsFileName,
                         args.hypernetWordEmbeddingsFileName, args.hypernetModelFileName)
@@ -360,11 +398,15 @@ try:
                                               statisticsAnswerHandler)
     pmVqaPipeline.answerQuestionsFromFile(args.questionsFileName)
     
-    print('Questions processed: {}, answered: {}, correct answers: {}% ({})'
+    print('Questions processed: {0}, answered: {1}, correct answers: {2}% ({3}), unaswered {4}%'
           .format(statisticsAnswerHandler.processedQuestions,
                   statisticsAnswerHandler.questionsAnswered,
                   statisticsAnswerHandler.correctAnswerPercent(),
-                  statisticsAnswerHandler.correctAnswers))
+                  statisticsAnswerHandler.correctAnswers,
+                  statisticsAnswerHandler.unanswered_percent()))
+    with open("unanswered.txt", 'w') as f:
+        for record in statisticsAnswerHandler.get_unanswered():
+            f.write(record.toString() + '\n')
 finally:
     jpype.shutdownJVM()
 
