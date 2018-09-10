@@ -15,7 +15,7 @@ def addLeadingZeros(number, requriedLength):
 
 def loadDataFromZipOrFolder(folderOrZip, fileName, loadProcedure):
     if (os.path.isdir(folderOrZip)):
-        with open(folderOrZip + '/' + fileName) as file:
+        with open(folderOrZip + '/' + fileName, 'rb') as file:
             return loadProcedure(file)
     else:
         with zipfile.ZipFile(folderOrZip, 'r') as archive:
