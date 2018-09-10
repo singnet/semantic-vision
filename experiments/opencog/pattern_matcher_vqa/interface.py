@@ -1,9 +1,11 @@
 from abc import ABC
 
+
 class NeuralNetworkRunner(ABC):
     
     def runNeuralNetwork(self, features, word):
         pass
+
 
 class AnswerHandler(ABC):
     
@@ -12,7 +14,10 @@ class AnswerHandler(ABC):
     
     def onAnswer(self, record, answer):
         pass
-    
+
+    def get_unanswered(self):
+        return list()
+
 
 class ChainAnswerHandler(AnswerHandler):
     
@@ -28,7 +33,12 @@ class ChainAnswerHandler(AnswerHandler):
     def notifyAll(self, methodToCall):
         map(methodToCall, answerHandlerList)
 
+
 class FeatureExtractor(ABC):
     
     def getFeaturesByImageId(self, imageId):
         pass
+
+
+class NoModelException(RuntimeError):
+    pass
