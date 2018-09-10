@@ -2,14 +2,44 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class NetsVocab(nn.Module):
+
+class INetsVocab(nn.Module):
+    """
+    Interface for retrieving NN models by for word
+    """
+
+    def __init__(self):
+        self.modelIndexByWord = {}
+
+    def getModelByWord(self, word):
+        return self.get_model_by_word(word)
+
+    def get_model_by_word(self, word):
+        """
+        Retrieve model by word
+            Parameters
+         ----------
+         word : str
+             word to get model for
+
+         Returns
+         -------
+         Torch model
+             model if successful, None otherwise.
+        """
+        if word in self.modelIndexByWord:
+            return self.models[self.modelIndexByWord[word]]
+        else:
+            return None
+
+
+class NetsVocab(INetsVocab):
     
     def __init__(self, device):
-        super(NetsVocab, self).__init__()
+        super(INetsVocab, self).__init__()
         
         self.device = device
         self.models = nn.ModuleList()
-        self.modelIndexByWord = {}
 
     @classmethod
     def fromWordsVocabulary(cls, vocabulary, featureVectorSize, device):
@@ -56,13 +86,7 @@ class NetsVocab(nn.Module):
                 ).to(self.device))
             self.modelIndexByWord[word] = modelIndex
             modelIndex += 1
-    
-    def getModelByWord(self, word):
-        if word in self.modelIndexByWord:
-            return self.models[self.modelIndexByWord[word]]
-        else:
-            return None
-    
+
     def getModelsByWords(self, words):
         models = []
         for word in words:
