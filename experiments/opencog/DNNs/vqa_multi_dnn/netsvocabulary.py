@@ -5,11 +5,19 @@ import torch.nn.functional as F
 
 class INetsVocab(nn.Module):
     """
-    Interface for retrieving NN models by for word
+    Base class for retrieving NN models by for word
     """
 
     def __init__(self):
-        self.modelIndexByWord = {}
+        self._modelIndexByWord = {}
+
+    @property
+    def modelIndexByWord(self):
+        return self._modelIndexByWord
+
+    @modelIndexByWord.setter
+    def modelIndexByWord(self, value):
+        self._modelIndexByWord = value
 
     def getModelByWord(self, word):
         return self.get_model_by_word(word)
