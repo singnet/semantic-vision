@@ -1,3 +1,7 @@
+"""
+Loading and using multi-neural networks pytorch models
+"""
+
 import json
 import torch
 import torch.nn as nn
@@ -15,11 +19,14 @@ import numpy
 sys.path.insert(0, os.path.dirname(__file__) + '/../../DNNs/vqa_multi_dnn')
 from netsvocabulary import INetsVocab
 
-logger = logging.getLogger('NetsVocabularyNeuralNetworkRunner')
+logger = logging.getLogger(__name__)
 
 
 class SplitNetsVocab(INetsVocab):
-
+    """
+    Class for loading and using pytorch models with custom
+    thresholds
+    """
     def __init__(self, models_directory):
         super().__init__()
         path = os.path.join(models_directory, 'dictionary.pkl')
@@ -32,10 +39,15 @@ class SplitNetsVocab(INetsVocab):
         self.thresholds_by_id = self.load_threshold(models_directory)
         model_list = sorted(self.models.keys())
         th_list = sorted(self.thresholds_by_id.keys())
+        if len(th_list):
+            mean_th = numpy.mean(list(self.thresholds_by_id.values()))
+        else:
+            logger.warning("thresholds not found")
+            mean_th = 0.5
         for i in model_list:
             if i not in th_list:
-                logger.warning("no threshold for {0}".format(i))
-                self.thresholds_by_id[i] = 0.5
+                logger.warning("no threshold for {0}, using mean value {1}".format(i, mean_th))
+                self.thresholds_by_id[i] = mean_th
 
     def create_networks(self, all_words, device):
         nets = dict()
@@ -91,7 +103,9 @@ class SplitNetsVocab(INetsVocab):
 
 
 class SplitMultidnnRunner(NeuralNetworkRunner):
-
+    """
+    Class for running multi-nn models with custom thresholds
+    """
     def __init__(self, models_directory):
         self.nets_vocabulary = SplitNetsVocab(models_directory)
 
