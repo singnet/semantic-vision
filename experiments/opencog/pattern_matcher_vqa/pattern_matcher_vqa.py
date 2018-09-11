@@ -112,7 +112,7 @@ class StatisticsAnswerHandler(AnswerHandler):
     def unanswered_percent(self):
         return self.dont_know / self.questionsAnswered * 100
 
-    def get_unanswered(self):
+    def getUnanswered(self):
         return self._dont_know_queries
 
 
@@ -405,7 +405,7 @@ try:
                   statisticsAnswerHandler.correctAnswers,
                   statisticsAnswerHandler.unanswered_percent()))
     with open("unanswered.txt", 'w') as f:
-        for record in statisticsAnswerHandler.get_unanswered():
+        for record in statisticsAnswerHandler.getUnanswered():
             f.write(record.toString() + '\n')
 finally:
     jpype.shutdownJVM()
