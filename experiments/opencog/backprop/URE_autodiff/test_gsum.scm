@@ -6,8 +6,13 @@
 (use-modules (opencog rule-engine))
 
 
-(define (identity A B)
-  A)
+(define (id2 C A)
+  (cog-set-tv! C (stv 1 1)))
+  ;C)
+
+(define (id4 C A B D)
+  (cog-set-tv! C (stv 1 1)))
+  ;C)
 
 (DefineLink
      (DefinedSchemaNode "GradientSum")
@@ -23,7 +28,7 @@
        (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F2")) (Variable "$EGY"))))
 
       (ExecutionOutputLink
-       (GroundedSchemaNode "scm: identity")
+       (GroundedSchemaNode "scm: id4")
        (List
         (EvaluationLink
          (Predicate "ExpandTo")
@@ -32,7 +37,10 @@
           (NumericOutputLink (ConceptNode "+")
                              (VariableNode "$EGX")
                              (VariableNode "$EGY"))))
-        (Concept "EmptyPremisses")))))
+        (NumericOutputLink (ConceptNode "Gradient") (NumericOutputLink (ConceptNode "+") (VariableNode "$F1") (VariableNode "$F2")))
+        (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F1")) (Variable "$EGX")))
+        (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F2")) (Variable "$EGY")))
+        ))))
 
 
 ;(Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Number "3")) (Number "-3")))
@@ -48,11 +56,13 @@
       (And
        (NumericOutputLink (ConceptNode "Gradient") (Variable "$F0")))
       (ExecutionOutputLink
-       (GroundedSchemaNode "scm: identity")
+       (GroundedSchemaNode "scm: id2")
        (List
         (Evaluation (Predicate "ExpandTo") (List (NumericOutputLink (ConceptNode "Gradient") (Variable "$F0"))
                                                  (Number "0")))
-        (Concept "EmptyPremisses")))))
+        (NumericOutputLink (ConceptNode "Gradient") (Variable "$F0"))
+        ))
+      ))
 
 
 (define SRC
@@ -67,8 +77,8 @@
                                (Variable "$X"))))
 
 (define SRC23 (Evaluation (Predicate "ExpandTo")
-                         (List (NumericOutputLink (ConceptNode "Gradient") (NumericOutputLink (ConceptNode "+") (Number "4") (Number "3")))
-                               (NumericOutput (Concept "+") (Number "0") (Variable "$X")))))
+                         (List (NumericOutputLink (ConceptNode "Gradient") (NumericOutputLink (ConceptNode "+") (Number "2") (Number "3")))
+                               (NumericOutputLink (Concept "+") (Number "0") (Variable "$X")))))
 
 (define SRC3 (Evaluation (Predicate "ExpandTo")
                          (List (NumericOutputLink (ConceptNode "Gradient") (Number "3"))
@@ -85,8 +95,8 @@
 (Member (DefinedSchema "GradientAny" (stv 0.4 1)) (Concept "my-rule-base"))
 
 (define (my-forward-chainer SRC) (cog-fc (Concept "my-rule-base") SRC))
-(define (my-backward-chainer SRC) (cog-bc (Concept "my-rule-base") SRC))
+(define (my-backward-chainer SRC) (cog-bc (Concept "my-rule-base") SRC)) ; #:vardecl (Variable "$X")))
 
-(GetLink (VariableNode "$X"))
+;(GetLink (VariableNode "$X"))
 
 ;(load "test_gsum")
