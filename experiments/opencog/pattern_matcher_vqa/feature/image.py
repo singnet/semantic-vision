@@ -2,7 +2,8 @@ import sys
 import numpy as np
 import cv2
 import caffe
-from fast_rcnn.test import im_detect,_get_blobs
+import torch
+from fast_rcnn.test import im_detect, _get_blobs
 from fast_rcnn.nms_wrapper import nms
 from fast_rcnn.config import cfg
 
@@ -23,7 +24,10 @@ class ImageFeatureExtractor(FeatureExtractor):
 
     
     def initFeatureExtractingNetwork(self):
-        caffe.set_mode_cpu()
+        if torch.cuda.device_count():
+            caffe.set_mode_gpu()
+        else:
+            caffe.set_mode_cpu()
         return caffe.Net(self.prototxt, caffe.TEST, weights=self.weights)
     
     def getImageFileName(self, imageId):
