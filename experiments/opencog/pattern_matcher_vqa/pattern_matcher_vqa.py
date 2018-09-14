@@ -179,7 +179,8 @@ class OtherDetSubjObjResult:
 
 
 class PatternMatcherVqaPipeline:
-    
+    header = "questionid::questiontype::question::imageid::answer::shortformula::fullformula"
+
     def __init__(self, featureExtractor, questionConverter, atomspace, answerHandler):
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
         self.featureExtractor = featureExtractor
@@ -282,6 +283,8 @@ class PatternMatcherVqaPipeline:
     def answerQuestionsFromFile(self, questionsFileName):
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
+            if self.header in line:
+                continue
             try:
                 record = Record.fromString(line)
                 self.answerQuestion(record)
