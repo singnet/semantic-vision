@@ -78,4 +78,8 @@ class QuestionRecord {
                         && !fields[5].contains(RelexFormula.INVALID_KEY_VIOLATION);
     }
 
+    public static String getDelimiter() {
+        return FIELD_DELIMITER;
+    }
+
 }

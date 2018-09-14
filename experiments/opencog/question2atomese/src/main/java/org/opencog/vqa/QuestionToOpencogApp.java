@@ -110,11 +110,33 @@ public class QuestionToOpencogApp {
     private static void handleException(Exception e) {
         e.printStackTrace();
     }
+    
+    public static String getHeader() {
+        // format:
+        // question id, question type, question, image id, answer, short formula, full formula
+
+        String delim = QuestionRecord.getDelimiter();
+        StringBuilder header = new StringBuilder("questionid");
+        header.append(delim).append("questiontype");
+        header.append(delim).append("question");
+        header.append(delim).append("imageid");
+        header.append(delim).append("answer");
+        header.append(delim).append("shortformula");
+        header.append(delim).append("fullformula");
+        return header.toString();
+    }
+
+    private static void writeHeader(PrintWriter stream) {
+        stream.println(QuestionToOpencogApp.getHeader());
+    }
 
     @VisibleForTesting
     void run() {
         Stream<String> linesStream = bufferedReader.lines();
         try {
+
+            QuestionToOpencogApp.writeHeader(this.printWriter);
+
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
                     .parallel()

@@ -11,6 +11,8 @@ import org.junit.Test;
 
 public class QuestionToOpencogAppTest {
 
+	private static String header = QuestionToOpencogApp.getHeader();
+
     @Test
     public void test_GetFactFromWhatQuestion() {
         InputStream inputStream = inputStreamFromString("458752002::other::What color is the players shirt?::458752::orange");
@@ -61,13 +63,20 @@ public class QuestionToOpencogAppTest {
 
         new QuestionToOpencogApp(inputStream, outputStream, Optional.empty()).run();
 
-        String record = outputStream.toString();
+        String lines[] = outputStream.toString().split("\n");
+        String header = lines[0];
+        String record = lines[1];
+        assertEquals(header.trim(), getHeader());
         System.out.printf("record: %s%n", record);
-        assertEquals(parsedSentence, outputStream.toString().trim());
+        assertEquals(parsedSentence, lines[1].trim());
     }
 
     private static ByteArrayInputStream inputStreamFromString(String string) {
         return new ByteArrayInputStream(string.getBytes());
     }
+
+	public static String getHeader() {
+		return header;
+	}
 
 }
