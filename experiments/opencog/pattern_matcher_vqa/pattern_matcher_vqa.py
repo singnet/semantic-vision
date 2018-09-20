@@ -279,11 +279,22 @@ class PatternMatcherVqaPipeline:
         questionRecord.question = question
         questionRecord.imageId = imageId
         self.answerQuestion(questionRecord)
-    
+
+    @classmethod
+    def is_record(cls, line):
+        striped_line = line.strip()
+        if not line:
+            return False
+        if cls.header in striped_line:
+            return False
+        if striped_line.startswith('#'):
+            return False
+        return True
+
     def answerQuestionsFromFile(self, questionsFileName):
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
-            if self.header in line:
+            if not self.is_record(line):
                 continue
             try:
                 record = Record.fromString(line)

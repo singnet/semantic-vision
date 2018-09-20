@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class QuestionToOpencogAppTest {
 
-	private static String header = QuestionToOpencogApp.getHeader();
+	private static String header = QuestionRecord.getHeader();
 
     @Test
     public void test_GetFactFromWhatQuestion() {
