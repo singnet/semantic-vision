@@ -87,7 +87,7 @@ class QuestionRecord {
         // question id, question type, question, image id, answer, short formula, full formula
 
         String delim = QuestionRecord.getDelimiter();
-        StringBuilder header = new StringBuilder("questionid");
+        StringBuilder header = new StringBuilder("#questionid");
         header.append(delim).append("questiontype");
         header.append(delim).append("question");
         header.append(delim).append("imageid");
