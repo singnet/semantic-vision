@@ -1,5 +1,8 @@
 import sys
+import hashlib
+import functools
 import numpy as np
+import numpy
 import cv2
 import caffe
 import torch
@@ -10,9 +13,50 @@ from fast_rcnn.config import cfg
 from util import *
 from interface import FeatureExtractor
 
+
+def numpyImageToBRG(rgb):
+    bgr = rgb[...,::-1]
+    return bgr
+
+
+class ArrayHash():
+   def __init__(self, array):
+       self.array = array
+       self._hash = None
+
+   def __hash__(self):
+       if self._hash is None:
+           self._hash = self.hash()
+       return self._hash
+          
+   def hash(self):
+       hashable = numpy.ascontiguousarray(self.array)
+       m = hashlib.md5()
+       m.update(hashable)
+       return hash(m.digest())
+
+   def __lt__(self, other):
+       return hash(self) < hash(other)
+
+   def __eq__(self, other):
+       return not ((self < other) or (other < self))
+
+
+def array_cache(function, maxsize=10):
+
+    @functools.lru_cache(maxsize=maxsize)
+    def cached(self, arrayhash):
+        return function(self, arrayhash.array)
+
+    def wrapped(self, array):
+        return cached(self, ArrayHash(array))
+    
+    return wrapped
+
+
 class ImageFeatureExtractor(FeatureExtractor):
     
-    def __init__(self, prototxt, weights, imagesPath, imagePrefix):
+    def __init__(self, prototxt, weights, imagesPath=None, imagePrefix=None):
         self.prototxt = prototxt
         self.weights = weights
         self.imagesPath = imagesPath
@@ -21,7 +65,6 @@ class ImageFeatureExtractor(FeatureExtractor):
         self.conf_thresh = 0.2
         self.MIN_BOXES = 36
         self.MAX_BOXES = 36
-
     
     def initFeatureExtractingNetwork(self):
         if torch.cuda.device_count():
@@ -29,12 +72,12 @@ class ImageFeatureExtractor(FeatureExtractor):
         else:
             caffe.set_mode_cpu()
         return caffe.Net(self.prototxt, caffe.TEST, weights=self.weights)
-    
+
     def getImageFileName(self, imageId):
         return self.imagePrefix + addLeadingZeros(imageId, 12) + '.jpg'
 
     def loadImageUsingFileHandle(self, fileHandle):
-        data = np.asarray(bytearray(fileHandle.read()), dtype=np.uint8)
+        data = numpy.asarray(bytearray(fileHandle.read()), dtype=numpy.uint8)
         return cv2.imdecode(data, cv2.IMREAD_COLOR)
     
     def loadImageByFileName(self, imageFileName):
@@ -44,8 +87,15 @@ class ImageFeatureExtractor(FeatureExtractor):
     def getFeaturesByImageId(self, imageId):
         return self.getFeaturesByImagePath(self.getImageFileName(imageId))
     
+    def getFeaturesByImage(self, image):
+        return self.getFeaturesByBRGImage(numpyImageToBRG(image))
+
     def getFeaturesByImagePath(self, imagePath):
         image = self.loadImageByFileName(imagePath)
+        return self.getFeaturesByBRGImage(image)
+
+    @array_cache
+    def getFeaturesByBRGImage(self, image):
         scores, boxes, attr_scores, rel_scores = im_detect(self.net, image)
         
         # Keep the original boxes, don't worry about the regresssion bbox outputs
