@@ -7,7 +7,17 @@ public class WhatOtherDetObjSubjToSchemeQueryConverter implements ToQueryConvert
 
     @Override
     public boolean isApplicable(RelexFormula formula) {
-        return formula.getFullFormula().equals("_det(A, B);_obj(C, D);_subj(C, A)");
+        return formula.getFullFormula().equals(this.getFullFormula());
+    }
+    
+    @Override
+    public String getFullFormula() {
+    	return "_det(A, B);_obj(C, D);_subj(C, A)";
+    }
+    
+    @Override
+    public String getQuestionType() {
+    	return "other";
     }
 
     @Override

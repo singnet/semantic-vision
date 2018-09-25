@@ -15,7 +15,7 @@ class AnswerHandler(ABC):
     def onAnswer(self, record, answer):
         pass
 
-    def getUnanswered(self):
+    def get_unanswered(self):
         return list()
 
 

@@ -1,6 +1,8 @@
 package org.opencog.vqa.relex;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import relex.ParsedSentence;
 import relex.RelationExtractor;
@@ -39,5 +41,13 @@ public class QuestionToOpencogConverter {
         }
         
         return null;
+    }
+    
+    public Map<String, String> getFormulaQuestionMap(){
+    	HashMap<String, String> result = new HashMap<String, String>();
+    	for (ToQueryConverter converter : toQueryConverters) {
+    		result.put(converter.getFullFormula(), converter.getQuestionType());
+    	}
+    	return result;
     }
 }

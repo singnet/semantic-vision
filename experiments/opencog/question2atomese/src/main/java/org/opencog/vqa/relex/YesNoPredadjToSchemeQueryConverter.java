@@ -7,7 +7,17 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
 
     @Override
     public boolean isApplicable(RelexFormula formula) {
-        return formula.getFullFormula().equals("_predadj(A, B)");
+        return formula.getFullFormula().equals(this.getFullFormula());
+    }
+    
+    @Override
+    public String getFullFormula() {
+    	return "_predadj(A, B)";
+    }
+    
+    @Override
+    public String getQuestionType() {
+    	return "yes/no";
     }
 
     @Override
