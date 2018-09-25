@@ -179,7 +179,6 @@ class OtherDetSubjObjResult:
 
 
 class PatternMatcherVqaPipeline:
-    header = "questionid::questiontype::question::imageid::answer::shortformula::fullformula"
 
     def __init__(self, featureExtractor, questionConverter, atomspace, answerHandler):
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
@@ -283,10 +282,6 @@ class PatternMatcherVqaPipeline:
     @classmethod
     def is_record(cls, line):
         striped_line = line.strip()
-        if not line:
-            return False
-        if cls.header in striped_line:
-            return False
         if striped_line.startswith('#'):
             return False
         return True
