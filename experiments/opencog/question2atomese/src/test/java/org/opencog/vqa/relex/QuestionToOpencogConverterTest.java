@@ -47,4 +47,12 @@ public class QuestionToOpencogConverterTest {
                             ")\n"
                             , scheme);
     }
+
+    @Test
+	public void test_ParseQuestionWithType() {
+	    String question = "Are zebras fat?";
+	    QuestionToOpencogConverter.ParsedQuestion parsedQuestion = questionToOpencogConverter.parseQuestionAndType(question);
+	    Assert.assertEquals(parsedQuestion.questionType, "yes/no");
+	    Assert.assertEquals(parsedQuestion.relexFormula.getFullFormula(), "_predadj(A, B)");
+	}
 }
