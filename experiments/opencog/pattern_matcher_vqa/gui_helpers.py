@@ -22,7 +22,7 @@ def build_extractor(prototxt, caffemodel):
 def build_converter(question2atomeseLibraryPath='../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar'):
     jpype.startJVM(jpype.getDefaultJVMPath(),
                    '-Djava.class.path=' + question2atomeseLibraryPath)
-    
+
     question_converter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     return question_converter
 
@@ -37,7 +37,7 @@ class MainWindow():
         self.current_image = None
         self.text = widgets.Text()
         self.text.on_submit(self._handle_submit)
-    
+
     def _next_image(self, idx):
         img_path = self.images[idx]
         image = Image.from_file(img_path,
@@ -47,12 +47,16 @@ class MainWindow():
         image.widght = 320
         image.height = 420
         display(image)
-        
+
     def _handle_submit(self, sender):
         self.label_question.value = self.text.value
         self.label_answer.value = ""
-        self.label_answer.value = self.vqa.answerQuestionByImage(self.current_image, self.text.value)
-        
+        new_answer = self.vqa.answerQuestionByImage(self.current_image, self.text.value)
+        if new_answer is None:
+            self.label_answer.value = "I don't know."
+        else:
+            self.label_answer.value = new_answer
+
     def display(self):
         hlayout = Layout(display='flex',
                     flex_flow='row',
