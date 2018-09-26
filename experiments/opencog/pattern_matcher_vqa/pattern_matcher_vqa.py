@@ -179,7 +179,7 @@ class OtherDetSubjObjResult:
 
 
 class PatternMatcherVqaPipeline:
-    
+
     def __init__(self, featureExtractor, questionConverter, atomspace, answerHandler):
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
         self.featureExtractor = featureExtractor
@@ -278,10 +278,19 @@ class PatternMatcherVqaPipeline:
         questionRecord.question = question
         questionRecord.imageId = imageId
         self.answerQuestion(questionRecord)
-    
+
+    @classmethod
+    def is_record(cls, line):
+        striped_line = line.strip()
+        if striped_line.startswith('#'):
+            return False
+        return True
+
     def answerQuestionsFromFile(self, questionsFileName):
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
+            if not self.is_record(line):
+                continue
             try:
                 record = Record.fromString(line)
                 self.answerQuestion(record)

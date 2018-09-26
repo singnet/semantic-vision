@@ -111,10 +111,17 @@ public class QuestionToOpencogApp {
         e.printStackTrace();
     }
 
+    private static void writeHeader(PrintWriter stream) {
+        stream.println(QuestionRecord.getHeader());
+    }
+
     @VisibleForTesting
     void run() {
         Stream<String> linesStream = bufferedReader.lines();
         try {
+
+            QuestionToOpencogApp.writeHeader(this.printWriter);
+
             linesStream.map(QuestionRecord::load)
                     .map(this::parseQuestion)
                     .parallel()
