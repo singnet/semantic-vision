@@ -27,7 +27,7 @@ def loadDataFromZipOrFolder(folderOrZip, fileName, loadProcedure):
                 return loadProcedure(file)
 
 
-def initialize_atomspace(atomspaceFileName=None):
+def initialize_atomspace_by_facts(atomspaceFileName=None):
     atomspace = scheme_eval_as('(cog-atomspace)')
     scheme_eval(atomspace, '(use-modules (opencog))')
     scheme_eval(atomspace, '(use-modules (opencog exec))')

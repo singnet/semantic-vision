@@ -416,7 +416,7 @@ def main():
                              .format(args.kindOfFeaturesExtractor))
 
         questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
-        atomspace = initialize_atomspace(args.atomspaceFileName)
+        atomspace = initialize_atomspace_by_facts(args.atomspaceFileName)
         statisticsAnswerHandler = StatisticsAnswerHandler()
         if (args.kindOfModel == 'MULTIDNN'):
             network_runner.runner = NetsVocabularyNeuralNetworkRunner(args.multidnnModelFileName)

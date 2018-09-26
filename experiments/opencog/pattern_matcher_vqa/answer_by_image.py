@@ -2,7 +2,7 @@ import jpype
 from feature.image import ImageFeatureExtractor
 from scipy import misc
 from splitnet.splitmultidnnmodel import SplitMultidnnRunner
-from util import initialize_atomspace
+from util import initialize_atomspace_by_facts
 from pattern_matcher_vqa import PatternMatcherVqaPipeline, runNeuralNetwork
 import network_runner
 
@@ -19,7 +19,7 @@ def test():
 
     question_converter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     extractor = ImageFeatureExtractor(prototxt, caffemodel)
-    atomspace = initialize_atomspace()
+    atomspace = initialize_atomspace_by_facts()
     image =  misc.imread('images/Fat-Zebra-Animated-Animal-Photo.jpg') 
     network_runner.runner = SplitMultidnnRunner(models)
     vqa = PatternMatcherVqaPipeline(extractor, question_converter, atomspace, None) 
