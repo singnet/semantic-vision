@@ -6,26 +6,21 @@ from scipy import misc
 from IPython.display import display
 from ipywidgets import Layout
 
-from ipywidgets import Button, Box, VBox, HBox
+from ipywidgets import VBox, HBox
 
 from ipywidgets import widgets
 
 
-
-def build_extractor(prototxt, caffemodel):
-    prototxt = '/mnt/fileserver/shared/vital/image-features/test.prototxt'
-    caffemodel = '/mnt/fileserver/shared/vital/image-features/resnet101_faster_rcnn_final_iter_320000_for_36_bboxes.caffemodel'
-    atomspace_path = '/mnt/fileserver/shared/models/vqa_split_multidnn/vqa_dataset/atomspace_val.scm'
+def build_image_feature_extractor(prototxt, caffemodel):
     return ImageFeatureExtractor(prototxt, caffemodel)
 
 
-def build_converter(question2atomeseLibraryPath='../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar'):
+def build_question_to_query_converter(question2atomeseLibraryPath='../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar'):
     jpype.startJVM(jpype.getDefaultJVMPath(),
                    '-Djava.class.path=' + question2atomeseLibraryPath)
 
     question_converter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
     return question_converter
-
 
 
 class MainWindow():
