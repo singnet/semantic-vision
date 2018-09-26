@@ -177,9 +177,6 @@ class PatternMatcherVqaPipeline:
         self.answerHandler = answerHandler
         self.formulaQuestionMap = dict()
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
-        tmp_map = self.questionConverter.getFormulaQuestionMap()
-        for item in tmp_map.entrySet():
-            self.formulaQuestionMap[item.getKey()] = item.getValue()
 
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
     def addBoundingBoxesIntoAtomspace(self, record=None, image=None):
@@ -232,13 +229,14 @@ class PatternMatcherVqaPipeline:
         self.atomspace = pushAtomspace(self.atomspace)
         try:
             self.addBoundingBoxesIntoAtomspace(image=image)
-            relexFormula = self.questionConverter.parseQuestion(question)
+            parsedQuestion = self.questionConverter.parseQuestionAndType(question)
+            relexFormula = parsedQuestion.relexFormula
             queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
             if queryInScheme is None:
                 self.logger.error('Question was not parsed')
                 return
             self.logger.debug('Scheme query: %s', queryInScheme)
-            questionType = self.get_question_type(relexFormula.fullFormula)
+            questionType = parsedQuestion.questionType
             return self.answerQuery(questionType, queryInScheme)
         finally:
             self.atomspace = popAtomspace(self.atomspace)
