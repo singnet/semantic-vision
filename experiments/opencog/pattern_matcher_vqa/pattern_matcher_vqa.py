@@ -179,7 +179,7 @@ class PatternMatcherVqaPipeline:
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
 
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
-    def addBoundingBoxesIntoAtomspace(self, record=None, image=None):
+    def addBoundingBoxesIntoAtomspace(self, features):
         """
         populate atomspace with bounding boxes, that is concept nodes
 
@@ -188,21 +188,13 @@ class PatternMatcherVqaPipeline:
 
         Parameters
         ----------
-        record : Record
-            record object, holding imageId. Features will be obtained using this id
-        image : numpy.array
-            an image to process. Features will be obtained directly from image
+        features : Iterable
+            iterable with bounding box features
 
         Returns
         -------
         None
         """
-
-        assert (record is None) != (image is None)
-        if image is None:
-            features = self.featureExtractor.getFeaturesByImageId(record.imageId)
-        else:
-            features = self.featureExtractor.getFeaturesByImage(image)
         boundingBoxNumber = 0
         for boundingBoxFeatures in features:
             imageFeatures = FloatValue(boundingBoxFeatures)
@@ -211,12 +203,6 @@ class PatternMatcherVqaPipeline:
             InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
             boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
             boundingBoxNumber += 1
-
-    def get_question_type(self, formula):
-        for formula_key, question_type in self.formulaQuestionMap.items():
-            if formula_key in formula:
-                return question_type
-        raise NotImplementedError("formula({0}) is not supported yet".format(formula))
 
     def answerQuery(self, questionType, query):
         if questionType == 'yes/no':
@@ -228,7 +214,7 @@ class PatternMatcherVqaPipeline:
     def answerQuestionByImage(self, image, question):
         self.atomspace = pushAtomspace(self.atomspace)
         try:
-            self.addBoundingBoxesIntoAtomspace(image=image)
+            self.addBoundingBoxesIntoAtomspace(self.featureExtractor.getFeaturesByImage(image))
             parsedQuestion = self.questionConverter.parseQuestionAndType(question)
             relexFormula = parsedQuestion.relexFormula
             queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
@@ -237,6 +223,8 @@ class PatternMatcherVqaPipeline:
                 return
             self.logger.debug('Scheme query: %s', queryInScheme)
             questionType = parsedQuestion.questionType
+            if questionType is None:
+                return
             return self.answerQuery(questionType, queryInScheme)
         finally:
             self.atomspace = popAtomspace(self.atomspace)
@@ -248,7 +236,7 @@ class PatternMatcherVqaPipeline:
         # bounding boxes
         self.atomspace = pushAtomspace(self.atomspace)
         try:
-            self.addBoundingBoxesIntoAtomspace(record=record)
+            self.addBoundingBoxesIntoAtomspace(self.featureExtractor.getFeaturesByImageId(record.imageId))
 
             relexFormula = self.questionConverter.parseQuestion(record.question)
             queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
