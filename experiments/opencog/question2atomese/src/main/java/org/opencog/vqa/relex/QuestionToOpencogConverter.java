@@ -17,9 +17,9 @@ public class QuestionToOpencogConverter {
 	public class ParsedQuestion {
 		public final RelexFormula relexFormula;
 		public final String questionType;
-		public ParsedQuestion(RelexFormula a_relexFormula, String a_questionType) {
-			this.relexFormula = a_relexFormula;
-			this.questionType = a_questionType;
+		public ParsedQuestion(RelexFormula relexFormula, String questionType) {
+			this.relexFormula = relexFormula;
+			this.questionType = questionType;
 		}
 	}
 
@@ -59,6 +59,26 @@ public class QuestionToOpencogConverter {
             }
         }
         
+        return null;
+    }
+
+    public String convertToOpencogSchemePM(RelexFormula formula) {
+        for (ToQueryConverter converter : toQueryConverters) {
+            if (converter.isApplicable(formula)) {
+                return converter.getSchemeQueryPM(formula);
+            }
+        }
+
+        return null;
+    }
+
+    public String convertToOpencogSchemeURE(RelexFormula formula) {
+        for (ToQueryConverter converter : toQueryConverters) {
+            if (converter.isApplicable(formula)) {
+                return converter.getSchemeQueryURE(formula);
+            }
+        }
+
         return null;
     }
 

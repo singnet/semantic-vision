@@ -27,14 +27,34 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
         // $X - is a bounding box
         // visitor.object - object which is supposed to be in some state
         // visitor.state - the question is whether object is in this state
-        return String.format("(SatisfactionLink\n" +
+        return String.format("(BindLink\n" +
                 "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
                 "  (AndLink\n" +
                 "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
                 "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%1$s\")) )\n" +
                 "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%2$s\")) )\n" +
-                "  )\n" + 
+                "  )\n" +
+                "  (VariableNode \"$X\")" +
                 ")\n", visitor.object, visitor.state);
+    }
+
+    @Override
+    public String getSchemeQueryURE(RelexFormula relexFormula) {
+        RelexVisitor visitor = new RelexVisitor();
+        relexFormula.getRelexSentence().foreach(visitor);
+        // $X - is a bounding box
+        // visitor.object - object which is supposed to be in some state
+        // visitor.state - the question is whether object is in this state
+        return String.format("(conj-bc (AndLink\n" +
+                "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
+                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%1$s\")) )\n" +
+                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%2$s\")) )\n" +
+                "  )\n )", visitor.object, visitor.state);
+    }
+
+    @Override
+    public String getSchemeQueryPM(RelexFormula relexFormula) {
+		return "(cog-execute! " + this.getSchemeQuery(relexFormula) + ")";
     }
 
     private static class RelexVisitor implements RelationCallback {

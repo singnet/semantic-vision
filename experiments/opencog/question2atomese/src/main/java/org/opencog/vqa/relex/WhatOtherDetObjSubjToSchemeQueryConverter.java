@@ -20,6 +20,16 @@ public class WhatOtherDetObjSubjToSchemeQueryConverter implements ToQueryConvert
     	return "other";
     }
 
+	private String getAndLink() {
+		String andLink = "  (AndLink\n" +
+                "    (InheritanceLink (VariableNode \"$B\") (ConceptNode \"BoundingBox\"))\n" +
+                "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"%1$s\"))\n" +
+                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"%2$s\")) )\n" + 
+                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
+                "  )\n";
+		return andLink;
+	}
+
     @Override
     public String getSchemeQuery(RelexFormula relexFormula) {
         RelexVisitor visitor = new RelexVisitor();
@@ -28,20 +38,29 @@ public class WhatOtherDetObjSubjToSchemeQueryConverter implements ToQueryConvert
         // $B - bounding box
         // visitor.object - object which attribute value is under the question
         // visitor.attribute - an attribute name, for instance "color"
+        String andLink = getAndLink();
         return String.format("(BindLink\n" + 
                 "  (VariableList\n" +
                 "    (TypedVariableLink (VariableNode \"$B\") (TypeNode \"ConceptNode\"))\n" +
                 "    (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
-                "  )\n" +
-                "  (AndLink\n" +
-                "    (InheritanceLink (VariableNode \"$B\") (ConceptNode \"BoundingBox\"))\n" +
-                "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"%1$s\"))\n" +
-                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"%2$s\")) )\n" + 
-                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
-                "  )\n" +
+                "  )\n" + andLink + 
                 "  (ListLink (Variable \"$B\") (Variable \"$X\") (ConceptNode \"%2$s\"))\n" +
                 ")\n"
                 , visitor.attribute, visitor.object);
+    }
+    
+    @Override
+    public String getSchemeQueryURE(RelexFormula relexFormula) {
+        RelexVisitor visitor = new RelexVisitor();
+        relexFormula.getRelexSentence().foreach(visitor);
+        String andLink = getAndLink();
+        return String.format("(conj-bc " + andLink + ")\n"
+                , visitor.attribute, visitor.object);
+    }
+    
+    @Override
+    public String getSchemeQueryPM(RelexFormula relexFormula) {
+    	return "(cog-execute! " + this.getSchemeQuery(relexFormula) + ")";
     }
     
     private static class RelexVisitor implements RelationCallback {
