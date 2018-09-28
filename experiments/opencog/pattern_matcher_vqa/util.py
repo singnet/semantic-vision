@@ -27,14 +27,18 @@ def loadDataFromZipOrFolder(folderOrZip, fileName, loadProcedure):
                 return loadProcedure(file)
 
 
-def initialize_atomspace_by_facts(atomspaceFileName=None):
+def initialize_atomspace_by_facts(atomspaceFileName=None, ure_config=None, directories=[]):
     atomspace = scheme_eval_as('(cog-atomspace)')
     scheme_eval(atomspace, '(use-modules (opencog))')
     scheme_eval(atomspace, '(use-modules (opencog exec))')
     scheme_eval(atomspace, '(use-modules (opencog query))')
     scheme_eval(atomspace, '(use-modules (opencog logger))')
     scheme_eval(atomspace, '(add-to-load-path ".")')
+    for item in directories:
+        scheme_eval(atomspace, '(add-to-load-path "{0}")'.format(item))
     if atomspaceFileName is not None:
         scheme_eval(atomspace, '(load-from-path "' + atomspaceFileName + '")')
+    if ure_config is not None:
+        scheme_eval(atomspace, '(load-from-path "' + ure_config + '")')
     return atomspace
 
