@@ -17,13 +17,14 @@ public class QuestionToOpencogConverterTest {
     public void test_YesNoPredadj_IsTheRoomDark() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("Is the room dark?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
-        Assert.assertEquals("(SatisfactionLink\n" + 
+        Assert.assertEquals("(BindLink\n" +
                             "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
                             "  (AndLink\n" +
                             "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"room\")) )\n" + 
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"dark\")) )\n" +
                             "  )\n" +
+                            "  (VariableNode \"$X\")" +
                             ")\n"
                             , scheme);
     }
@@ -32,7 +33,7 @@ public class QuestionToOpencogConverterTest {
     public void test_OtherDetObjSubj_WhatColorIsTheSky() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("What color is the sky?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
-        Assert.assertEquals("(BindLink\n" + 
+        Assert.assertEquals("(BindLink\n" +
                             "  (VariableList\n" +
                             "    (TypedVariableLink (VariableNode \"$B\") (TypeNode \"ConceptNode\"))\n" +
                             "    (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
