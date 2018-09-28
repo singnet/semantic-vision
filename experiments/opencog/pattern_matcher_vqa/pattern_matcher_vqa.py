@@ -2,6 +2,7 @@ import sys
 import logging
 import datetime
 import argparse
+import abc
 
 import jpype
 import numpy as np
@@ -34,6 +35,7 @@ def initializeRootAndOpencogLogger(opencogLogLevel, pythonLogLevel):
 
 
 def pushAtomspace(parentAtomspace):
+    """Create child atomspace"""
     # TODO: cannot push/pop atomspace via Python API,
     # workarouding it using Scheme API
     scheme_eval(parentAtomspace, '(cog-push-atomspace)')
@@ -43,6 +45,7 @@ def pushAtomspace(parentAtomspace):
 
 
 def popAtomspace(childAtomspace):
+    """Destroy child atomspace"""
     scheme_eval(childAtomspace, '(cog-pop-atomspace)')
     parentAtomspace = scheme_eval_as('(cog-atomspace)')
     set_type_ctor_atomspace(parentAtomspace)
@@ -109,6 +112,13 @@ class StatisticsAnswerHandler(AnswerHandler):
 ### Pipeline code
 
 def runNeuralNetwork(boundingBox, conceptNode):
+    """
+    Callback for running from within the atomspace from ground predicate
+
+    :param boundingBox: Atom
+    :param conceptNode: Atom
+    :return: TruthValue
+    """
     logger = logging.getLogger('runNeuralNetwork')
     try:
         logger.debug('runNeuralNetwork: %s, %s', boundingBox.name, conceptNode.name)
@@ -136,13 +146,23 @@ def runNeuralNetwork(boundingBox, conceptNode):
         # TODO: how to return predicted values properly?
         boundingBox.set_value(conceptNode, FloatValue(result))
         conceptNode.set_value(boundingBox, FloatValue(result))
-        return TruthValue(result, certainty)
+        groundedPredicate = GroundedPredicateNode("py:runNeuralNetwork")
+        ev = EvaluatableLink(groundedPredicate, ListLink(boundingBox, conceptNode))
+        tv = TruthValue(result, certainty)
+        ev.tv = tv
+        return tv
     except BaseException as e:
         logger.exception('Unexpected exception %s', e)
         return TruthValue(0.0, 1.0)
 
 
-class OtherDetSubjObjResult:
+class OtherDetSubjObj:
+    @abc.abstractmethod
+    def get_answer(self):
+        pass
+
+
+class OtherDetSubjObjResult(OtherDetSubjObj):
 
     def __init__(self, bounding_box, attribute, object):
         self.bb = bounding_box
@@ -166,6 +186,28 @@ class OtherDetSubjObjResult:
                                    self.object.name,
                                    self.objectProbability,
                                    self.attributeProbability)
+
+    def get_answer(self):
+        return self.attribute.name
+
+
+class OtherDetSubjObjConjunction(OtherDetSubjObj):
+    def __init__(self, strength, confidence, predicate_name):
+        self.strength = strength
+        self.confidence = confidence
+        self.predicate_name = predicate_name
+
+    def __lt__(self, other):
+        if abs(self.strength - other.strength) > 0.000001:
+            return self.strength < other.strength
+        else:
+            return self.confidence < other.confidence
+
+    def __gt__(self, other):
+        return other.__lt__(self)
+
+    def get_answer(self):
+        return self.predicate_name
 
 
 class PatternMatcherVqaPipeline:
@@ -200,7 +242,9 @@ class PatternMatcherVqaPipeline:
             imageFeatures = FloatValue(boundingBoxFeatures)
             boundingBoxInstance = ConceptNode(
                 'BoundingBox-' + str(boundingBoxNumber))
-            InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
+            inh = InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
+            tv = TruthValue(0.999, 0.999)
+            inh.tv = tv
             boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
             boundingBoxNumber += 1
 
@@ -211,13 +255,27 @@ class PatternMatcherVqaPipeline:
             answer = self.answerOtherQuestion(query)
         return answer
 
-    def answerQuestionByImage(self, image, question):
+    def answerQuestionByImage(self, image, question, use_pm=True):
+        """
+        Get answer from image and text
+        :param image: numpy.array
+            height x width x num channels
+            expected type = numpy.uint8
+        :param question: str
+        :param use_pm: bool
+            if use_pm == True, pattern matcher will be used to compute the answer
+            otherwise unified rule engine will be used
+        :return: str
+        """
         self.atomspace = pushAtomspace(self.atomspace)
         try:
             self.addBoundingBoxesIntoAtomspace(self.featureExtractor.getFeaturesByImage(image))
             parsedQuestion = self.questionConverter.parseQuestionAndType(question)
             relexFormula = parsedQuestion.relexFormula
-            queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
+            if use_pm:
+                queryInScheme = self.questionConverter.convertToOpencogSchemePM(relexFormula)
+            else:
+                queryInScheme = self.questionConverter.convertToOpencogSchemeURE(relexFormula)
             if queryInScheme is None:
                 self.logger.error('Question was not parsed')
                 return
@@ -229,7 +287,7 @@ class PatternMatcherVqaPipeline:
         finally:
             self.atomspace = popAtomspace(self.atomspace)
 
-    def answerQuestion(self, record):
+    def answerQuestion(self, record, use_pm=True):
         self.logger.debug('processing question: %s', record.question)
         self.answerHandler.onNewQuestion(record)
         # Push/pop atomspace each time to not pollute it by temporary
@@ -239,7 +297,10 @@ class PatternMatcherVqaPipeline:
             self.addBoundingBoxesIntoAtomspace(self.featureExtractor.getFeaturesByImageId(record.imageId))
 
             relexFormula = self.questionConverter.parseQuestion(record.question)
-            queryInScheme = self.questionConverter.convertToOpencogScheme(relexFormula)
+            if use_pm:
+                queryInScheme = self.questionConverter.convertToOpencogSchemePM(relexFormula)
+            else:
+                queryInScheme = self.questionConverter.convertToOpencogSchemeURE(relexFormula)
             if queryInScheme is None:
                 self.logger.error('Question was not parsed')
                 return
@@ -254,18 +315,18 @@ class PatternMatcherVqaPipeline:
             self.atomspace = popAtomspace(self.atomspace)
 
     def answerYesNoQuestion(self, queryInScheme):
-        evaluateStatement = '(cog-evaluate! ' + queryInScheme + ')'
         start = datetime.datetime.now()
         # TODO: evaluates AND operations as crisp logic values
         # if clause has tv->mean() > 0.5 then return tv->mean() == 1.0
-        result = scheme_eval_v(self.atomspace, evaluateStatement)
+
+        result = scheme_eval_h(self.atomspace, queryInScheme)
         delta = datetime.datetime.now() - start
         self.logger.debug('The result of pattern matching is: '
                           '%s, time: %s microseconds',
                           result, delta.microseconds)
         # TODO: Python value API improvements: convert single value to
         # appropriate type directly?
-        answer = 'yes' if result.to_list()[0] >= 0.5 else 'no'
+        answer = 'yes' if result and any(x.tv.mean > 0.5 for x in result.out) else 'no'
         return answer
 
     def answerOtherQuestion(self, queryInScheme):
@@ -277,18 +338,33 @@ class PatternMatcherVqaPipeline:
         :return: str or None
             str if answer was found None otherwise
         """
-        evaluateStatement = '(cog-execute! ' + queryInScheme + ')'
         start = datetime.datetime.now()
-        resultsData = scheme_eval_h(self.atomspace, evaluateStatement)
+        resultsData = scheme_eval_h(self.atomspace, queryInScheme)
         delta = datetime.datetime.now() - start
         self.logger.debug('The resultsData of pattern matching contains: '
                           '%s records, time: %s microseconds',
                           len(resultsData.out), delta.microseconds)
 
+        def extract_predicate(atoms):
+            for atom in atoms:
+                if atom.type == opencog.atomspace.types.InheritanceLink:
+                    if atom.out[1].name != 'BoundingBox':
+                        predicate_name = atom.out[0].name
+                        return predicate_name
+
         results = []
         for resultData in resultsData.out:
             out = resultData.out
-            results.append(OtherDetSubjObjResult(out[0], out[1], out[2]))
+            if resultData.type == opencog.atomspace.types.AndLink:
+                # resultData is AndLink with random order of conjucts
+                strength = resultData.tv.mean
+                confidence = resultData.tv.confidence
+                predicate_name = extract_predicate(out)
+                if not predicate_name:
+                    continue
+                results.append(OtherDetSubjObjConjunction(strength, confidence, predicate_name))
+            else:
+                results.append(OtherDetSubjObjResult(out[0], out[1], out[2]))
         results.sort(reverse=True)
 
         for result in results:
@@ -296,7 +372,7 @@ class PatternMatcherVqaPipeline:
         if not results:
             return None
         maxResult = results[0]
-        answer = maxResult.attribute.name
+        answer = maxResult.get_answer()
         return answer
 
     def answerSingleQuestion(self, question, imageId):
