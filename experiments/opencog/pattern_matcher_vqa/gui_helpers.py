@@ -1,4 +1,8 @@
-# setup pipeline
+"""
+The module contains classes and functions
+for working with VQA pipeline from jupyter notebook
+"""
+
 import jpype
 from feature.image import ImageFeatureExtractor
 from ipywidgets import Image
@@ -32,6 +36,7 @@ class MainWindow():
         self.current_image = None
         self.text = widgets.Text()
         self.text.on_submit(self._handle_submit)
+        self.use_pattern_matcher = True
 
     def _next_image(self, idx):
         img_path = self.images[idx]
@@ -46,7 +51,7 @@ class MainWindow():
     def _handle_submit(self, sender):
         self.label_question.value = self.text.value
         self.label_answer.value = ""
-        new_answer = self.vqa.answerQuestionByImage(self.current_image, self.text.value)
+        new_answer = self.vqa.answerQuestionByImage(self.current_image, self.text.value, use_pm=self.use_pattern_matcher)
         if new_answer is None:
             self.label_answer.value = "I don't know."
         else:
@@ -64,5 +69,3 @@ class MainWindow():
         interact = widgets.interactive(self._next_image, idx=(0, len(self.images) - 1))
         interact.layout.height = '550px'
         display(HBox(children=[interact, vbox], layout=hlayout))
-
-
