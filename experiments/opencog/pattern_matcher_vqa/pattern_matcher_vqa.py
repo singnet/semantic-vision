@@ -161,6 +161,38 @@ class OtherDetSubjObj:
     def get_answer(self):
         pass
 
+    def get_bounding_box_id(self):
+        pass
+
+    def get_expression(self):
+        pass
+
+
+class QueryProcessingData:
+    """
+    Holds different intermediate results for query computation
+    """
+    __slots__ = ["relexFormula", "query", "answer", "boundingBoxes", "answerBox", "answerExpression"]
+
+    def __init__(self, relexFormula, query, answer, boundingBoxes, answerBox, answerExpression):
+        self.relexFormula = relexFormula
+        self.query = query
+        self.answer = answer
+        self.boundingBoxes = boundingBoxes
+        self.answerBox = answerBox
+        self.answerExpression = answerExpression
+
+    def __str__(self):
+        return self.answer
+
+    def __repr__(self):
+        return "QueryProcessingData({0}, \n{1}, \n{2}, \n{3},\n {4},\n {5})".format(self.relexFormula,
+                                                                                    self.query,
+                                                                                    self.answer,
+                                                                                    self.boundingBoxes,
+                                                                                    self.answerBox,
+                                                                                    self.answerExpression)
+
 
 class OtherDetSubjObjResult(OtherDetSubjObj):
 
@@ -191,11 +223,13 @@ class OtherDetSubjObjResult(OtherDetSubjObj):
         return self.attribute.name
 
 
-class OtherDetSubjObjConjunction(OtherDetSubjObj):
-    def __init__(self, strength, confidence, predicate_name):
+class ConjunctionResult(OtherDetSubjObj):
+    def __init__(self, strength, confidence, predicate_name, bounding_box_id, expression):
         self.strength = strength
         self.confidence = confidence
         self.predicate_name = predicate_name
+        self.bounding_box_id = bounding_box_id
+        self.expression = expression
 
     def __lt__(self, other):
         if abs(self.strength - other.strength) > 0.000001:
@@ -208,6 +242,28 @@ class OtherDetSubjObjConjunction(OtherDetSubjObj):
 
     def get_answer(self):
         return self.predicate_name
+
+    def get_bounding_box_id(self):
+        return self.bounding_box_id
+
+    def get_expression(self):
+        return self.expression
+
+
+def extract_predicate(atoms):
+    for atom in atoms:
+        if atom.type == opencog.atomspace.types.InheritanceLink:
+            if atom.out[1].name != 'BoundingBox':
+                predicate_name = atom.out[0].name
+                return predicate_name
+
+
+def extract_bb_id(atoms):
+    for atom in atoms:
+        if atom.type == opencog.atomspace.types.InheritanceLink:
+            if atom.out[1].name == 'BoundingBox':
+                predicate_name = atom.out[0].name
+                return int(predicate_name.split('-')[-1])
 
 
 class PatternMatcherVqaPipeline:
@@ -255,7 +311,7 @@ class PatternMatcherVqaPipeline:
             answer = self.answerOtherQuestion(query)
         return answer
 
-    def answerQuestionByImage(self, image, question, use_pm=True):
+    def answerQuestionByImage(self, image, question, use_pm=True) -> QueryProcessingData:
         """
         Get answer from image and text
         :param image: numpy.array
@@ -265,11 +321,12 @@ class PatternMatcherVqaPipeline:
         :param use_pm: bool
             if use_pm == True, pattern matcher will be used to compute the answer
             otherwise unified rule engine will be used
-        :return: str
+        :return: QueryProcessingData
         """
         self.atomspace = pushAtomspace(self.atomspace)
         try:
-            self.addBoundingBoxesIntoAtomspace(self.featureExtractor.getFeaturesByImage(image))
+            features, boxes = self.featureExtractor.getFeaturesByImage(image)
+            self.addBoundingBoxesIntoAtomspace(features)
             parsedQuestion = self.questionConverter.parseQuestionAndType(question)
             relexFormula = parsedQuestion.relexFormula
             if use_pm:
@@ -283,7 +340,10 @@ class PatternMatcherVqaPipeline:
             questionType = parsedQuestion.questionType
             if questionType is None:
                 return
-            return self.answerQuery(questionType, queryInScheme)
+            answer, bb_id, expr = self.answerQuery(questionType, queryInScheme)
+            result = QueryProcessingData(relexFormula, queryInScheme, answer, boxes,
+                                         answerBox=bb_id, answerExpression=expr)
+            return result
         finally:
             self.atomspace = popAtomspace(self.atomspace)
 
@@ -294,7 +354,8 @@ class PatternMatcherVqaPipeline:
         # bounding boxes
         self.atomspace = pushAtomspace(self.atomspace)
         try:
-            self.addBoundingBoxesIntoAtomspace(self.featureExtractor.getFeaturesByImageId(record.imageId))
+            features = self.featureExtractor.getFeaturesByImageId(record.imageId)
+            self.addBoundingBoxesIntoAtomspace(features)
 
             relexFormula = self.questionConverter.parseQuestion(record.question)
             if use_pm:
@@ -305,7 +366,7 @@ class PatternMatcherVqaPipeline:
                 self.logger.error('Question was not parsed')
                 return
             self.logger.debug('Scheme query: %s', queryInScheme)
-            answer = self.answerQuery(record.questionType, queryInScheme)
+            answer, bb_id, expr = self.answerQuery(record.questionType, queryInScheme)
             self.answerHandler.onAnswer(record, answer)
 
             print('{}::{}::{}::{}::{}'.format(record.questionId, record.question,
@@ -315,6 +376,14 @@ class PatternMatcherVqaPipeline:
             self.atomspace = popAtomspace(self.atomspace)
 
     def answerYesNoQuestion(self, queryInScheme):
+        """
+        Find answer for question with formula _predadj(A, B)
+
+        :param queryInScheme: str
+            query to pattern matcher or ure
+        :return: Tuple[str, int, str]
+            if answer was found Tuple[None, None, None] otherwise
+        """
         start = datetime.datetime.now()
         # TODO: evaluates AND operations as crisp logic values
         # if clause has tv->mean() > 0.5 then return tv->mean() == 1.0
@@ -326,8 +395,14 @@ class PatternMatcherVqaPipeline:
                           result, delta.microseconds)
         # TODO: Python value API improvements: convert single value to
         # appropriate type directly?
-        answer = 'yes' if result and any(x.tv.mean > 0.5 for x in result.out) else 'no'
-        return answer
+        results = self.sort_results(result, a_extract_predicate=False)
+        if not results:
+            return 'no', None, None
+        maxResult = results[0]
+        bb_id = maxResult.get_bounding_box_id()
+        expression = maxResult.get_expression()
+        answer = 'yes' if expression.tv.mean > 0.5 else 'no'
+        return answer, bb_id, expression
 
     def answerOtherQuestion(self, queryInScheme):
         """
@@ -335,8 +410,8 @@ class PatternMatcherVqaPipeline:
 
         :param queryInScheme: str
             query to pattern matcher or ure
-        :return: str or None
-            str if answer was found None otherwise
+        :return: Tuple[str, int, str]
+            if answer was found Tuple[None, None, None] otherwise
         """
         start = datetime.datetime.now()
         resultsData = scheme_eval_h(self.atomspace, queryInScheme)
@@ -345,13 +420,16 @@ class PatternMatcherVqaPipeline:
                           '%s records, time: %s microseconds',
                           len(resultsData.out), delta.microseconds)
 
-        def extract_predicate(atoms):
-            for atom in atoms:
-                if atom.type == opencog.atomspace.types.InheritanceLink:
-                    if atom.out[1].name != 'BoundingBox':
-                        predicate_name = atom.out[0].name
-                        return predicate_name
+        results = self.sort_results(resultsData, a_extract_predicate=True)
+        if not results:
+            return None, None, None
+        maxResult = results[0]
+        answer = maxResult.get_answer()
+        bb_id = maxResult.get_bounding_box_id()
+        expression = maxResult.get_expression()
+        return answer, bb_id, expression
 
+    def sort_results(self, resultsData, a_extract_predicate=False):
         results = []
         for resultData in resultsData.out:
             out = resultData.out
@@ -359,21 +437,20 @@ class PatternMatcherVqaPipeline:
                 # resultData is AndLink with random order of conjucts
                 strength = resultData.tv.mean
                 confidence = resultData.tv.confidence
-                predicate_name = extract_predicate(out)
-                if not predicate_name:
-                    continue
-                results.append(OtherDetSubjObjConjunction(strength, confidence, predicate_name))
+                bounding_box_id = extract_bb_id(out)
+                if a_extract_predicate:
+                    predicate_name = extract_predicate(out)
+                    if not predicate_name:
+                        continue
+                else:
+                    predicate_name = None
+                results.append(ConjunctionResult(strength, confidence, predicate_name, bounding_box_id, resultData))
             else:
                 results.append(OtherDetSubjObjResult(out[0], out[1], out[2]))
         results.sort(reverse=True)
-
         for result in results:
             self.logger.debug(str(result))
-        if not results:
-            return None
-        maxResult = results[0]
-        answer = maxResult.get_answer()
-        return answer
+        return results
 
     def answerSingleQuestion(self, question, imageId):
         questionRecord = Record()
@@ -388,14 +465,14 @@ class PatternMatcherVqaPipeline:
             return False
         return True
 
-    def answerQuestionsFromFile(self, questionsFileName):
+    def answerQuestionsFromFile(self, questionsFileName, use_pm=True):
         questionFile = open(questionsFileName, 'r')
         for line in questionFile:
             if not self.is_record(line):
                 continue
             try:
                 record = Record.fromString(line)
-                self.answerQuestion(record)
+                self.answerQuestion(record, use_pm=use_pm)
             except BaseException as e:
                 logger.exception('Unexpected exception %s', e)
                 continue
@@ -460,6 +537,11 @@ def parse_args():
         dest='q2aJarFilenName', action='store', type = str,
         default=question2atomeseLibraryPath,
         help='path to question2atomese-<version>.jar')
+    parser.add_argument('--use-pm', dest='use_pm', action='store_true',
+                        help='if True use pattern matcher else URE')
+    parser.add_argument('--no-use-pm', dest='use_pm', action='store_false',
+                        help='if True use pattern matcher else URE')
+    parser.set_defaults(use_pm=True)
     args = parser.parse_args()
     return args
 
@@ -492,7 +574,16 @@ def main():
                              .format(args.kindOfFeaturesExtractor))
 
         questionConverter = jpype.JClass('org.opencog.vqa.relex.QuestionToOpencogConverter')()
-        atomspace = initialize_atomspace_by_facts(args.atomspaceFileName)
+        if args.use_pm:
+            atomspace = initialize_atomspace_by_facts(args.atomspaceFileName)
+        else:
+            scheme_directories = ["~/projects/opencog/examples/pln/conjunction/",
+                                  "~/projects/atomspace/examples/rule-engine/rules/",
+                                  "~/projects/opencog/opencog/pln/rules/"]
+
+            atomspace = initialize_atomspace_by_facts(args.atomspaceFileName,
+                                                      "conjunction-rule-base-config.scm",
+                                                      [os.path.expanduser(x) for x in scheme_directories])
         statisticsAnswerHandler = StatisticsAnswerHandler()
         if (args.kindOfModel == 'MULTIDNN'):
             network_runner.runner = NetsVocabularyNeuralNetworkRunner(args.multidnnModelFileName)
@@ -508,7 +599,7 @@ def main():
                                                   questionConverter,
                                                   atomspace,
                                                   statisticsAnswerHandler)
-        pmVqaPipeline.answerQuestionsFromFile(args.questionsFileName)
+        pmVqaPipeline.answerQuestionsFromFile(args.questionsFileName, use_pm=args.use_pm)
 
         print('Questions processed: {0}, answered: {1}, correct answers: {2}% ({3}), unaswered {4}%'
               .format(statisticsAnswerHandler.processedQuestions,
