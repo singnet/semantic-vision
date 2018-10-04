@@ -20,6 +20,14 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
     	return "yes/no";
     }
 
+    private String getAndLink() {
+        return "  (AndLink\n" +
+        "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
+        "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%1$s\")) )\n" +
+        "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%2$s\")) )\n" +
+        "  )\n";
+    }
+
     @Override
     public String getSchemeQuery(RelexFormula relexFormula) {
         RelexVisitor visitor = new RelexVisitor();
@@ -29,12 +37,8 @@ class YesNoPredadjToSchemeQueryConverter implements ToQueryConverter {
         // visitor.state - the question is whether object is in this state
         return String.format("(BindLink\n" +
                 "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
-                "  (AndLink\n" +
-                "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
-                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%1$s\")) )\n" +
-                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"%2$s\")) )\n" +
-                "  )\n" +
-                "  (VariableNode \"$X\")" +
+                this.getAndLink() +
+                this.getAndLink() +
                 ")\n", visitor.object, visitor.state);
     }
 
