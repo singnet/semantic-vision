@@ -43,8 +43,7 @@ public class WhatOtherDetObjSubjToSchemeQueryConverter implements ToQueryConvert
                 "  (VariableList\n" +
                 "    (TypedVariableLink (VariableNode \"$B\") (TypeNode \"ConceptNode\"))\n" +
                 "    (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
-                "  )\n" + andLink + 
-                "  (ListLink (Variable \"$B\") (Variable \"$X\") (ConceptNode \"%2$s\"))\n" +
+                "  )\n" + andLink + andLink +
                 ")\n"
                 , visitor.attribute, visitor.object);
     }
