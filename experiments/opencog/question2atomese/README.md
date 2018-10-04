@@ -223,6 +223,16 @@ Get 10 most frequent question types:
 ./sort_questions_by_frequency.sh parsed_questions.txt | head -10
 ```
 
+## Compute truth values for the inheritance links
+
+compute_stv.py will generate truth values for the inheritance links
+
+usage: compute_stv.py [-h] <input atomspace file>  <output file>
+
+positional arguments:
+  input       source atomspace without truth values
+  output      output path for atomspace with truth values
+
 ## Other scripts
 
 - ```record.py``` - reusable module to load question record from Python 
