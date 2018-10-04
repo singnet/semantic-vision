@@ -96,6 +96,11 @@ class ImageFeatureExtractor(FeatureExtractor):
 
     @array_cache
     def getFeaturesByBRGImage(self, image):
+        """
+        Compute features for regions in the image
+        :param image: numpy.array
+        :return: tuple(list[features], list[bounding boxes])
+        """
         scores, boxes, attr_scores, rel_scores = im_detect(self.net, image)
         
         # Keep the original boxes, don't worry about the regresssion bbox outputs
@@ -114,8 +119,10 @@ class ImageFeatureExtractor(FeatureExtractor):
             dets = np.hstack((cls_boxes, cls_scores[:, np.newaxis])).astype(np.float32)
             keep = np.array(nms(dets, cfg.TEST.NMS))
             max_conf[keep] = np.where(cls_scores[keep] > max_conf[keep], cls_scores[keep], max_conf[keep])
-    
+
+
         keep_boxes = np.where(max_conf >= self.conf_thresh)[0]
+
         if len(keep_boxes) < self.MIN_BOXES:
             keep_boxes = np.argsort(max_conf)[::-1][:self.MIN_BOXES]
         elif len(keep_boxes) > self.MAX_BOXES:
@@ -125,4 +132,4 @@ class ImageFeatureExtractor(FeatureExtractor):
         for box in pool5[keep_boxes]:
             features.append(box.tolist())
         
-        return features
+        return features, cls_boxes[keep_boxes]
