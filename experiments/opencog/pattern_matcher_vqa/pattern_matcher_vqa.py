@@ -299,7 +299,7 @@ class PatternMatcherVqaPipeline:
             boundingBoxInstance = ConceptNode(
                 'BoundingBox-' + str(boundingBoxNumber))
             inh = InheritanceLink(boundingBoxInstance, ConceptNode('BoundingBox'))
-            tv = TruthValue(0.999, 0.999)
+            tv = TruthValue(1.0, 1.0)
             inh.tv = tv
             boundingBoxInstance.set_value(PredicateNode('features'), imageFeatures)
             boundingBoxNumber += 1
