@@ -17,6 +17,7 @@ public class QuestionToOpencogConverterTest {
     public void test_YesNoPredadj_IsTheRoomDark() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("Is the room dark?");
         String scheme = questionToOpencogConverter.convertToOpencogScheme(formula);
+        System.out.println(scheme);
         Assert.assertEquals("(BindLink\n" +
                             "  (TypedVariableLink (VariableNode \"$X\") (TypeNode \"ConceptNode\"))\n" +
                             "  (AndLink\n" +
@@ -24,11 +25,27 @@ public class QuestionToOpencogConverterTest {
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"room\")) )\n" + 
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"dark\")) )\n" +
                             "  )\n" +
-                            "  (VariableNode \"$X\")" +
+                            "  (AndLink\n" +
+                            "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"room\")) )\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"dark\")) )\n" +
+                            "  )\n" +
                             ")\n"
                             , scheme);
     }
     
+    @Test
+    public void test_YesNoPredadj_IsTheRoomDarkURE() {
+        RelexFormula formula = questionToOpencogConverter.parseQuestion("Is the room dark?");
+        String scheme = questionToOpencogConverter.convertToOpencogSchemeURE(formula);
+        System.out.println(scheme);
+        Assert.assertEquals("(conj-bc (AndLink\n" +
+			                "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"BoundingBox\"))\n" +
+			                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"room\")) )\n" +
+			                "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$X\") (ConceptNode \"dark\")) )\n" +
+			                "  )\n )", scheme);
+    }
+
     @Test
     public void test_OtherDetObjSubj_WhatColorIsTheSky() {
         RelexFormula formula = questionToOpencogConverter.parseQuestion("What color is the sky?");
@@ -41,10 +58,29 @@ public class QuestionToOpencogConverterTest {
                             "  (AndLink\n" +
                             "    (InheritanceLink (VariableNode \"$B\") (ConceptNode \"BoundingBox\"))\n" +
                             "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"color\"))\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"sky\")) )\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
+                            "  )\n" +
+                            "  (AndLink\n" +
+                            "    (InheritanceLink (VariableNode \"$B\") (ConceptNode \"BoundingBox\"))\n" +
+                            "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"color\"))\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"sky\")) )\n" +
+                            "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
+                            "  )\n" +
+                            ")\n"
+                            , scheme);
+    }
+
+    @Test
+    public void test_OtherDetObjSubj_WhatColorIsTheSkyURE() {
+        RelexFormula formula = questionToOpencogConverter.parseQuestion("What color is the sky?");
+        String scheme = questionToOpencogConverter.convertToOpencogSchemeURE(formula);
+        Assert.assertEquals("(conj-bc   (AndLink\n" +
+                            "    (InheritanceLink (VariableNode \"$B\") (ConceptNode \"BoundingBox\"))\n" +
+                            "    (InheritanceLink (VariableNode \"$X\") (ConceptNode \"color\"))\n" +
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (ConceptNode \"sky\")) )\n" + 
                             "    (EvaluationLink (GroundedPredicateNode \"py:runNeuralNetwork\") (ListLink (VariableNode \"$B\") (VariableNode \"$X\")) )\n" +
                             "  )\n" +
-                            "  (ListLink (Variable \"$B\") (Variable \"$X\") (ConceptNode \"sky\"))\n" +
                             ")\n"
                             , scheme);
     }
