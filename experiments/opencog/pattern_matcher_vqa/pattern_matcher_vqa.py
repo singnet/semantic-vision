@@ -526,9 +526,9 @@ def parse_args():
         default=question2atomeseLibraryPath,
         help='path to question2atomese-<version>.jar')
     parser.add_argument('--use-pm', dest='use_pm', action='store_true',
-                        help='if True use pattern matcher else URE')
+                        help='use pattern matcher')
     parser.add_argument('--no-use-pm', dest='use_pm', action='store_false',
-                        help='if True use pattern matcher else URE')
+                        help='use URE instead of pattern matcher')
     parser.set_defaults(use_pm=True)
     args = parser.parse_args()
     return args
