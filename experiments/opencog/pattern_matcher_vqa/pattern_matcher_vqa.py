@@ -158,7 +158,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
 
 class OtherDetSubjObj:
     @abc.abstractmethod
-    def get_answer(self):
+    def get_predicate_name(self):
         pass
 
     def get_bounding_box_id(self):
@@ -219,17 +219,15 @@ class OtherDetSubjObjResult(OtherDetSubjObj):
                                    self.objectProbability,
                                    self.attributeProbability)
 
-    def get_answer(self):
+    def get_predicate_name(self):
         return self.attribute.name
 
 
 class ConjunctionResult(OtherDetSubjObj):
-    def __init__(self, strength, confidence, predicate_name, bounding_box_id, expression):
-        self.strength = strength
-        self.confidence = confidence
-        self.predicate_name = predicate_name
-        self.bounding_box_id = bounding_box_id
-        self.expression = expression
+    def __init__(self, atom):
+        self.atom = atom
+        self.strength = atom.tv.mean
+        self.confidence = atom.tv.confidence
 
     def __lt__(self, other):
         if abs(self.strength - other.strength) > 0.000001:
@@ -240,14 +238,14 @@ class ConjunctionResult(OtherDetSubjObj):
     def __gt__(self, other):
         return other.__lt__(self)
 
-    def get_answer(self):
-        return self.predicate_name
+    def get_predicate_name(self):
+        return extract_predicate(self.atom.out)
 
     def get_bounding_box_id(self):
-        return self.bounding_box_id
+        return extract_bb_id(self.atom.out)
 
     def get_expression(self):
-        return self.expression
+        return self.atom
 
 
 def extract_predicate(atoms):
@@ -366,7 +364,7 @@ class PatternMatcherVqaPipeline:
                 self.logger.error('Question was not parsed')
                 return
             self.logger.debug('Scheme query: %s', queryInScheme)
-            answer, bb_id, expr = self.answerQuery(record.questionType, queryInScheme)
+            answer, _, _ = self.answerQuery(record.questionType, queryInScheme)
             self.answerHandler.onAnswer(record, answer)
 
             print('{}::{}::{}::{}::{}'.format(record.questionId, record.question,
@@ -424,10 +422,9 @@ class PatternMatcherVqaPipeline:
         if not results:
             return None, None, None
         maxResult = results[0]
-        answer = maxResult.get_answer()
-        bb_id = maxResult.get_bounding_box_id()
-        expression = maxResult.get_expression()
-        return answer, bb_id, expression
+        return maxResult.get_predicate_name(), \
+               maxResult.get_bounding_box_id(), \
+               maxResult.get_expression()
 
     def sort_results(self, resultsData, a_extract_predicate=False):
         results = []
@@ -435,16 +432,7 @@ class PatternMatcherVqaPipeline:
             out = resultData.out
             if resultData.type == opencog.atomspace.types.AndLink:
                 # resultData is AndLink with random order of conjucts
-                strength = resultData.tv.mean
-                confidence = resultData.tv.confidence
-                bounding_box_id = extract_bb_id(out)
-                if a_extract_predicate:
-                    predicate_name = extract_predicate(out)
-                    if not predicate_name:
-                        continue
-                else:
-                    predicate_name = None
-                results.append(ConjunctionResult(strength, confidence, predicate_name, bounding_box_id, resultData))
+                results.append(ConjunctionResult(resultData))
             else:
                 results.append(OtherDetSubjObjResult(out[0], out[1], out[2]))
         results.sort(reverse=True)
