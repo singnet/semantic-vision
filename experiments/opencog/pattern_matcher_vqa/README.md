@@ -146,4 +146,6 @@ optional arguments:
                         Python logging level
   --question2atomese-java-library Q2AJARFILENNAME
                         path to question2atomese-<version>.jar
+  --use-pm              use pattern matcher
+  --no-use-pm           use URE instead of pattern matcher
 ```
