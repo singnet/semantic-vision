@@ -20,25 +20,29 @@ def numpyImageToBRG(rgb):
 
 
 class ArrayHash():
-   def __init__(self, array):
+    """
+    Wrapper for numpy arrays with hashing methods
+    Allows for using a numpy array as a dict key
+    """
+    def __init__(self, array):
        self.array = array
        self._hash = None
 
-   def __hash__(self):
+    def __hash__(self):
        if self._hash is None:
            self._hash = self.hash()
        return self._hash
-          
-   def hash(self):
+
+    def hash(self):
        hashable = numpy.ascontiguousarray(self.array)
        m = hashlib.md5()
        m.update(hashable)
        return hash(m.digest())
 
-   def __lt__(self, other):
+    def __lt__(self, other):
        return hash(self) < hash(other)
 
-   def __eq__(self, other):
+    def __eq__(self, other):
        return not ((self < other) or (other < self))
 
 
