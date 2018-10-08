@@ -147,7 +147,7 @@ def runNeuralNetwork(boundingBox, conceptNode):
         boundingBox.set_value(conceptNode, FloatValue(result))
         conceptNode.set_value(boundingBox, FloatValue(result))
         groundedPredicate = GroundedPredicateNode("py:runNeuralNetwork")
-        ev = EvaluatableLink(groundedPredicate, ListLink(boundingBox, conceptNode))
+        ev = EvaluationLink(groundedPredicate, ListLink(boundingBox, conceptNode))
         tv = TruthValue(result, certainty)
         ev.tv = tv
         return tv
