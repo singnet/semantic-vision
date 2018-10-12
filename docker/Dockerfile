@@ -2,7 +2,7 @@
 # Docker file that builds RelEx and visual question answering pipeline.
 #
 # To start:
-#    docker run -it -p 8888:8888 relex-vqa
+#    docker run -it -p 8888:8888 vqa
 #
 # To demo:
 #    open in browser localhost:8888
