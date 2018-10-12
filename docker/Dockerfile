@@ -25,10 +25,7 @@ RUN apt-get update ; apt-get -y upgrade ; apt-get -y autoclean
 RUN apt-get -y install maven screen telnet netcat-openbsd byobu \
                        wget vim git unzip sudo apt-utils
 
-# incorrect packaging in ubuntu-xenial
-# dpkg: error processing archive /var/cache/apt/archives/openjdk-9-jdk_9~b114-0ubuntu1_amd64.deb (--unpack):
-# trying to overwrite '/usr/lib/jvm/java-9-openjdk-amd64/include/linux/jawt_md.h', which is also in package openjdk-9-jdk-headless:amd64 9~b114-0ubuntu1
-RUN apt-get -o Dpkg::Options::="--force-overwrite" -y install openjdk-11-jdk
+RUN apt-get -y install openjdk-11-jdk
 
 # GCC and basic build tools
 RUN apt-get -y install gcc g++ make swig ant
@@ -47,26 +44,10 @@ RUN mkdir /usr/local/share/java
 
 WORKDIR /home/Downloads/
 
-# JWNL - Never changes, so do this first.
-RUN wget https://downloads.sourceforge.net/project/jwordnet/jwnl/JWNL%201.4/jwnl14-rc2.zip \
-    && unzip jwnl14-rc2.zip; cd jwnl14-rc2; \
-    cp jwnl.jar /usr/local/share/java/; \
-    chmod 755 /usr/local/share/java/jwnl.jar; \
-    cd ..; rm -rf jwnl*
 
-# OpenNLP - Never changes, so do this first.
-RUN wget https://archive.apache.org/dist/opennlp/opennlp-1.5.3/apache-opennlp-1.5.3-bin.tar.gz \
-    && tar -zxf apache-opennlp-1.5.3-bin.tar.gz ;\
-    cd apache-opennlp-1.5.3; \
-    cp lib/*.jar /usr/local/share/java/; \
-    cp lib/*.jar /usr/share/java/; \
-    cp lib/opennlp-tools-1.5.3.jar /usr/local/share/java/opennlp-tools-1.5.0.jar; \
-    cd .. ; rm -rf apache-opennlp*
 # build tools
 RUN apt install -y libboost-python-dev libblas-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev
 RUN apt install -y cmake libboost-program-options-dev libboost-regex-dev libiberty-dev guile-2.2-dev protobuf-compiler uuid-dev
-
-
 
 # Conda
 # install conda 
@@ -171,37 +152,32 @@ make ; make pycaffe ; cd ../lib && export PYTHONPATH=$(pwd):$(pwd)/../caffe/pyth
 RUN echo "export PYTHONPATH=\$PYTHONPATH:~/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/feature/bottom-up-attention/lib:~/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/feature/bottom-up-attention/lib/../caffe/python" >> /home/relex/.profile
 
 
-USER root 
+USER relex 
 
 # cogutil
 RUN wget https://github.com/opencog/cogutil/archive/master.zip
 RUN unzip master.zip && cd cogutil-master/ && mkdir build &&  cd build && cmake ..
-RUN cd cogutil-master/build && make install
-RUN rm -rf cogutil-master master.zip
+RUN cd cogutil-master/build && sudo make install
+RUN sudo rm -rf cogutil-master master.zip
 
 # atomspace
 
-USER relex 
 
 RUN wget https://github.com/opencog/atomspace/archive/master.zip
 RUN unzip master.zip 
 RUN source /home/relex/miniconda3/bin/activate pmvqa3 && cd atomspace-master && mkdir build && cd build/ && cmake .. && make
-USER root 
-run cd atomspace-master/build && make install
-RUN rm -rf atomspace-master/build master.zip
-USER relex 
+run cd atomspace-master/build && sudo make install
+RUN sudo rm -rf atomspace-master/build master.zip
 RUN mv atomspace-master /home/relex/projects/atomspace
 
 # opencog
 
-USER relex 
+
 RUN wget https://github.com/opencog/opencog/archive/master.zip
 RUN unzip master.zip
 RUN source /home/relex/miniconda3/bin/activate pmvqa3 && cd opencog-master && mkdir build && cd build/ && cmake .. && make
-USER root
-RUN cd opencog-master/build && make install
-RUN rm -rf opencog-master/build master.zip
-USER relex
+RUN cd opencog-master/build && sudo make install
+RUN sudo rm -rf opencog-master/build master.zip
 RUN mv opencog-master /home/relex/projects/opencog
 
 # download some images
@@ -220,10 +196,9 @@ RUN echo "(use-modules (ice-9 readline)) (activate-readline)\
 (use-modules (opencog exec))" >> /home/relex/.guile
 
 RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/local/lib/python3.5/dist-packages/" >> /home/relex/.profile
-RUN wget  https://raw.githubusercontent.com/singnet/semantic-vision/dca3aed52578084e39bb52ffff79dbff11098827/experiments/opencog/pattern_matcher_vqa/vqa -O /home/relex/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/vqa
-RUN chmod +x /home/relex/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/vqa
 
 RUN source /home/relex/miniconda3/bin/activate pmvqa3 && jupyter notebook --generate-config 
+
 RUN echo "c.NotebookApp.password = 'sha1:b6e570f197d6:b920933b262cf450f5c11dc21d878c53972cb2fa'" >> /home/relex/.jupyter/jupyter_notebook_config.py
 
 RUN echo "c.NotebookApp.password_required = False" >> /home/relex/.jupyter/jupyter_notebook_config.py
