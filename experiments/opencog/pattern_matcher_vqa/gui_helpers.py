@@ -3,9 +3,10 @@ The module contains classes and functions
 for working with VQA pipeline from jupyter notebook
 """
 
+from io import BytesIO
 import jpype
 from feature.image import ImageFeatureExtractor
-from ipywidgets import Image
+import ipywidgets
 from IPython.display import display
 
 from scipy import misc
@@ -32,6 +33,29 @@ def build_question_to_query_converter(question2atomeseLibraryPath='../question2a
     return question_converter
 
 
+def pil2ipyimage(image, height=None, width=None):
+    """
+    Convert PILLOW image to ipython Image
+
+    Parameters
+    ----------
+    image : pil.Image
+        pillow image object
+    height: int
+        height to resize the returned image widget
+        parameter will keep proportions
+    width: int
+        height to resize the returned image widget
+        parameter will keep proportions
+    """
+
+    b = BytesIO()
+    image.save(b, format='png')
+    data = b.getvalue()
+    image_widget = display.Image(data, format='png', height=height, width=width)
+    return image_widget
+
+
 class MainWindow():
     def __init__(self, images, vqa):
         self.vqa = vqa
@@ -45,6 +69,8 @@ class MainWindow():
         self.text = widgets.Text()
         self.text.on_submit(self._handle_submit)
         self.use_pattern_matcher = True
+        self.width = 400
+        self.height = 400
 
     def _draw_image(self, bbox=None):
         if self.image_output is None:
@@ -54,7 +80,7 @@ class MainWindow():
             if bbox is not None:
                 draw = ImageDraw.Draw(image)
                 draw.rectangle(bbox, fill=None, outline="red")
-            display.display(image)
+            display.display(pil2ipyimage(image, height=self.height, width=self.width))
 
     def _next_image(self, idx):
         img_path = self.images[idx]
