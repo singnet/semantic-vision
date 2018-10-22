@@ -5,6 +5,13 @@
 (use-modules (opencog exec))
 (use-modules (opencog rule-engine))
 
+
+(define (id2 C A)
+  (cog-set-tv! C (stv 1 1)))
+
+(define (id4 C A B D)
+  (cog-set-tv! C (stv 1 1)))
+
 (define (identity A B)
   A)
 
@@ -28,12 +35,12 @@
 
 (define N4 (NumberNode "4"))
 
-(define X  N(VariableNode "$X"))
-(define F0 N(VariableNode "$F0"))
-(define F1 N(VariableNode "$F1"))
-(define F2 N(VariableNode "$F2"))
-(define EGX N(VariableNode "$EGX"))
-(define EGY N(VariableNode "$EGY"))
+(define X  (VariableNode "$X"))
+(define F0 (VariableNode "$F0"))
+(define F1 (VariableNode "$F1"))
+(define F2 (VariableNode "$F2"))
+(define EGX (VariableNode "$EGX"))
+(define EGY (VariableNode "$EGY"))
 
 (define premise1 (EvaluationLink ExpandTo (List (NumericOutputLink Gradient F1) EGX)))
 
@@ -46,20 +53,20 @@
               F2
               EGX
               EGY)
-             (And premise1 premise1)
+             (And premise1 premise2)
              (ExecutionOutputLink
-              (GroundedSchemaNode "scm: identity")
+              (GroundedSchemaNode "scm: id4")
               (List
                (EvaluationLink
                 ExpandTo
                 (List (NumericOutputLink Gradient (NumericOutputLink Plus F1 F2))
                       (NumericOutputLink Plus EGX EGY)))
-                premise1 premise1)
+                premise1 premise2)
               )
              )
             )
 
-(define GradF0 (NumericOutputLink Gradient F0)
+(define GradF0 (NumericOutputLink Gradient F0))
 
 (DefineLink GradientAny
             (BindLink
@@ -89,7 +96,7 @@
 (Member (DefinedSchema "GradientSum" (stv 0.4 1)) (Concept "my-rule-base"))
 (Member (DefinedSchema "GradientAny" (stv 0.4 1)) (Concept "my-rule-base"))
 
-(define (my-backward-chainer SRC2) (cog-bc (Concept "my-rule-base") SRC))
+(define (my-backward-chainer SRC) (cog-bc (Concept "my-rule-base") SRC))
 
 (define expected (SetLink
                   (Evaluation
@@ -102,5 +109,3 @@
                     (NumericOutputLink Plus N0 N0)))))
 
 (equal? (my-backward-chainer SRC2) expected)
-
-  
