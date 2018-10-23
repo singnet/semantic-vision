@@ -6,7 +6,7 @@
 (use-modules (opencog exec))
 (use-modules (opencog rule-engine))
 
-; 3 version of identity function. id2 and id4 return first argument with assigned truth values
+;3 versions of identity function. id2 and id4 return first argument with assigned truth values
 (define (id2 C A)
   (cog-set-tv! C (stv 1 1)))
 
