@@ -8,8 +8,10 @@ import jpype
 from feature.image import ImageFeatureExtractor
 import ipywidgets
 from IPython.display import display
+from ipywebrtc import CameraStream, ImageRecorder
 
 from scipy import misc
+import numpy
 
 
 from ipywidgets import Layout
@@ -57,7 +59,7 @@ def pil2ipyimage(image, height=None, width=None):
 
 
 class MainWindow():
-    def __init__(self, images, vqa):
+    def __init__(self, images, vqa, use_camera=False):
         self.vqa = vqa
         self.images = images
         self.image_output = None
@@ -71,6 +73,17 @@ class MainWindow():
         self.use_pattern_matcher = True
         self.width = 400
         self.height = 400
+        if use_camera:
+            self.camera = CameraStream(constraints=
+                          {'facing_mode': 'user',
+                           'audio': False,
+                           'video': { 'width': 640, 'height': 480 }
+                           })
+            self.image_recorder = ImageRecorder(stream=self.camera)
+            self.image_recorder.recording = True
+            self.image_recorder.autosave = False
+        else:
+            self.camera = None
 
     def _draw_image(self, bbox=None):
         if self.image_output is None:
@@ -87,9 +100,14 @@ class MainWindow():
         self.current_image = misc.imread(img_path)
         self._draw_image()
 
+    def _handle_camera(self):
+        if self.camera:
+            self.current_image = numpy.asarray(Image.open(BytesIO(self.image_recorder.image.value)))[:,:,:3]
+
     def _handle_submit(self, sender):
         self.label_question.value = self.text.value
         self._clear_widgets()
+        self._handle_camera()
         new_answer = self.vqa.answerQuestionByImage(self.current_image, self.text.value,
                                                     use_pm=self.use_pattern_matcher)
         if not (new_answer and new_answer.answer):
@@ -124,4 +142,9 @@ class MainWindow():
         interact = widgets.interactive(self._next_image, idx=(0, len(self.images) - 1))
         interact.layout.height = '550px'
         self.image_output = interact.out
-        display.display(HBox(children=[interact, vbox], layout=hlayout))
+        if self.camera:
+            vbox_images = VBox(children=[self.image_output, self.camera, self.image_recorder])
+        else:
+            vbox_images = VBox(children=[interact])
+        display.display(HBox(children=[vbox_images, vbox], layout=hlayout))
+
