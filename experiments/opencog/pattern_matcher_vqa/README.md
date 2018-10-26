@@ -68,6 +68,8 @@ Precalculated coco vqa features for validation set, along with parsed questions 
 
 There is also docker image for vqa code - https://hub.docker.com/r/opencog/vqa/
 
+In order to use with docker container mount the data directory to /home/relex/projects/data
+
 ### Main arguments
 
 The following arguments are required to run ```pattern_matcher_vqa.py``` (see full command line parameters description below):
