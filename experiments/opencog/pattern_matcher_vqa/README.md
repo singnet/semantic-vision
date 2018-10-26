@@ -61,6 +61,13 @@ Questions processed: 3, answered: 3, correct answers: 33.33333333333333% (1)
 
 Answers are printed using format: ```questionId::question::answer::correct_answer::imageId``` .
 
+### Datasets and models
+
+Precalculated coco vqa features for validation set, along with parsed questions and  
+ multidnn model may be downloaded with download_data.sh
+
+There is also docker image for vqa code - https://hub.docker.com/r/opencog/vqa/
+
 ### Main arguments
 
 The following arguments are required to run ```pattern_matcher_vqa.py``` (see full command line parameters description below):
