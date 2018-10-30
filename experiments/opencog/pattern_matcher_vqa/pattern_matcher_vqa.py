@@ -12,6 +12,7 @@ import network_runner
 from opencog.atomspace import TruthValue
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
+from opencog import bindlink
 
 from util import *
 from interface import FeatureExtractor, AnswerHandler, NoModelException
@@ -471,6 +472,40 @@ class PatternMatcherVqaPipeline:
             except BaseException as e:
                 logger.exception('Unexpected exception %s', e)
                 continue
+
+
+class TBD(PatternMatcherVqaPipeline):
+    def answerByPrograms(self, tdb_net, features, programs):
+        batch_size = feats.size(0)
+        feat_input_volume = tdb_net.stem(features)
+        for n in range(batch_size):
+            feat_input = feat_input_volume[n:n + 1]
+            output = feat_input
+            program = []
+            for i in reversed(programs.data[n].cpu().numpy()):
+                module_type = self.vocab['program_idx_to_token'][i]
+                if module_type == '<NULL>':
+                    continue
+                    program.append(module_type)
+                result = self.run_program(output, program)
+
+    def run_program(self, features, program):
+        self.atomspace = pushAtomspace(self.atomspace)
+        self._add_scene_atom(features)
+        import tbd
+        eval_link, left, inheritance_set = tbd.return_prog(commands=tuple(reversed(program)), atomspace=self.atomspace)
+        bind_link = tbd.build_bind_link(self.atomspace, eval_link, inheritance_set)
+        result = bindlink(atomspace, bind_link)
+        import pdb;pdb.set_trace()
+
+    def _add_scene_atom(self, features):
+        key_array = self.atomspace.add_node(types.ConceptNode, 'array')
+        key_shape = self.atomspace.add_node(types.ConceptNode, 'shape')
+        data = FloatValue(tuple(features.flatten()))
+        boundingBoxInstance = self.atomspace.add_node(types.ConceptNode, 'BoundingBox1')
+        box_concept = self.atomspace.add_node(types.ConceptNode, 'BoundingBox')
+        self.atomspace.add_link(types.InheritanceLink, [boundingBoxInstance, box_concept])
+
 
 ### MAIN
 question2atomeseLibraryPath = (currentDir(__file__) +
