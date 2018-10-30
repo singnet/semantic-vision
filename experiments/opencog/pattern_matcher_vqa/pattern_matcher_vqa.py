@@ -267,11 +267,22 @@ def extract_bb_id(atoms):
 class PatternMatcherVqaPipeline:
 
     def __init__(self, featureExtractor, questionConverter, atomspace, answerHandler):
+        """
+        Construct pattern matcher object
+
+        :param featureExtractor: interface.FeatureExtractor
+            feature extractor for images
+        :param questionConverter: org.opencog.vqa.relex.QuestionToOpencogConverter
+            converter from text to atomese queries
+        :param atomspace: atomspace
+            atomspace with background knowledge
+        :param answerHandler: interface.AnswerHandler
+            answer handler for statistics
+        """
         self.featureExtractor = featureExtractor
         self.questionConverter = questionConverter
         self.atomspace = atomspace
         self.answerHandler = answerHandler
-        self.formulaQuestionMap = dict()
         self.logger = logging.getLogger('PatternMatcherVqaPipeline')
 
     # TODO: pass atomspace as parameter to exclude necessity of set_type_ctor_atomspace
@@ -383,16 +394,12 @@ class PatternMatcherVqaPipeline:
             if answer was found Tuple[None, None, None] otherwise
         """
         start = datetime.datetime.now()
-        # TODO: evaluates AND operations as crisp logic values
-        # if clause has tv->mean() > 0.5 then return tv->mean() == 1.0
 
         result = scheme_eval_h(self.atomspace, queryInScheme)
         delta = datetime.datetime.now() - start
         self.logger.debug('The result of pattern matching is: '
                           '%s, time: %s microseconds',
                           result, delta.microseconds)
-        # TODO: Python value API improvements: convert single value to
-        # appropriate type directly?
         results = self.sort_results(result, a_extract_predicate=False)
         if not results:
             return 'no', None, None
