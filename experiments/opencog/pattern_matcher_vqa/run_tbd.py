@@ -7,7 +7,7 @@ from util import initialize_atomspace_by_facts
 from tbd.utils.clevr import load_vocab, ClevrDataLoaderNumpy, ClevrDataLoaderH5
 import tbd_helpers
 # imports for calling from atomspace
-from tbd_helpers import init_scene, filter, intersect, classify, relate
+from tbd_helpers import init_scene, filter, intersect, classify, relate, same
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'

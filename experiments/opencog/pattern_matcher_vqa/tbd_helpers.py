@@ -32,7 +32,7 @@ def build_filter(atomspace, filter_type, filter_argument, exec_out_sub):
 
 
 def build_relate(atomspace, relate_argument, exec_out_sub):
-    schema =  atomspace.add_node(types.GroundedSchemaNode, "py:relate")
+    schema = atomspace.add_node(types.GroundedSchemaNode, "py:relate")
     lst = atomspace.add_link(types.ListLink, [atomspace.add_node(types.ConceptNode, relate_argument),
                                               exec_out_sub])
     return atomspace.add_link(types.ExecutionOutputLink, [schema, lst])
@@ -61,6 +61,13 @@ def build_bind_link(atomspace, eval_link, inheritance):
 def build_scene(atomspace, scene):
     schema =  atomspace.add_node(types.GroundedSchemaNode, "py:init_scene")
     lst = atomspace.add_link(types.ListLink, [scene])
+    return atomspace.add_link(types.ExecutionOutputLink, [schema, lst])
+
+
+def build_same(atomspace, same_argument, exec_out_sub):
+    schema = atomspace.add_node(types.GroundedSchemaNode, "py:same")
+    lst = atomspace.add_link(types.ListLink, [atomspace.add_node(types.ConceptNode, same_argument),
+                                              exec_out_sub])
     return atomspace.add_link(types.ExecutionOutputLink, [schema, lst])
 
 
@@ -101,6 +108,12 @@ def return_prog(atomspace, commands, inheritance_set=None):
         inheritance_set |= inh
         return build_relate(atomspace, relate_argument=relate_arg,
                             exec_out_sub=sub_prog), left, inheritance_set
+    elif current.startswith('same'):
+        same_arg = current.split('_')[-1]
+        sub_prog, left, inh = return_prog(atomspace, rest)
+        inheritance_set |= inh
+        return build_same(atomspace, same_argument=same_arg,
+                          exec_out_sub=sub_prog), left, inheritance_set
     elif current.startswith('intersect'):
         sub_prog0, left, inh = return_prog(atomspace, rest)
         inheritance_set |= inh
@@ -173,7 +186,7 @@ def intersect(arg0, arg1):
     :param arg1:
     :return: Atom
     """
-    atomspace = data_atom.atomspace
+    atomspace = arg0.atomspace
     key_attention, key_scene, key_shape_attention, key_shape_scene = generate_keys(atomspace)
     feat_attention1 = extract_tensor(arg0, key_attention, key_shape_attention)
     feat_attention2 = extract_tensor(arg1, key_attention, key_shape_attention)
@@ -196,6 +209,12 @@ def relate(relation, data_atom):
     Function which applies filtering neural network module
     """
     module_type = 'relate[' + relation.name + ']'
+    run_attention(data_atom, module_type)
+    return data_atom
+
+
+def same(relation, data_atom):
+    module_type = 'same_' + relation.name
     run_attention(data_atom, module_type)
     return data_atom
 
