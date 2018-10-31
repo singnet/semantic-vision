@@ -524,7 +524,9 @@ class TBD(PatternMatcherVqaPipeline):
         eval_link, left, inheritance_set = tbd_helpers.return_prog(commands=tuple(reversed(program)), atomspace=self.atomspace)
         bind_link = tbd_helpers.build_bind_link(self.atomspace, eval_link, inheritance_set)
         result = bindlink.bindlink(self.atomspace, bind_link)
-        return self.argmax(result)
+        answer = self.argmax(result)
+        self.atomspace = popAtomspace(self.atomspace)
+        return answer
 
     def _add_scene_atom(self, features):
         import tbd_helpers

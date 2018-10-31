@@ -141,7 +141,6 @@ def init_scene(scene):
     data_atom = atomspace.add_node(types.ConceptNode, 'Data-' + str(uuid.uuid4()))
     key_attention, key_scene, key_shape, key_shape_scene = generate_keys(atomspace)
 
-    print(scene.name)
     data_atom.set_value(key_scene, scene.get_value(key_scene))
     data_atom.set_value(key_shape_scene, scene.get_value(key_shape_scene))
     data_atom.set_value(key_attention, FloatValue(list(tbd.ones_var.flatten())))
@@ -225,7 +224,5 @@ def run_attention(data_atom, module_type):
     key_attention, key_scene, key_shape_attention, key_shape_scene = generate_keys(atomspace)
     feat_input = extract_tensor(data_atom, key_scene, key_shape_scene)
     feat_attention = extract_tensor(data_atom, key_attention, key_shape_attention)
-    print(feat_input.float().type())
-    print(feat_attention.float().type())
     out = module(feat_input.float(), feat_attention.float())
     set_attention_map(data_atom, key_attention, key_shape_attention, out)

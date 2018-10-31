@@ -42,6 +42,10 @@ def main():
         programs = programs.to(device)
 
         results = tbd.answerByPrograms(tdb_net, feats, programs)
+        correct = 0
+        for (ans, expected) in zip([answers_str_int[x] for x in results], answers):
+            correct += (ans == expected)
+        print("Accuracy: {0}".format(float(correct) / len(programs)))
         import pdb;pdb.set_trace()
 
 
