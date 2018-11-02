@@ -40,7 +40,6 @@ class CallLogger():
 
             start = time.time()
 
-
             try:
                 result = func(*args, **kwargs)
                 end = time.time()
@@ -74,10 +73,31 @@ class CallLogger():
 def logged(*args, **kwargs):
     root_logger = logging.getLogger()
     logger = kwargs.get('logger', root_logger)
-    # option 1, logged used as @logged(logger=some_logger) 
+    # option 1, logged used as @logged(logger=some_logger)
     if not args:
         return functools.partial(logged, logger=logger)
     # default case
     # todo: pass logger level
     return CallLogger(logger)(*args)
+
+# example usage
+if __name__ == '__main__':
+
+    @logged
+    def foo(a, **kwargs):
+        pass
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(levelname)-6s %(message)s')
+    ch.setFormatter(formatter)
+    ch.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
+
+    @logged(logger=logger)
+    def foor(a, **kwargs):
+        foo(a, **kwargs)
+
+    foor('test', key='value')
 
