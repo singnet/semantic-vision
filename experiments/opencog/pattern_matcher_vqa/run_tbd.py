@@ -2,12 +2,13 @@ from pathlib import Path
 import torch
 
 from tbd.tbd.module_net import load_tbd_net
-from pattern_matcher_vqa import TBD
+from tbd_cog import tbd_vqa
 from util import initialize_atomspace_by_facts
-from tbd.utils.clevr import load_vocab, ClevrDataLoaderNumpy, ClevrDataLoaderH5
-import tbd_helpers
-# imports for calling from atomspace
-from tbd_helpers import init_scene, filter, intersect, classify, relate, same
+from tbd.utils.clevr import load_vocab, ClevrDataLoaderH5
+from tbd_cog import tbd_helpers
+
+# imports to be used as callbacks in atomspace
+from tbd_cog.tbd_helpers import init_scene, filter, intersect, relate, same
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -20,8 +21,8 @@ answers_str_int = {v: k for (k, v) in answers_str.items()}
 
 def main():
     torch.set_grad_enabled(False)
-    atomspace = initialize_atomspace_by_facts("tbdas.scm")
-    tbd = TBD(None, None, atomspace, None)
+    atomspace = initialize_atomspace_by_facts("tbd_cog/tbdas.scm")
+    tbd = tbd_vqa.TBD(None, None, atomspace, None)
     tbd_net_checkpoint = './models/clevr-reg.pt'
     vocab = load_vocab(Path('data/vocab.json'))
     tdb_net = load_tbd_net(tbd_net_checkpoint, vocab, feature_dim=(1024, 14, 14))
@@ -36,7 +37,8 @@ def main():
 
     tbd_helpers.tbd = tdb_net
     loader = ClevrDataLoaderH5(**val_loader_kwargs)
-    for batch in loader:
+    total_acc = 0
+    for i, batch in enumerate(loader):
         _, _, feats, answers, programs = batch
         feats = feats.to(device)
         programs = programs.to(device)
@@ -45,8 +47,9 @@ def main():
         correct = 0
         for (ans, expected) in zip([answers_str_int[x] for x in results], answers):
             correct += (ans == expected)
-        print("Accuracy: {0}".format(float(correct) / len(programs)))
-        import pdb;pdb.set_trace()
+        acc = float(correct) / len(programs)
+        total_acc = total_acc * (i / (i + 1)) + acc/(i + 1)
+        print("Accuracy average: {0}".format(total_acc))
 
 
 if __name__ == '__main__':
