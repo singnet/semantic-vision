@@ -23,8 +23,8 @@ def main():
     torch.set_grad_enabled(False)
     atomspace = initialize_atomspace_by_facts("tbd_cog/tbdas.scm")
     tbd = tbd_vqa.TBD(None, None, atomspace, None)
-    tbd_net_checkpoint = './models/clevr-reg.pt'
-    vocab = load_vocab(Path('data/vocab.json'))
+    tbd_net_checkpoint = '/mnt/fileserver/shared/models/tbd-nets-models/clevr-reg.pt'
+    vocab = load_vocab(Path('/mnt/fileserver/shared/models/tbd-nets-models/data/vocab.json'))
     tdb_net = load_tbd_net(tbd_net_checkpoint, vocab, feature_dim=(1024, 14, 14))
     BATCH_SIZE = 64
     val_loader_kwargs = {
