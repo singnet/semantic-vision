@@ -118,11 +118,10 @@ RUN wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86
 
 RUN /home/relex/miniconda3/bin/conda create -y --name pmvqa3 python=3.5 && \
 source /home/relex/miniconda3/bin/activate pmvqa3 && echo 'opencv ==3.1.0' > $(dirname $(which python))/../conda-meta/pinned && \
-    conda install -y opencv=3.1.0 atlas bokeh ca-certificates certifi cffi click cloudpickle cudatoolkit cudnn cycler cython cytoolz dask dask-core dbus decorator distributed expat fontconfig freetype gflags glib glog gst-plugins-base gstreamer h5py hdf5 heapdict icu imageio intel-openmp jbig jinja2 jpeg leveldb libedit libffi libgcc libgcc-ng libgfortran-ng libiconv libpng libprotobuf libstdcxx-ng libtiff libxcb libxml2 lmdb locket markupsafe matplotlib mkl msgpack-python nccl ncurses networkx ninja numpy opencv openssl packaging pandas partd pcre pillow pip protobuf psutil pycparser pyparsing pyqt python python-dateutil pytorch pytz pywavelets pyyaml qt readline scikit-image scipy setuptools sip six snappy sortedcontainers sqlite tblib tk toolz tornado wheel xz yaml zict zlib jupyter && conda install -y -c conda-forge jpype1 && pip install easydict
+    conda install -y opencv=3.1.0 atlas bokeh ca-certificates certifi cffi click cloudpickle cudatoolkit cudnn cycler cython cytoolz dask dask-core dbus decorator distributed expat fontconfig freetype gflags glib glog gst-plugins-base gstreamer h5py hdf5 heapdict icu imageio intel-openmp jbig jinja2 jpeg leveldb libedit libffi libgcc libgcc-ng libgfortran-ng libiconv libpng libprotobuf libstdcxx-ng libtiff libxcb libxml2 lmdb locket markupsafe matplotlib mkl msgpack-python nccl ncurses networkx ninja numpy opencv openssl packaging pandas partd pcre pillow pip protobuf psutil pycparser pyparsing pyqt python python-dateutil pytorch pytz pywavelets pyyaml qt readline scikit-image scipy setuptools sip six snappy sortedcontainers sqlite tblib tk toolz tornado wheel xz yaml zict zlib jupyter && conda install -y -c conda-forge jpype1 && pip install easydict ipywebrtc
 
 
 # vqa piplie(java)
-
 RUN wget https://github.com/singnet/semantic-vision/archive/master.zip
 
 RUN unzip master.zip
@@ -181,7 +180,7 @@ RUN sudo rm -rf opencog-master/build master.zip
 RUN mv opencog-master /home/relex/projects/opencog
 
 # download some images
-RUN mkdir -p /home/relex/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/images
+RUN mkdir -p /home/relex/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/images && cd /home/relex/projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/images/ && wget https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Plains_Zebra_Equus_quagga.jpg/440px-Plains_Zebra_Equus_quagga.jpg 
 
 RUN echo "export GUILE_AUTO_COMPILE=0" >> /home/relex/.profile
 
