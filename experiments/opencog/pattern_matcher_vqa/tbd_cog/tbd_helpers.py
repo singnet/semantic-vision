@@ -1,7 +1,11 @@
+"""
+Converters for tbd programs to atomese and callbacks
+"""
+
 import re
 import uuid
 
-from opencog.atomspace import AtomSpace, types
+from opencog.atomspace import types
 from opencog.type_constructors import *
 
 import numpy
@@ -46,6 +50,14 @@ def build_intersect(atomspace, arg0, arg1):
 
 
 def build_bind_link(atomspace, eval_link, inheritance):
+    """
+    Build bind link from ExecutionOutput or Evaluation links and inheritance links
+
+    :param atomspace: AtomSpace
+    :param eval_link: ExecutionOutput or EvaluationLink
+    :param inheritance: Set[InheritanceLink]
+    :return: BindLink
+    """
     varlist = []
     for inh in inheritance:
         for atom in inh.get_out():
@@ -72,6 +84,16 @@ def build_same(atomspace, same_argument, exec_out_sub):
 
 
 def return_prog(atomspace, commands, inheritance_set=None):
+    """
+    Convert tbd program to atomese
+
+    :param atomspace: Atomspace
+    :param commands: list
+    :param inheritance_set: set
+        Inhertiance links constructed during conversion
+    :return: Tuple[ExecutionOutputLink, list, set]
+        program in form of execution output link, unprocessed part of the program, set of inheritance links
+    """
     current, rest = commands[0], commands[1:]
     if inheritance_set is None:
         inheritance_set = set()
@@ -126,6 +148,9 @@ def return_prog(atomspace, commands, inheritance_set=None):
         return return_prog(atomspace, rest)
     else:
         raise NotImplementedError(current)
+
+
+# CALLBACKS
 
 
 def init_scene(scene):

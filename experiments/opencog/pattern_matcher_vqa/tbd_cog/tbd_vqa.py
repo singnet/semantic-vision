@@ -1,3 +1,8 @@
+"""
+visual question answering with "transparent by design" architecture
+Contains TBD class to run vqa pipeline
+"""
+
 from opencog.type_constructors import FloatValue, types
 from opencog import bindlink
 
