@@ -196,6 +196,7 @@ def return_prog(atomspace, commands, inheritance_set=None):
         var = atomspace.add_node(types.VariableNode, "$X")
         concept = atomspace.add_node(types.ConceptNode, query_type)
         inh_link = atomspace.add_link(types.InheritanceLink, [var, concept])
+        assert(inh_link not in inheritance_set)
         inheritance_set.add(inh_link)
         # todo: use build link build_eval_link(atomspace, variable=var, category=concept, eval_link_sub=sub_prog)
         link = build_filter(atomspace, concept, var, exec_out_sub=sub_prog)
