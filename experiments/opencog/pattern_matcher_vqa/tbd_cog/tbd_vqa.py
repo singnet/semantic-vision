@@ -10,10 +10,20 @@ from tbd_cog import tbd_helpers
 from pattern_matcher_vqa import PatternMatcherVqaPipeline, popAtomspace, pushAtomspace
 
 
+class TransparentByDesignVQA(PatternMatcherVqaPipeline):
 
-class TBD(PatternMatcherVqaPipeline):
-
-    def answerByPrograms(self, tdb_net, features, programs):
+    def answer_by_programs(self, tdb_net, features, programs):
+        """
+        Compute answers from image features and programs
+        :param tdb_net: tbd.TbDNet
+            Object holding neural networks
+        :param features: torch.Tensor
+            Images features
+        :param programs: torch.Tensor
+            Programs in numeric form
+        :return: List[str]
+            answers as strings
+        """
         batch_size = features.size(0)
         feat_input_volume = tdb_net.stem(features)
         results = []
@@ -70,4 +80,3 @@ class TBD(PatternMatcherVqaPipeline):
         bbox_instance.set_value(key_shape_scene, FloatValue(list(features.numpy().shape)))
         box_concept = self.atomspace.add_node(types.ConceptNode, 'BoundingBox')
         self.atomspace.add_link(types.InheritanceLink, [bbox_instance, box_concept])
-
