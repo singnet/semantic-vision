@@ -132,6 +132,52 @@ def return_prog(atomspace, commands, inheritance_set=None):
     """
     Convert tbd program to atomese
 
+    Example
+    ----------------------
+    >> commands = ['<END>', 'scene', 'filter_size[large]', 'filter_color[purple]', 'unique', 'query_material', '<START>']
+    >> exec_link, _, inheritance_set = return_prog(atomspace, commands)
+    >> print(exec_link)
+    (ExecutionOutputLink
+      (GroundedSchemaNode "py:filter")
+      (ListLink
+        (ConceptNode "material")
+        (VariableNode "$X")
+        (ExecutionOutputLink
+          (GroundedSchemaNode "py:filter")
+          (ListLink
+            (ConceptNode "color")
+            (ConceptNode "purple")
+            (ExecutionOutputLink
+              (GroundedSchemaNode "py:filter")
+              (ListLink
+                (ConceptNode "size")
+                (ConceptNode "large")
+                (ExecutionOutputLink
+                  (GroundedSchemaNode "py:init_scene")
+                  (ListLink
+                    (VariableNode "$Scene")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+    >>
+    >> print(inheritance_set)
+    {(InheritanceLink
+      (VariableNode "$Scene")
+      (ConceptNode "BoundingBox")
+    )
+    , (InheritanceLink
+      (VariableNode "$X")
+      (ConceptNode "material")
+    )
+    }
+
+    Parameters
+    ----------
     :param atomspace: Atomspace
     :param commands: list
     :param inheritance_set: set
