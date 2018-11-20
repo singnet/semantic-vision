@@ -472,6 +472,7 @@ class PatternMatcherVqaPipeline:
                 logger.exception('Unexpected exception %s', e)
                 continue
 
+
 ### MAIN
 question2atomeseLibraryPath = (currentDir(__file__) +
     '/../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
