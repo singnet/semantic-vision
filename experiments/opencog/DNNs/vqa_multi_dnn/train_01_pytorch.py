@@ -19,7 +19,7 @@ pathPickledTrainFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_t
 pathPickledValFeatrues = '/mnt/fileserver/shared/datasets/at-on-at-data/COCO_val2014_yes_no.pkl'
 
 
-pathSaveModel = '/mnt/fileserver/users/mvp/models/vqa/multi_dnn_01'
+pathSaveModel = './saved_models/'
 if os.path.isdir(pathSaveModel) is False:
     try:
         os.makedirs(pathSaveModel)
