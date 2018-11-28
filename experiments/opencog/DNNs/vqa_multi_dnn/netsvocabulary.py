@@ -9,6 +9,7 @@ class INetsVocab(nn.Module):
     """
 
     def __init__(self):
+        nn.Module.__init__(self)
         self._modelIndexByWord = {}
 
     @property
@@ -42,35 +43,35 @@ class INetsVocab(nn.Module):
 
 
 class NetsVocab(INetsVocab):
-    
+
     def __init__(self, device):
-        super(INetsVocab, self).__init__()
-        
+        INetsVocab.__init__(self)
+
         self.device = device
         self.models = nn.ModuleList()
 
     @classmethod
     def fromWordsVocabulary(cls, vocabulary, featureVectorSize, device):
         netsVocab = cls(device)
-        
+
         netsVocab.vocabulary = vocabulary
         netsVocab.featureVectorSize = featureVectorSize
         netsVocab.initializeModels()
-        
+
         return netsVocab
-    
+
     @classmethod
     def fromStateDict(cls, device, stateDict):
         netsVocab = cls(device)
-        
+
         netsVocab.vocabulary = stateDict['vocabulary']
         netsVocab.featureVectorSize = stateDict['featureVectorSize']
         netsVocab.initializeModels()
-        
+
         netsVocab.load_state_dict(stateDict['pytorch_state_dict'])
-        
+
         return netsVocab
-    
+
     def state_dict(self):
         return {
             'version' : 1,
@@ -78,7 +79,7 @@ class NetsVocab(INetsVocab):
             'featureVectorSize': self.featureVectorSize,
             'pytorch_state_dict': super().state_dict()
             }
-    
+
     def initializeModels(self):
         modelIndex = 0
         for word in self.vocabulary:
@@ -88,7 +89,7 @@ class NetsVocab(INetsVocab):
                 nn.Linear(64, 32),
                 nn.ReLU(),
                 nn.Linear(32, 1)
-                # TODO: why it is not included into model but 
+                # TODO: why it is not included into model but
                 # applied in feed_forward()
                 # nn.Sigmoid()
                 ).to(self.device))
@@ -103,7 +104,7 @@ class NetsVocab(INetsVocab):
                 continue
             models.append(model)
         return models
-    
+
     def feed_forward(self, nBBox, x, words):
         output = torch.ones(size=(nBBox,1)).to(self.device)
         for model in self.getModelsByWords(words):
