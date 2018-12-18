@@ -131,14 +131,13 @@ rcnn_features = tf.placeholder(tf.float32, [None, 2048])
 encoder_features = e(bounding_boxes)
 
 W = tf.constant(np.ones((OUTPUT_DIM, OUTPUT_DIM)), dtype=tf.float32, name="W")
+#W = tf.get_variable("W",(OUTPUT_DIM, OUTPUT_DIM))
 W = tf.reshape(W, (1, OUTPUT_DIM, OUTPUT_DIM))
 W = tf.tile(W, [tf.shape(bounding_boxes)[0], 1, 1])
 
 W_control = tf.layers.dense(encoder_features, 64, activation=tf.nn.relu)
 W_control = tf.layers.dense(W_control, OUTPUT_DIM * OUTPUT_DIM, activation=None)
 W_control = tf.reshape(W_control, [-1, OUTPUT_DIM, OUTPUT_DIM])
-
-W_control = tf.nn.softmax(W_control, axis=1)
 
 W_rez = W * W_control
 
