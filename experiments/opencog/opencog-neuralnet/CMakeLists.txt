@@ -1,9 +1,12 @@
 # ===================================================================
 # Build system settings
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12.2)
+IF(CMAKE_VERSION VERSION_GREATER 3.0.2)
+	CMAKE_POLICY(SET CMP0037 OLD)
+ENDIF(CMAKE_VERSION VERSION_GREATER 3.0.2)
 
-PROJECT(opencog-neuralnet VERSION 0.0.1)
+PROJECT(opencog-neuralnet)
 
 # set default build type
 IF (CMAKE_BUILD_TYPE STREQUAL "")
@@ -43,6 +46,7 @@ ELSE (COGUTIL_FOUND)
 ENDIF (COGUTIL_FOUND)
 
 LIST(APPEND CMAKE_MODULE_PATH  ${COGUTIL_DATA_DIR}/cmake)
+INCLUDE(AddCxxtest)
 INCLUDE(Summary)
 
 # AtomSpace
@@ -56,15 +60,36 @@ ENDIF (ATOMSPACE_FOUND)
 LIST(APPEND CMAKE_MODULE_PATH  ${ATOMSPACE_DATA_DIR}/cmake)
 INCLUDE("OpenCogMacros")
 
+# C++ unit testing
+FIND_PACKAGE(Cxxtest)
+IF (CXXTEST_FOUND)
+	MESSAGE(STATUS "CxxTest found.")
+ELSE (CXXTEST_FOUND)
+	MESSAGE(STATUS "CxxTest missing: needed for unit tests.")
+ENDIF (CXXTEST_FOUND)
+
 # ===================================================================
 # Build subdirectories
 ADD_SUBDIRECTORY(opencog)
+
+# TODO: replace by include from cogutil
+IF (CXXTEST_FOUND)
+	ADD_CUSTOM_TARGET(tests)
+	ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
+	ADD_CUSTOM_TARGET(test
+		DEPENDS tests
+		WORKING_DIRECTORY tests
+		COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure $(ARGS)
+		COMMENT "Running tests..."
+	)
+ENDIF (CXXTEST_FOUND)
 
 # ===================================================================
 # Show a summary of what we found, what we will do.
 
 SUMMARY_ADD("CogUtil" "OpenCog utilities" COGUTIL_FOUND)
 SUMMARY_ADD("AtomSpace" "Base atoms definitions" ATOMSPACE_FOUND)
+SUMMARY_ADD("Cxxtest" "C++ unit testing" CXXTEST_FOUND)
 SUMMARY_ADD("Cython bindings" "Cython (python) bindings" HAVE_CYTHON)
 SUMMARY_ADD("Python tests" "Python bindings nose tests" HAVE_NOSETESTS)
 
