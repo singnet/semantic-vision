@@ -42,12 +42,18 @@ FIND_PACKAGE(AtomSpace 5.0.4 CONFIG REQUIRED)
 LIST(APPEND CMAKE_MODULE_PATH  ${ATOMSPACE_DATA_DIR}/cmake)
 INCLUDE("OpenCogMacros")
 
+FIND_PACKAGE(Python3Interp 3.5 REQUIRED)
+FIND_PACKAGE(PythonLibs 3.5 REQUIRED)
+
+FIND_PACKAGE(Cython 0.23 REQUIRED)
+
 FIND_PACKAGE(Cxxtest)
 
 # ===================================================================
 # Build subdirectories
 
 ADD_SUBDIRECTORY(opencog)
+ADD_SUBDIRECTORY(cython)
 
 # TODO: replace by include from cogutil
 IF (CXXTEST_FOUND)
@@ -71,7 +77,9 @@ ENDIF (CXXTEST_FOUND)
 
 SUMMARY_ADD("CogUtil" "OpenCog utilities" COGUTIL_FOUND)
 SUMMARY_ADD("AtomSpace" "Base atoms definitions" ATOMSPACE_FOUND)
-SUMMARY_ADD("Cython bindings" "Cython (python) bindings" CYTHON_FOUND)
+SUMMARY_ADD("PythonInterp" "Python intepreter" PYTHON3INTERP_FOUND)
+SUMMARY_ADD("PythonLibs" "Python libraries" PYTHONLIBS_FOUND)
+SUMMARY_ADD("Cython" "Cython (python) bindings" CYTHON_FOUND)
 SUMMARY_ADD("Cxxtest" "C++ unit testing" CXXTEST_FOUND)
 
 SUMMARY_SHOW()
