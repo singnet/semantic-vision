@@ -62,17 +62,19 @@ class VqaService(service_pb2_grpc.VqaServiceServicer):
        question = request.question
        response = service_pb2.VqaResponse()
        response.ok = False
+       print("start")
        try:
            answer = self.vqa.answerQuestionByImage(image, question, use_pm=request.use_pm)
            if answer:
+               print("answer: " + answer.answer)
                response.message = answer.answer
                response.ok = True
            else:
                response.message = ''
        except RuntimeError as e:
            print(e)
-           return response
-       response.ok = True
+           response.message = str(e)
+       print(response)
        return response
 
 
