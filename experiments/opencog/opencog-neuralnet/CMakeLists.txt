@@ -3,7 +3,7 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
-PROJECT(opencog-tensor VERSION 0.0.1)
+PROJECT(opencog-neuralnet VERSION 0.0.1)
 
 # set default build type
 IF (CMAKE_BUILD_TYPE STREQUAL "")
@@ -52,7 +52,7 @@ INCLUDE("${ATOMSPACE_DATA_DIR}/cmake/OpenCogMacros.cmake")
 
 # ===================================================================
 # Build subdirectories
-ADD_SUBDIRECTORY(atoms)
+ADD_SUBDIRECTORY(opencog)
 
 # ===================================================================
 # Show a summary of what we found, what we will do.

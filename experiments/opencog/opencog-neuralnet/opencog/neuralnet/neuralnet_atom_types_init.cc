@@ -1,5 +1,5 @@
 /*
- * tensor_atom_types_init.cc
+ * neuralnet_atom_types_init.cc
  *
  * Copyright (C) 2019 Vitaly Bogdanov
  * All Rights Reserved
@@ -20,9 +20,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "atoms/tensor_atom_types.definitions"
+#include "opencog/neuralnet/neuralnet_atom_types.definitions"
 
-#define INHERITANCE_FILE "atoms/tensor_atom_types.inheritance"
-#define INITNAME tensor_types_init
+#define INHERITANCE_FILE "opencog/neuralnet/neuralnet_atom_types.inheritance"
+#define INITNAME neuralnet_types_init
 
 #include <opencog/atoms/atom_types/atom_types.cc>

@@ -8,7 +8,7 @@
 // for the CamelCase names, to see if they show up elsewhere!
 
 // ====================================================================
-// Tensor integration atoms:
+// Neural network integration atoms:
 //
 
 PTR_VALUE <- VALUE
