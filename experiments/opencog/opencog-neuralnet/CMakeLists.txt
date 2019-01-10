@@ -38,7 +38,8 @@ ELSE (COGUTIL_FOUND)
     MESSAGE(FATAL_ERROR "CogUtil missing: it is needed!")
 ENDIF (COGUTIL_FOUND)
 
-INCLUDE(${COGUTIL_DATA_DIR}/cmake/Summary.cmake)
+LIST(APPEND CMAKE_MODULE_PATH  ${COGUTIL_DATA_DIR}/cmake)
+INCLUDE(Summary)
 
 # AtomSpace
 FIND_PACKAGE(AtomSpace 5.0.4 CONFIG REQUIRED)
@@ -48,7 +49,8 @@ ELSE (ATOMSPACE_FOUND)
 	MESSAGE(FATAL_ERROR "AtomSpace missing: it is needed!")
 ENDIF (ATOMSPACE_FOUND)
 
-INCLUDE("${ATOMSPACE_DATA_DIR}/cmake/OpenCogMacros.cmake")
+LIST(APPEND CMAKE_MODULE_PATH  ${ATOMSPACE_DATA_DIR}/cmake)
+INCLUDE("OpenCogMacros")
 
 # ===================================================================
 # Build subdirectories
@@ -57,8 +59,8 @@ ADD_SUBDIRECTORY(opencog)
 # ===================================================================
 # Show a summary of what we found, what we will do.
 
-SUMMARY_ADD("CogUtil" "OpenCog utilities" HAVE_COGUTIL)
-SUMMARY_ADD("AtomSpace" "Base atoms definitions" HAVE_ATOMSPACE)
+SUMMARY_ADD("CogUtil" "OpenCog utilities" COGUTIL_FOUND)
+SUMMARY_ADD("AtomSpace" "Base atoms definitions" ATOMSPACE_FOUND)
 SUMMARY_ADD("Cython bindings" "Cython (python) bindings" HAVE_CYTHON)
 SUMMARY_ADD("Python tests" "Python bindings nose tests" HAVE_NOSETESTS)
 
