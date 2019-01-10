@@ -16,6 +16,10 @@ IF (NOT DEFINED DATADIR)
 ENDIF (NOT DEFINED DATADIR)
 ADD_DEFINITIONS(-DDATADIR="${DATADIR}")
 
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
+# The neuralnet_atom_types.h file is written to the build directory
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+
 # TODO: replace by include from cogutil if PR
 # https://github.com/opencog/cogutil/pull/159 is merged
 IF (CMAKE_COMPILER_IS_GNUCXX)
