@@ -47,6 +47,11 @@ FIND_PACKAGE(PythonLibs 3.5 REQUIRED)
 FIND_PACKAGE(Cython 0.23 REQUIRED)
 
 FIND_PACKAGE(Cxxtest)
+FIND_PROGRAM(NOSETESTS_EXECUTABLE nosetests3)
+IF (NOSETESTS_EXECUTABLE)
+	SET(NOSETESTS_FOUND 1)
+	MESSAGE(STATUS "Using nosetests executable " ${NOSETESTS_EXECUTABLE})
+ENDIF (NOSETESTS_EXECUTABLE)
 
 # ===================================================================
 # Build subdirectories
@@ -55,21 +60,18 @@ ADD_SUBDIRECTORY(opencog)
 ADD_SUBDIRECTORY(cython)
 
 # TODO: replace by include from cogutil
-IF (CXXTEST_FOUND)
-	ADD_CUSTOM_TARGET(tests)
-	ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
-
-	# requried to allow redefining "test" goal
-	IF(CMAKE_VERSION VERSION_GREATER 3.0.2)
-		CMAKE_POLICY(SET CMP0037 OLD)
-	ENDIF(CMAKE_VERSION VERSION_GREATER 3.0.2)
-	ADD_CUSTOM_TARGET(test
-		DEPENDS tests
-		WORKING_DIRECTORY tests
-		COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure $(ARGS)
-		COMMENT "Running tests..."
-	)
-ENDIF (CXXTEST_FOUND)
+ADD_CUSTOM_TARGET(tests)
+ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
+# requried to allow redefining "test" goal
+IF(CMAKE_VERSION VERSION_GREATER 3.0.2)
+	CMAKE_POLICY(SET CMP0037 OLD)
+ENDIF(CMAKE_VERSION VERSION_GREATER 3.0.2)
+ADD_CUSTOM_TARGET(test
+	DEPENDS tests
+	WORKING_DIRECTORY tests
+	COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure $(ARGS)
+	COMMENT "Running tests..."
+)
 
 # ===================================================================
 # Show a summary of what we found, what we will do.
@@ -80,5 +82,6 @@ SUMMARY_ADD("PythonInterp" "Python intepreter" PYTHON3INTERP_FOUND)
 SUMMARY_ADD("PythonLibs" "Python libraries" PYTHONLIBS_FOUND)
 SUMMARY_ADD("Cython" "Cython (python) bindings" CYTHON_FOUND)
 SUMMARY_ADD("Cxxtest" "C++ unit testing" CXXTEST_FOUND)
+SUMMARY_ADD("Nosetests" "Python unit test runner" NOSETESTS_FOUND)
 
 SUMMARY_SHOW()
