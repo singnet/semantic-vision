@@ -1,1 +1,1 @@
-ADD_SUBDIRECTORY(neuralnet)
+ADD_SUBDIRECTORY(opencog)
