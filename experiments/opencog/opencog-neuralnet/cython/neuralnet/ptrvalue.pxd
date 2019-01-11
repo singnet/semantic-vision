@@ -1,5 +1,5 @@
 from libcpp.memory cimport shared_ptr
-from atomspace cimport Type, Value, cValue, cValuePtr
+from opencog.atomspace cimport Type, Value, cValue, cValuePtr
 
 cdef extern from "cython/neuralnet/ptrvalue.h":
     cdef void incref(void* ptr)

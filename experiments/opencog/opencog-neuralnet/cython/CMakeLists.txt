@@ -10,7 +10,10 @@ MACRO(CYTHON_ADD_MODULE_PYX name)
 	ADD_CUSTOM_COMMAND(
 		OUTPUT ${name}.cc
 		COMMAND ${CYTHON_EXECUTABLE}
-		ARGS ${CYTHON_FLAGS} -I ${PROJECT_BINARY_DIR} -o ${name}.cc
+		ARGS ${CYTHON_FLAGS}
+				-I ${PROJECT_BINARY_DIR}
+				-I ${CMAKE_CURRENT_SOURCE_DIR}
+				-o ${name}.cc
 				--cplus ${CMAKE_CURRENT_SOURCE_DIR}/${name}
 		DEPENDS ${ARGN}
 		COMMENT "Cythonizing ${name} to ${name}.cc")

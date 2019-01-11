@@ -1,4 +1,4 @@
-from atomspace cimport get_value_ptr
+from opencog.atomspace cimport get_value_ptr
 
 cdef Value wrapPtrValue(cValuePtr shared_ptr):
     """Factory method to construct PtrValue from C++ ValuePtr (see
