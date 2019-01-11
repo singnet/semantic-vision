@@ -14,5 +14,6 @@ message VqaRequest {
 message VqaResponse {
     string message = 1;
     bool ok = 2;
+    string error_message = 3;
 }
 
