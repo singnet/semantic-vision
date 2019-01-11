@@ -79,7 +79,6 @@ class VqaService(service_pb2_grpc.VqaServiceServicer):
 
 
 def main():
-    image = imageio.imread('/home/relex/projects/data/coco/COCO_val2014_000000999999.jpg')
     service = VqaService()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     service_pb2_grpc.add_VqaServiceServicer_to_server(
