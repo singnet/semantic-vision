@@ -20,8 +20,8 @@ PtrValue.cc * opencog/neuralnet/PtrValue.h
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _OPENCOG_PTR_VALUE_H
-#define _OPENCOG_PTR_VALUE_H
+#ifndef _OPENCOG_NEURALNET_PTRVALUE_H
+#define _OPENCOG_NEURALNET_PTRVALUE_H
 
 #include <opencog/atoms/value/Value.h>
 #include <opencog/neuralnet/neuralnet_atom_types.h>
@@ -77,4 +77,4 @@ static inline std::shared_ptr<PtrValue> createPtrValue(Type&&... args)
 /** @}*/
 } // namespace opencog
 
-#endif // _OPENCOG_PTR_VALUE_H
+#endif // _OPENCOG_NEURALNET_PTRVALUE_H
