@@ -6,7 +6,6 @@ from concurrent import futures
 
 import jpype
 from feature.image import ImageFeatureExtractor
-from scipy import misc
 from splitnet.splitmultidnnmodel import SplitMultidnnRunner
 from util import initialize_atomspace_by_facts
 from pattern_matcher_vqa import PatternMatcherVqaPipeline, runNeuralNetwork
@@ -23,7 +22,7 @@ question2atomeseLibraryPath = ('../question2atomese/target/question2atomese-1.0-
 
 
 def setup_logger():
-    logging.basicConfig(filename='vqa_service.log',level=logging.INFO)
+    logging.basicConfig(filename='vqa_service.log', level=logging.INFO)
 
 
 def build_vqa():
@@ -49,38 +48,36 @@ def build_vqa():
     return vqa
 
 
-mydata = threading.local()
+thread_local = threading.local()
 
 
 class VqaService(service_pb2_grpc.VqaServiceServicer):
-   def __init__(self):
-       super().__init__()
 
-   @property
-   def vqa(self):
-       # jpype is not threadsafe, causes segmentation fault
-       # if run from another thread
-       if getattr(mydata, 'vqa', None) is None:
-           mydata.vqa = build_vqa()
-       return mydata.vqa
+    @property
+    def vqa(self):
+        # jpype is not threadsafe, causes segmentation fault
+        # if run from another thread
+        if getattr(thread_local, 'vqa', None) is None:
+            thread_local.vqa = build_vqa()
+        return thread_local.vqa
 
-   def answer(self, request, context):
-       image = imageio.imread(io.BytesIO(request.data))
-       question = request.question
-       response = service_pb2.VqaResponse()
-       response.ok = False
-       try:
-           answer = self.vqa.answerQuestionByImage(image, question, use_pm=request.use_pm)
-           if answer.ok:
-               response.message = answer.answer
-               response.ok = True
-           else:
-               response.error_message = answer.error_message
-       except RuntimeError as e:
-           logger.error(e)
-           response.error_message = str(e)
-       logger.info(response)
-       return response
+    def answer(self, request, context):
+        image = imageio.imread(io.BytesIO(request.data))
+        question = request.question
+        response = service_pb2.VqaResponse()
+        response.ok = False
+        try:
+            answer = self.vqa.answerQuestionByImage(image, question, use_pm=request.use_pm)
+            if answer.ok:
+                response.message = answer.answer
+                response.ok = True
+            else:
+                response.error_message = answer.error_message
+        except RuntimeError as e:
+            logger.error(e)
+            response.error_message = str(e)
+        logger.info(response)
+        return response
 
 
 def main():
