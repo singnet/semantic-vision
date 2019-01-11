@@ -10,3 +10,5 @@ target
 # Python
 __pycache__
 
+# Vim
+*.swp
