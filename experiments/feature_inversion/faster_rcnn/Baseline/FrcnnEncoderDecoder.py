@@ -37,7 +37,7 @@ def getBatches(dataset):
 
 def load_data(th5, t, c):
     with h5py.File(th5, 'r') as f:
-        imgs = np.array(f[t + '_images_' + c]) / 256.0
+        imgs = np.array(f[t + '_images_' + c]) / 255.0
         features = np.array(f[t + '_features'])
     return imgs, features
 
