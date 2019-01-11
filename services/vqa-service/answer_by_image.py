@@ -1,5 +1,6 @@
 import io
 import imageio
+import logging
 import threading
 from concurrent import futures
 
@@ -17,8 +18,12 @@ import service_pb2
 import service_pb2_grpc
 
 
-
+logger = logging.getLogger(__name__)
 question2atomeseLibraryPath = ('../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
+
+
+def setup_logger():
+    logging.basicConfig(filename='vqa_service.log',level=logging.INFO)
 
 
 def build_vqa():
@@ -43,7 +48,9 @@ def build_vqa():
     vqa = PatternMatcherVqaPipeline(extractor, question_converter, atomspace, None)
     return vqa
 
+
 mydata = threading.local()
+
 
 class VqaService(service_pb2_grpc.VqaServiceServicer):
    def __init__(self):
@@ -62,23 +69,22 @@ class VqaService(service_pb2_grpc.VqaServiceServicer):
        question = request.question
        response = service_pb2.VqaResponse()
        response.ok = False
-       print("start")
        try:
            answer = self.vqa.answerQuestionByImage(image, question, use_pm=request.use_pm)
-           if answer:
-               print("answer: " + answer.answer)
+           if answer.ok:
                response.message = answer.answer
                response.ok = True
            else:
-               response.message = ''
+               response.error_message = answer.error_message
        except RuntimeError as e:
-           print(e)
-           response.message = str(e)
-       print(response)
+           logger.error(e)
+           response.error_message = str(e)
+       logger.info(response)
        return response
 
 
 def main():
+    setup_logger()
     service = VqaService()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     service_pb2_grpc.add_VqaServiceServicer_to_server(
@@ -89,6 +95,7 @@ def main():
 
     while True:
         time.sleep(1)
+
 
 if __name__ == '__main__':
     main()
