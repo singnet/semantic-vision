@@ -4,12 +4,12 @@
     "encoding": "proto",
     "service_type": "grpc",
     "payment_expiration_threshold": 40320,
-    "model_ipfs_hash": "QmYZWxr8U7FrCmfCMrq4852MPRBm8tKGcmzxpvh5tHsqSw",
+    "model_ipfs_hash": "QmTAXBccCXmN2G6fjzBpME8aaBiLdsp8fNTLAD2mbLCjak",
     "mpe_address": "0x5C7a4290F6F8FF64c69eEffDFAFc8644A4Ec3a4E",
     "service_description": "visual question answering service see: https://github.com/singnet/semantic-vision",
     "pricing": {
         "price_model": "fixed_price",
-        "price_in_cogs": 300000000
+        "price_in_cogs": 3
     },
     "groups": [
         {
