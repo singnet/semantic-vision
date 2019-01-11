@@ -172,7 +172,7 @@ class QueryProcessingData:
     """
     Holds different intermediate results for query computation
     """
-    __slots__ = ["relexFormula", "query", "answer", "boundingBoxes", "answerBox", "answerExpression"]
+    __slots__ = ["relexFormula", "query", "answer", "boundingBoxes", "answerBox", "answerExpression", "ok"]
 
     def __init__(self, relexFormula, query, answer, boundingBoxes, answerBox, answerExpression):
         self.relexFormula = relexFormula
@@ -181,6 +181,7 @@ class QueryProcessingData:
         self.boundingBoxes = boundingBoxes
         self.answerBox = answerBox
         self.answerExpression = answerExpression
+        self.ok = True
 
     def __str__(self):
         return self.answer
@@ -192,6 +193,14 @@ class QueryProcessingData:
                                                                                     self.boundingBoxes,
                                                                                     self.answerBox,
                                                                                     self.answerExpression)
+
+
+class FailedProcessingData(QueryProcessingData):
+    __slots__ = ["error_message"]
+
+    def __init__(self, error_message):
+        self.error_message = error_message
+        self.ok = False
 
 
 class OtherDetSubjObjResult(OtherDetSubjObj):
@@ -344,11 +353,11 @@ class PatternMatcherVqaPipeline:
                 queryInScheme = self.questionConverter.convertToOpencogSchemeURE(relexFormula)
             if queryInScheme is None:
                 self.logger.error('Question was not parsed')
-                return
+                return FailedProcessingData('Question was not parsed')
             self.logger.debug('Scheme query: %s', queryInScheme)
             questionType = parsedQuestion.questionType
             if questionType is None:
-                return
+                return FailedProcessingData('Question was not parsed')
             answer, bb_id, expr = self.answerQuery(questionType, queryInScheme)
             result = QueryProcessingData(relexFormula, queryInScheme, answer, boxes,
                                          answerBox=bb_id, answerExpression=expr)
