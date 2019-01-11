@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "display_name": "ProcessService",
+    "encoding": "proto",
+    "service_type": "grpc",
+    "payment_expiration_threshold": 40320,
+    "model_ipfs_hash": "QmYZWxr8U7FrCmfCMrq4852MPRBm8tKGcmzxpvh5tHsqSw",
+    "mpe_address": "0x5C7a4290F6F8FF64c69eEffDFAFc8644A4Ec3a4E",
+    "pricing": {
+        "price_model": "fixed_price",
+        "price_in_cogs": 300000000
+    },
+    "groups": [
+        {
+            "group_name": "default_group",
+            "group_id": "+N9apI4UHNRotbzUJ2KwuvalFEWsJ0pEYn3sW8Cpk4A=",
+            "payment_address": "0x0067b427E299Eb2A4CBafc0B04C723F77c6d8a18"
+        }
+    ],
+    "endpoints": [
+        {
+            "group_name": "default_group",
+            "endpoint": "http://127.0.0.1:8080"
+        }
+    ]
+}
