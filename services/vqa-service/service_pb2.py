@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='service.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\rservice.proto\"R\n\nVqaRequest\x12\x10\n\x08question\x18\x01 \x01(\t\x12\x14\n\x0cimage_format\x18\x02 \x01(\t\x12\x0e\n\x06use_pm\x18\x03 \x01(\x08\x12\x0c\n\x04\x64\x61ta\x18\x04 \x01(\x0c\"*\n\x0bVqaResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\n\n\x02ok\x18\x02 \x01(\x08\x32\x31\n\nVqaService\x12#\n\x06\x61nswer\x12\x0b.VqaRequest\x1a\x0c.VqaResponseb\x06proto3')
+  serialized_pb=_b('\n\rservice.proto\"R\n\nVqaRequest\x12\x10\n\x08question\x18\x01 \x01(\t\x12\x14\n\x0cimage_format\x18\x02 \x01(\t\x12\x0e\n\x06use_pm\x18\x03 \x01(\x08\x12\x0c\n\x04\x64\x61ta\x18\x04 \x01(\x0c\"A\n\x0bVqaResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\n\n\x02ok\x18\x02 \x01(\x08\x12\x15\n\rerror_message\x18\x03 \x01(\t21\n\nVqaService\x12#\n\x06\x61nswer\x12\x0b.VqaRequest\x1a\x0c.VqaResponseb\x06proto3')
 )
 
 
@@ -98,6 +98,13 @@ _VQARESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error_message', full_name='VqaResponse.error_message', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -111,7 +118,7 @@ _VQARESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=101,
-  serialized_end=143,
+  serialized_end=166,
 )
 
 DESCRIPTOR.message_types_by_name['VqaRequest'] = _VQAREQUEST
@@ -140,8 +147,8 @@ _VQASERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=145,
-  serialized_end=194,
+  serialized_start=168,
+  serialized_end=217,
   methods=[
   _descriptor.MethodDescriptor(
     name='answer',
