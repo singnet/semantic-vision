@@ -1,4 +1,4 @@
-# TODO: replace by include from atomspace.pxd
+# TODO: replace by include from atomspace.pxd and remove __init__.py
 from libcpp.memory cimport shared_ptr
 from libcpp.string cimport string
 

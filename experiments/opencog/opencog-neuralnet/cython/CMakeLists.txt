@@ -11,12 +11,11 @@ MACRO(CYTHON_ADD_MODULE_PYX name)
 		OUTPUT ${name}.cc
 		COMMAND ${CYTHON_EXECUTABLE}
 		ARGS ${CYTHON_FLAGS}
-				-I ${PROJECT_BINARY_DIR}
-				-I ${CMAKE_CURRENT_SOURCE_DIR}
+				-I ${CMAKE_SOURCE_DIR}/cython
 				-o ${name}.cc
 				--cplus ${CMAKE_CURRENT_SOURCE_DIR}/${name}
 		DEPENDS ${ARGN}
 		COMMENT "Cythonizing ${name} to ${name}.cc")
 ENDMACRO(CYTHON_ADD_MODULE_PYX)
 
-ADD_SUBDIRECTORY(neuralnet)
+ADD_SUBDIRECTORY(opencog)
