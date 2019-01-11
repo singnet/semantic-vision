@@ -2,7 +2,7 @@ import unittest
 
 from opencog.atomspace import AtomSpace
 from opencog.utilities import initialize_opencog, finalize_opencog
-from neuralnet.ptrvalue import PtrValue
+from neuralnet.neuralnet import PtrValue
 
 class PtrValueTest(unittest.TestCase):
 

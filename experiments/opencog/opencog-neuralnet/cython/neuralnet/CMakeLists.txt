@@ -1,14 +1,17 @@
-CYTHON_ADD_MODULE_PYX(ptrvalue.pyx "ptrvalue.pxd" "ptrvalue.h")
+CYTHON_ADD_MODULE_PYX(neuralnet.pyx
+	"neuralnet.pxd" "ptrvalue.pyx" "ptrvalue.h" "ptrvalue.cc"
+	"opencog/atomspace.pxd")
 
-ADD_LIBRARY(cython-neuralnet-ptrvalue SHARED
-	ptrvalue.pyx.cc
+ADD_LIBRARY(cython-opencog-neuralnet SHARED
+	neuralnet.pyx.cc
 	ptrvalue.cc
 )
 
-TARGET_LINK_LIBRARIES(cython-neuralnet-ptrvalue
+TARGET_LINK_LIBRARIES(cython-opencog-neuralnet
 	opencog-neuralnet
 )
 
-SET_TARGET_PROPERTIES(cython-neuralnet-ptrvalue PROPERTIES
+# override name of the .so file to align with Python standards
+SET_TARGET_PROPERTIES(cython-opencog-neuralnet PROPERTIES
 	PREFIX ""
-	OUTPUT_NAME ptrvalue)
+	OUTPUT_NAME neuralnet)
