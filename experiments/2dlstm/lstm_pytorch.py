@@ -60,7 +60,6 @@ class LstmIterator:
     def look_back_idx(self):
         return self.steps_x
 
-
     @property
     def batch_size(self):
         return self.tensor.shape[0]
@@ -77,13 +76,6 @@ class Lstm2D(nn.Module):
         self._queue = None
         self._outs = None
         self._out_shape = None
-
-    def init_hidden(self):
-        # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        out_prev = torch.zeros((1, self.batch_size, self.num_cells))
-        c = torch.zeros((1, self.batch_size, self.num_cells))
-        hidden = [out_prev, c]
-        return hidden
 
     def forward(self, batch):
         iterator = LstmIterator(batch, *self.neib_shape)
