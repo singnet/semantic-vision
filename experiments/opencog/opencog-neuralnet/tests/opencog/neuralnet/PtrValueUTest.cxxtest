@@ -29,45 +29,45 @@ void noop(void* ptr) {}
 class PtrValueUTest : public CxxTest::TestSuite
 {
 public:
-    void test_constructor(void) {
-        int n = 10;
+	void test_constructor(void) {
+		int n = 10;
 
-        PtrValuePtr value = createPtrValue(&n, noop);
-        
-        TS_ASSERT(value.get() != NULL);
-        TS_ASSERT(value->value() == &n);
-        TS_ASSERT_EQUALS(*(int*)value->value(), n);
-    }
+		PtrValuePtr value = createPtrValue(&n, noop);
+		
+		TS_ASSERT(value.get() != NULL);
+		TS_ASSERT(value->value() == &n);
+		TS_ASSERT_EQUALS(*(int*)value->value(), n);
+	}
 
-    void test_equals(void) {
-        int n = 42;
+	void test_equals(void) {
+		int n = 42;
 
-        PtrValuePtr a = createPtrValue(&n, noop);
-        PtrValuePtr b = createPtrValue(&n, noop);
-        
-        TS_ASSERT(*a == *b);
-        TS_ASSERT(!(*a != *b));
-    }
+		PtrValuePtr a = createPtrValue(&n, noop);
+		PtrValuePtr b = createPtrValue(&n, noop);
+		
+		TS_ASSERT(*a == *b);
+		TS_ASSERT(!(*a != *b));
+	}
 
-    void test_not_equals(void) {
-        int n = 42;
-        int k = 42;
+	void test_not_equals(void) {
+		int n = 42;
+		int k = 42;
 
-        PtrValuePtr a = createPtrValue(&n, noop);
-        PtrValuePtr b = createPtrValue(&k, noop);
-        
-        TS_ASSERT(*a != *b);
-        TS_ASSERT(!(*a == *b));
-    }
+		PtrValuePtr a = createPtrValue(&n, noop);
+		PtrValuePtr b = createPtrValue(&k, noop);
+		
+		TS_ASSERT(*a != *b);
+		TS_ASSERT(!(*a == *b));
+	}
 
-    void test_to_string(void) {
-        PtrValuePtr value =
-            createPtrValue(reinterpret_cast<void*>(0x123456789ABCDEF0), noop);
+	void test_to_string(void) {
+		PtrValuePtr value =
+			createPtrValue(reinterpret_cast<void*>(0x123456789ABCDEF0), noop);
 
-        std::string str = value->to_string(" ");
+		std::string str = value->to_string(" ");
 
-        TS_ASSERT_EQUALS(str, " (PtrValue 0x123456789abcdef0)\n");
-    }
+		TS_ASSERT_EQUALS(str, " (PtrValue 0x123456789abcdef0)\n");
+	}
 
 	class RefCounter {
 	public:

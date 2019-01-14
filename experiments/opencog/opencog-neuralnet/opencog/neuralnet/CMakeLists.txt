@@ -27,6 +27,6 @@ INSTALL(TARGETS opencog-neuralnet
 )
 
 INSTALL(FILES PtrValue.h ${CMAKE_CURRENT_BINARY_DIR}/neuralnet_atom_types.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/opencog/neuralnet
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/opencog/neuralnet
 )
 
