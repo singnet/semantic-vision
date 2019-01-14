@@ -37,6 +37,14 @@ INCLUDE(OpenCogMacros)
 FIND_PACKAGE(Python3Interp 3.5 REQUIRED)
 FIND_PACKAGE(PythonLibs 3.5 REQUIRED)
 FIND_PACKAGE(Cython 0.23 REQUIRED)
+# Find python destination dir for python bindings
+# because it may differ on each operating system.
+EXECUTE_PROCESS(
+	COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import *;print(get_python_lib(prefix='${CMAKE_INSTALL_PREFIX}'))"
+	OUTPUT_VARIABLE PYTHON_DEST
+)
+MESSAGE(STATUS "PYTHON_DEST " ${PYTHON_DEST})
+STRING(REPLACE "\n" "" PYTHON_DEST "${PYTHON_DEST}")
 
 FIND_PACKAGE(Cxxtest)
 FIND_PROGRAM(NOSETESTS_EXECUTABLE nosetests3)
