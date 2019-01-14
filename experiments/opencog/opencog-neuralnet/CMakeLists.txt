@@ -3,7 +3,9 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
-PROJECT(opencog-neuralnet)
+PROJECT(opencog-neuralnet VERSION 0.0.1)
+
+INCLUDE(GNUInstallDirs)
 
 # set default build type
 IF (CMAKE_BUILD_TYPE STREQUAL "")

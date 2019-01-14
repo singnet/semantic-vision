@@ -20,7 +20,13 @@ TARGET_LINK_LIBRARIES(opencog-neuralnet
 
 ADD_DEPENDENCIES(opencog-neuralnet neuralnet_atom_types)
 
-INSTALL (FILES
-	PtrValue.h
-	DESTINATION "include/opencog/neuralnet"
+SET_TARGET_PROPERTIES(opencog-neuralnet PROPERTIES VERSION ${PROJECT_VERSION})
+
+INSTALL(TARGETS opencog-neuralnet
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/opencog
 )
+
+INSTALL(FILES PtrValue.h ${CMAKE_CURRENT_BINARY_DIR}/neuralnet_atom_types.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/opencog/neuralnet
+)
+

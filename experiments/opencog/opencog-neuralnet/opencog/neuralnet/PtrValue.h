@@ -1,5 +1,5 @@
 /*
-PtrValue.cc * opencog/neuralnet/PtrValue.h
+ * opencog/neuralnet/PtrValue.h
  *
  * Copyright (C) 2019 Vitaly Bogdanov
  * All Rights Reserved
