@@ -1,62 +1,48 @@
 import queue
 import numpy
-import numpy as np
-import scipy as sp
-
-from fireml import fire_pb2
-from fireml import weight_filler
-from fireml import learning
-from fireml import mlp
-import numpy as np
-import matplotlib.pyplot as plt
-
-from skimage.draw import line, polygon, circle
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-torch.manual_seed(1)
+
 
 HEIGHT = -2
 WIDTH = -1
 
 class LstmIterator:
     def __init__(self, tensor, size_x, size_y):
-       """
-       (30, 3, 128, 128)
-       The return type must be duplicated in the docstring to comply
-       with the NumPy docstring style.
+        """
+        (30, 3, 128, 128)
+        The return type must be duplicated in the docstring to comply
+        with the NumPy docstring style.
 
-       Parameters
-       ----------
-       tensor
-           array with 4 dimentions: (#batch, #channel, #HEIGHT, #WIDTH)
-       size_x
-           WIDTH in number of pixels
-       size_y
-           HEIGHT in number of pixels
-       """
-       self.size_x = size_x
-       self.size_y = size_y
-       self.tensor = self.zero_pad(tensor, size_x, WIDTH)
-       self.tensor = self.zero_pad(self.tensor, size_y, HEIGHT)
-       assert(self.tensor.shape[WIDTH] % size_x == 0)
-       assert(self.tensor.shape[HEIGHT] % size_y == 0)
-       self.steps_x = self.tensor.shape[WIDTH] // size_x
-       self.steps_y = self.tensor.shape[HEIGHT] // size_y
-       self.max_steps = self.steps_x * self.steps_y
-       self.out_shape = (tensor.shape[0], tensor.shape[1], self.steps_y, self.steps_x)
+        Parameters
+        ----------
+        tensor
+            array with 4 dimentions: (#batch, #channel, #HEIGHT, #WIDTH)
+        size_x
+            WIDTH in number of pixels
+        size_y
+            HEIGHT in number of pixels
+        """
+        self.size_x = size_x
+        self.size_y = size_y
+        self.tensor = self.zero_pad(tensor, size_x, WIDTH)
+        self.tensor = self.zero_pad(self.tensor, size_y, HEIGHT)
+        assert(self.tensor.shape[WIDTH] % size_x == 0)
+        assert(self.tensor.shape[HEIGHT] % size_y == 0)
+        self.steps_x = self.tensor.shape[WIDTH] // size_x
+        self.steps_y = self.tensor.shape[HEIGHT] // size_y
+        self.max_steps = self.steps_x * self.steps_y
+        self.out_shape = (tensor.shape[0], tensor.shape[1], self.steps_y, self.steps_x)
 
     def __iter__(self):
-       size_x = self.size_x
-       size_y = self.size_y
-       for i in range(self.steps_y):
-           for j in range(self.steps_x):
-               result = self.tensor[:, :,
-                                 i * size_x: i * size_x + size_x,
-                                 j * size_y: j * size_y + size_y]
-               yield result.reshape((1, result.shape[0], numpy.prod(result.shape[1:])))
+        size_x = self.size_x
+        size_y = self.size_y
+        for i in range(self.steps_y):
+            for j in range(self.steps_x):
+                result = self.tensor[:, :,
+                                  i * size_x: i * size_x + size_x,
+                                  j * size_y: j * size_y + size_y]
+                yield result.reshape((1, result.shape[0], numpy.prod(result.shape[1:])))
 
     @staticmethod
     def zero_pad_size(dim, step):
@@ -95,7 +81,7 @@ class Lstm2D(nn.Module):
     def init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
         out_prev = torch.zeros((1, self.batch_size, self.num_cells))
-        c = torch.zeros(( 1, self.batch_size, self.num_cells))
+        c = torch.zeros((1, self.batch_size, self.num_cells))
         hidden = [out_prev, c]
         return hidden
 
@@ -112,9 +98,9 @@ class Lstm2D(nn.Module):
         # loop over minibatch
         for i, item in enumerate(iterator):
             if i < iterator.look_back_idx:
-               prev_2 = torch.zeros(1, iterator.batch_size, self._num_cells, dtype=torch.float)
+                prev_2 = torch.zeros(1, iterator.batch_size, self._num_cells, dtype=torch.float)
             else:
-               prev_2 = self._queue.get()
+                prev_2 = self._queue.get()
             inp = torch.cat([item, prev_2], dim=2)
             out, hidden = self.lstm(inp, hidden)
             self._outs.append(out)
