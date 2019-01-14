@@ -1,9 +1,8 @@
 CYTHON_ADD_MODULE_PYX(neuralnet.pyx
-	"neuralnet.pxd" "ptrvalue.pyx" "ptrvalue.h" "ptrvalue.cc")
+	"neuralnet.pxd" "ptrvalue.pyx")
 
 ADD_LIBRARY(cython-opencog-neuralnet SHARED
 	neuralnet.pyx.cc
-	ptrvalue.cc
 )
 
 TARGET_LINK_LIBRARIES(cython-opencog-neuralnet
