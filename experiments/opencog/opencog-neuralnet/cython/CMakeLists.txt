@@ -12,6 +12,7 @@ MACRO(CYTHON_ADD_MODULE_PYX name)
 		COMMAND ${CYTHON_EXECUTABLE}
 		ARGS ${CYTHON_FLAGS}
 				-I ${CMAKE_SOURCE_DIR}/cython
+				-I ${ATOMSPACE_INCLUDE_DIR}/opencog/cython
 				-o ${name}.cc
 				--cplus ${CMAKE_CURRENT_SOURCE_DIR}/${name}
 		DEPENDS ${ARGN}

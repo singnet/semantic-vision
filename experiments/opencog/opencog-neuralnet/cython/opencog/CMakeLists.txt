@@ -1,6 +1,5 @@
 CYTHON_ADD_MODULE_PYX(neuralnet.pyx
-	"neuralnet.pxd" "ptrvalue.pyx" "ptrvalue.h" "ptrvalue.cc"
-	"atomspace.pxd")
+	"neuralnet.pxd" "ptrvalue.pyx" "ptrvalue.h" "ptrvalue.cc")
 
 ADD_LIBRARY(cython-opencog-neuralnet SHARED
 	neuralnet.pyx.cc
