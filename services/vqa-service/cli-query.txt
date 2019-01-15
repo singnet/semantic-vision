@@ -1,6 +1,5 @@
 {
    "question": "Is the cat gray?",
-   "image_format": "jpg",
    "use_pm":true,
-   "file@data": "/home/relex/projects/data/coco/COCO_val2014_000000999999.jpg"
+   "file@image_data": "/home/relex/projects/data/coco/COCO_val2014_000000999999.jpg"
 }
