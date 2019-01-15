@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import io
 import imageio
 import logging
@@ -13,8 +15,7 @@ import network_runner
 import grpc
 import time
 
-import service_pb2
-import service_pb2_grpc
+from vqaservice import service_pb2, service_pb2_grpc
 
 
 logger = logging.getLogger(__name__)
@@ -62,14 +63,14 @@ class VqaService(service_pb2_grpc.VqaServiceServicer):
         return thread_local.vqa
 
     def answer(self, request, context):
-        image = imageio.imread(io.BytesIO(request.data))
+        image = imageio.imread(io.BytesIO(request.image_data))
         question = request.question
         response = service_pb2.VqaResponse()
         response.ok = False
         try:
             answer = self.vqa.answerQuestionByImage(image, question, use_pm=request.use_pm)
             if answer.ok:
-                response.message = answer.answer
+                response.answer = answer.answer
                 response.ok = True
             else:
                 response.error_message = answer.error_message
