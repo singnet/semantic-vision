@@ -61,6 +61,7 @@ ADD_SUBDIRECTORY(cython)
 
 # TODO: replace by include from cogutil
 ADD_CUSTOM_TARGET(tests)
+ADD_DEPENDENCIES(tests cython-opencog-neuralnet)
 ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
 # requried to allow redefining "test" goal
 IF(CMAKE_VERSION VERSION_GREATER 3.0.2)
