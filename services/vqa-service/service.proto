@@ -6,13 +6,12 @@ service VqaService {
 
 message VqaRequest {
     string question = 1;
-    string image_format = 2;
     bool use_pm = 3;
-    bytes data = 4;
+    bytes image_data = 4;
 }
 
 message VqaResponse {
-    string message = 1;
+    string answer = 1;
     bool ok = 2;
     string error_message = 3;
 }
