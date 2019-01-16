@@ -4,6 +4,7 @@ import io
 import imageio
 import logging
 import threading
+import sys
 from concurrent import futures
 
 import jpype
@@ -14,9 +15,11 @@ from pattern_matcher_vqa import PatternMatcherVqaPipeline, runNeuralNetwork
 import network_runner
 import grpc
 import time
+import vqaservice
+sys.path.append(vqaservice.__path__[0])
+
 
 from vqaservice import service_pb2, service_pb2_grpc
-
 
 logger = logging.getLogger(__name__)
 question2atomeseLibraryPath = ('../question2atomese/target/question2atomese-1.0-SNAPSHOT.jar')
