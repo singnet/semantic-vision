@@ -5,6 +5,8 @@ import imageio
 import logging
 import threading
 import sys
+import argparse
+
 from concurrent import futures
 
 import jpype
@@ -27,6 +29,15 @@ question2atomeseLibraryPath = ('../question2atomese/target/question2atomese-1.0-
 
 def setup_logger():
     logging.basicConfig(filename='vqa_service.log', level=logging.INFO)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Start vqa service at port.')
+    parser.add_argument('ip', type=str, default="0.0.0.0",
+                        help='ip address(default="0.0.0.0")')
+    parser.add_argument('port', type=int,
+                               help='listent at port')
+    return parser.parse_args()
 
 
 def build_vqa():
@@ -91,7 +102,8 @@ def main():
     service_pb2_grpc.add_VqaServiceServicer_to_server(
         service,
         server)
-    server.add_insecure_port('127.0.0.1:12345')
+    args = parse_args()
+    server.add_insecure_port(args.ip + ':' + str(args.port))
     server.start()
 
     while True:
