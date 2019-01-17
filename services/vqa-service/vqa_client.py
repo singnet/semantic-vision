@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
 import grpc
+import vqaservice
+import sys
+
+sys.path.append(vqaservice.__path__[0])
 
 from vqaservice import service_pb2, service_pb2_grpc
 

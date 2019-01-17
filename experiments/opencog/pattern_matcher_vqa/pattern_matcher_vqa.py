@@ -362,6 +362,9 @@ class PatternMatcherVqaPipeline:
             result = QueryProcessingData(relexFormula, queryInScheme, answer, boxes,
                                          answerBox=bb_id, answerExpression=expr)
             return result
+        except RuntimeError as e:
+            self.logger.error(e)
+            return FailedProcessingData("RuntimeError {0}".format(str(e)))
         finally:
             self.atomspace = popAtomspace(self.atomspace)
 
