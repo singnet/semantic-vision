@@ -352,12 +352,12 @@ class PatternMatcherVqaPipeline:
             else:
                 queryInScheme = self.questionConverter.convertToOpencogSchemeURE(relexFormula)
             if queryInScheme is None:
-                self.logger.error('Question was not parsed')
-                return FailedProcessingData('Question was not parsed')
+                self.logger.error('unsuported question type {0}'.format(str(relexFormula)))
+                return FailedProcessingData('unsuported question type')
             self.logger.debug('Scheme query: %s', queryInScheme)
             questionType = parsedQuestion.questionType
             if questionType is None:
-                return FailedProcessingData('Question was not parsed')
+                return FailedProcessingData('unsuported question type')
             answer, bb_id, expr = self.answerQuery(questionType, queryInScheme)
             result = QueryProcessingData(relexFormula, queryInScheme, answer, boxes,
                                          answerBox=bb_id, answerExpression=expr)
