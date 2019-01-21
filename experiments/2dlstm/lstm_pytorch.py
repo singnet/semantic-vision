@@ -1,4 +1,5 @@
 import queue
+from enum import Enum
 import numpy
 import torch
 import torch.nn as nn
@@ -7,8 +8,22 @@ import torch.nn as nn
 HEIGHT = -2
 WIDTH = -1
 
+
+class Direction(Enum):
+   RIGHT_DOWN=1
+   RIGHT_TOP=2
+   LEFT_DOWN=3
+   LEFT_TOP=4
+
+
+MULT_DIRECTIONS = { Direction.RIGHT_DOWN:(1, 1),
+                    Direction.RIGHT_TOP: (-1, 1),
+                    Direction.LEFT_DOWN:  (1, -1),
+                    Direction.LEFT_TOP: (-1, -1)}
+
+
 class LstmIterator:
-    def __init__(self, tensor, size_x, size_y):
+    def __init__(self, tensor, size_x, size_y, direction=Direction.RIGHT_DOWN):
         """
         (30, 3, 128, 128)
         The return type must be duplicated in the docstring to comply
@@ -22,6 +37,9 @@ class LstmIterator:
             WIDTH in number of pixels
         size_y
             HEIGHT in number of pixels
+        direction
+            lstm_pytorch.Direction's field, determins order of direction
+            for the iteration over image
         """
         self.size_x = size_x
         self.size_y = size_y
@@ -33,12 +51,20 @@ class LstmIterator:
         self.steps_y = self.tensor.shape[HEIGHT] // size_y
         self.max_steps = self.steps_x * self.steps_y
         self.out_shape = (tensor.shape[0], tensor.shape[1], self.steps_y, self.steps_x)
+        self.direction = direction
+
+    @staticmethod
+    def _get_iterator(steps, direction):
+        if 0 < direction:
+            return range(steps)
+        return reversed(range(steps))
 
     def __iter__(self):
         size_x = self.size_x
         size_y = self.size_y
-        for i in range(self.steps_y):
-            for j in range(self.steps_x):
+        direction_i, direction_j = MULT_DIRECTIONS[self.direction]
+        for i in self._get_iterator(self.steps_y, direction_i):
+            for j in self._get_iterator(self.steps_x, direction_j):
                 result = self.tensor[:, :,
                                   i * size_x: i * size_x + size_x,
                                   j * size_y: j * size_y + size_y]
