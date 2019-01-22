@@ -20,7 +20,7 @@
         <dependency>
             <groupId>org.opencog</groupId>
             <artifactId>linkgrammar</artifactId>
-            <version>5.5.1</version>
+            <version>[5.5.1,)</version>
         </dependency>
         <dependency>
             <groupId>org.opencog</groupId>
