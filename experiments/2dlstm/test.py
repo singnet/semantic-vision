@@ -4,7 +4,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
-from lstm_pytorch import LstmIterator, Lstm2D
+from lstm_pytorch import LstmIterator, Lstm2D, Direction
 from torchvision import datasets, transforms
 
 
@@ -83,13 +83,33 @@ class TestLstmIterator(unittest.TestCase):
 
        ar = torch.from_numpy(ar)
        it = LstmIterator(ar, 2, 2)
-       expected = [[[1, 2],
-                    [5, 6]], [[3, 4,],
-                              [7, 8,]], [[9,10],
-                                         [0, 0]], [[11,12],
-                                                   [0, 0]]]
+       array = [[1,2,3,4],
+               [5,6,7,8],
+               [9,10,11,12],
+               [0, 0, 0, 0]]
+       array = torch.from_numpy(numpy.asarray(array))
+       expected = array[0:2,0:2], array[0:2, 2:4], array[2:4, 0:2], array[2:4, 2:4]
+
        for item, ex in zip(it, expected):
-           self.assertTrue(all((item == torch.from_numpy(numpy.asarray(ex))).flatten()))
+           self.assertTrue(all(item.flatten() == ex.flatten()))
+
+       it = LstmIterator(ar, 2, 2, Direction.LEFT_TOP)
+
+       for item, ex in zip(it, reversed(expected)):
+           self.assertTrue(all(item.flatten() == ex.flatten()))
+
+       it = LstmIterator(ar, 2, 2, Direction.LEFT_DOWN)
+
+       expected = array[0:2, 2:4], array[0:2,0:2], array[2:4, 2:4], array[2:4, 0:2]
+
+       for item, ex in zip(it, expected):
+           self.assertTrue(all(item.flatten() == ex.flatten()))
+
+       it = LstmIterator(ar, 2, 2, Direction.RIGHT_TOP)
+
+       for item, ex in zip(it, reversed(expected)):
+           self.assertTrue(all(item.flatten() == ex.flatten()))
+
 
 
 def count_circles():
