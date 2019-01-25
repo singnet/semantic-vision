@@ -195,6 +195,7 @@ RUN echo "(use-modules (ice-9 readline)) (activate-readline)\
 (use-modules (opencog exec))" >> /home/relex/.guile
 
 RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/local/lib/python3.5/dist-packages/" >> /home/relex/.profile
+RUN echo "export PYTHONPATH=\$PYTHONPATH:/usr/local/lib/python3/dist-packages/" >> /home/relex/.profile
 
 RUN source /home/relex/miniconda3/bin/activate pmvqa3 && jupyter notebook --generate-config 
 

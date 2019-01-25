@@ -14,3 +14,6 @@ RUN cd semantic-vision &&\
 
 RUN rm -r semantic-vision
 RUN echo "export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'" >> /home/relex/.profile
+
+CMD source .profile && source /home/relex/miniconda3/bin/activate pmvqa3 && \
+        cd projects/semantic-vision-1/experiments/opencog/pattern_matcher_vqa/ && vqa_service.py 0.0.0.0 8888
