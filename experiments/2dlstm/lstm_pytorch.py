@@ -1,4 +1,5 @@
 import queue
+from enum import IntEnum
 import numpy
 import torch
 import torch.nn as nn
@@ -7,8 +8,40 @@ import torch.nn as nn
 HEIGHT = -2
 WIDTH = -1
 
+
+class Direction(IntEnum):
+   RIGHT_DOWN=1
+   RIGHT_TOP=2
+   LEFT_DOWN=3
+   LEFT_TOP=4
+   DOWN_RIGHT=5
+   TOP_RIGHT=6
+   DOWN_LEFT=7
+   TOP_LEFT=8
+
+
+# direction over (x, y) axis
+# -1 means reversed order
+# 1  means default order
+# from left to right
+# from top to bottom
+MULT_DIRECTIONS = { Direction.RIGHT_DOWN:(1, 1),
+                    Direction.RIGHT_TOP: (1, -1),
+                    Direction.LEFT_DOWN:  (-1, 1),
+                    Direction.LEFT_TOP: (-1, -1),
+                    Direction.DOWN_RIGHT: (1, 1),
+                    Direction.TOP_RIGHT: (1, -1),
+                    Direction.DOWN_LEFT: (-1, 1),
+                    Direction.TOP_LEFT: (-1, -1)}
+
+
+class Axis(IntEnum):
+    X = 0
+    Y = 1
+
+
 class LstmIterator:
-    def __init__(self, tensor, size_x, size_y):
+    def __init__(self, tensor, size_x, size_y, direction=Direction.RIGHT_DOWN):
         """
         (30, 3, 128, 128)
         The return type must be duplicated in the docstring to comply
@@ -22,6 +55,9 @@ class LstmIterator:
             WIDTH in number of pixels
         size_y
             HEIGHT in number of pixels
+        direction
+            lstm_pytorch.Direction's field, determins order of direction
+            for the iteration over image
         """
         self.size_x = size_x
         self.size_y = size_y
@@ -33,16 +69,42 @@ class LstmIterator:
         self.steps_y = self.tensor.shape[HEIGHT] // size_y
         self.max_steps = self.steps_x * self.steps_y
         self.out_shape = (tensor.shape[0], tensor.shape[1], self.steps_y, self.steps_x)
+        self.direction = direction
+
+    def _get_iterator(self, axis, direction):
+        if axis == Axis.X:
+            steps = self.steps_x
+        else:
+            steps = self.steps_y
+        if 0 < direction:
+            return range(steps)
+        return reversed(range(steps))
 
     def __iter__(self):
         size_x = self.size_x
         size_y = self.size_y
-        for i in range(self.steps_y):
-            for j in range(self.steps_x):
-                result = self.tensor[:, :,
-                                  i * size_x: i * size_x + size_x,
-                                  j * size_y: j * size_y + size_y]
-                yield result.reshape((1, result.shape[0], numpy.prod(result.shape[1:])))
+        if self.direction <= Direction.LEFT_TOP:
+            first_axis = Axis.Y
+            second_axis = Axis.X
+        else:
+            first_axis = Axis.X
+            second_axis = Axis.Y
+
+        for i in self._get_iterator(first_axis, MULT_DIRECTIONS[self.direction][first_axis]):
+            for j in self._get_iterator(second_axis, MULT_DIRECTIONS[self.direction][second_axis]):
+                if first_axis == Axis.X:
+                    pos = (j, i)
+                else:
+                    pos = (i, j)
+                yield self.__get_item(*pos)
+
+    def __get_item(self, i, j):
+        size_x = self.size_x
+        size_y = self.size_y
+        result = self.tensor[:, :,
+                          i * size_x: i * size_x + size_x,
+                          j * size_y: j * size_y + size_y]
+        return result.reshape((1, result.shape[0], numpy.prod(result.shape[1:])))
 
     @staticmethod
     def zero_pad_size(dim, step):
@@ -58,7 +120,9 @@ class LstmIterator:
 
     @property
     def look_back_idx(self):
-        return self.steps_x
+        if self.direction <= Direction.LEFT_TOP:
+            return self.steps_x
+        return self.steps_y
 
     @property
     def batch_size(self):
