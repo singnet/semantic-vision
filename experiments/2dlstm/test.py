@@ -1,4 +1,5 @@
 import unittest
+import queue
 import numpy
 import torch
 import torch.optim as optim
@@ -110,7 +111,41 @@ class TestLstmIterator(unittest.TestCase):
        for item, ex in zip(it, reversed(expected)):
            self.assertTrue(all(item.flatten() == ex.flatten()))
 
+    def _look_back_idx(self, expected_prevs, direction, array):
+        iterator = LstmIterator(torch.from_numpy(numpy.array(array)), 2, 2, direction=direction)
+        q = queue.Queue()
+        # loop over minibatch
+        for i, item in enumerate(iterator):
+            if i < iterator.look_back_idx:
+                prev_2 = 0
+            else:
+                prev_2 = q.get()
+            self.assertTrue(prev_2 == expected_prevs[i])
+            out = item.sum()
+            q.put(out)
 
+    def test_look_back_idx(self):
+        array = [[[[1,2,3,4],
+               [5,6,7,8],
+               [9,10,11,12]]]]
+        self._look_back_idx([0, 0, 14, 22], Direction.RIGHT_DOWN, array)
+        self._look_back_idx([0, 0, 19, 23], Direction.RIGHT_TOP, array)
+        self._look_back_idx([0, 0, 22, 14], Direction.LEFT_DOWN, array)
+        self._look_back_idx([0, 0, 23, 19], Direction.LEFT_TOP, array)
+        self._look_back_idx([0, 0, 23, 22], Direction.TOP_LEFT, array)
+        self._look_back_idx([0, 0, 22, 23], Direction.DOWN_LEFT, array)
+        self._look_back_idx([0, 0, 14, 19], Direction.DOWN_RIGHT, array)
+        self._look_back_idx([0, 0, 22, 23], Direction.DOWN_LEFT, array)
+        array = [[[[1, 2, 3,4, 1],
+                   [5, 6, 7,8, 2],
+                   [9,10,11,12,3]]]]
+        self._look_back_idx([0, 0, 0, 14, 22, 3], Direction.RIGHT_DOWN, array)
+        self._look_back_idx([0, 0, 0, 19, 23, 3], Direction.RIGHT_TOP, array)
+        self._look_back_idx([0, 0, 0, 3, 22, 14], Direction.LEFT_DOWN, array)
+        self._look_back_idx([0, 0, 0, 3, 23, 19], Direction.LEFT_TOP, array)
+        self._look_back_idx([0, 0, 14, 19, 22, 23], Direction.DOWN_RIGHT, array)
+        self._look_back_idx([0, 0, 3, 3, 22, 23], Direction.DOWN_LEFT, array)
+        self._look_back_idx([0, 0, 3, 3, 23, 22], Direction.TOP_LEFT, array)
 
 def count_circles():
     """
