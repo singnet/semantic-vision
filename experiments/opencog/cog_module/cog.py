@@ -7,10 +7,13 @@ from opencog.bindlink import execute_atom, satisfaction_link, bindlink
 
 import torch
 from torch.distributions import normal
-from module import cogModule, get_cached_value
+from module import CogModule, execute, get_cached_value, evaluate
 
 
-class InputModule(cogModule):
+
+# example of pytorch modules
+
+class InputModule(CogModule):
     def __init__(self, atom, im):
         super().__init__(atom)
         self.im = im
@@ -20,7 +23,8 @@ class InputModule(cogModule):
     def forward(self):
         return self.im
 
-class AttentionModule(cogModule):
+
+class AttentionModule(CogModule):
     def __init__(self, atom):
         super().__init__(atom)
         self.x = normal.Normal(0.0, 1.0).sample()
@@ -42,11 +46,11 @@ net2 = AttentionModule(ConceptNode("green"))
 print(net1(inp()))
 
 # execution from Atomese
-prog1 = net1.Exec(inp.Exec())
+prog1 = net1.execute(inp.execute())
 print(prog1)
 print(get_cached_value(execute_atom(atomspace, prog1)))
 
-prog2 = net2.Exec(inp.Exec())
+prog2 = net2.execute(inp.execute())
 print(get_cached_value(execute_atom(atomspace, prog2)))
 
 bl = BindLink(
@@ -54,7 +58,7 @@ bl = BindLink(
     #VariableNode("$X"),
     AndLink(
         InheritanceLink(VariableNode("$X"), ConceptNode("color")),
-        cogModule.Evaluate(VariableNode("$X"), inp.Exec()) #inp.Exec() == cogModule.Execute(ConceptNode("image"))
+        evaluate(VariableNode("$X"), inp.execute()) #inp.execution() == execute(ConceptNode("image"))
     ),
     VariableNode("$X")
 )
@@ -64,14 +68,14 @@ print(bindlink(atomspace, bl))
 
 # wrapping torch.tensor tv to make it trainable
 # class TensorTVModule(cogModule):
-class InheritanceModule(cogModule):
+class InheritanceModule(CogModule):
     def __init__(self, atom, init_tv):
         super().__init__(atom)
         self.tv = init_tv
     def forward(self):
         return self.tv
 
-class AndModule(cogModule):
+class AndModule(CogModule):
     def forward(self, a, b):
         return a * b # torch.min(a, b)
 
@@ -82,7 +86,7 @@ h = InheritanceLink(ConceptNode("green"), ConceptNode("color"))
 InheritanceModule(h, torch.tensor([0.93]))
 # doesn't work with Evaluate
 print("Tensor truth value: ", get_cached_value(execute_atom(atomspace,
-    cogModule.Execute(InheritanceLink(ConceptNode("green"), ConceptNode("color"))))))
+    execute(InheritanceLink(ConceptNode("green"), ConceptNode("color"))))))
 
 # AndLinks are created dynamically, in ad hoc fashion for queries, etc.
 # it's cumbersome and unnecesary to bind them to individual objects
@@ -92,9 +96,9 @@ and_net = AndModule(ConceptNode("AndLink")) # GroundedObjectNode would be suitab
 bl = BindLink(
     VariableNode("$X"),
     #TypedVariableLink(VariableNode("$X"), TypeNode("ConceptNode")),
-    and_net.Eval(
-        cogModule.Execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
-        cogModule.Execute(VariableNode("$X"), inp.Exec())
+    and_net.evaluate(
+        execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
+        execute(VariableNode("$X"), inp.execute())
     ),
     VariableNode("$X")
 )
@@ -107,15 +111,15 @@ bl = BindLink(
     VariableNode("$X"),
     AndLink(
         InheritanceLink(VariableNode("$X"), ConceptNode("color")),
-        and_net.Eval(
-            cogModule.Execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
-            cogModule.Execute(VariableNode("$X"), inp.Exec())
+        and_net.evaluate(
+            execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
+            execute(VariableNode("$X"), inp.execute())
         )
     ),
     # another bad thing is that we need to execute it once again; caching might help though
-    and_net.Eval(
-            cogModule.Execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
-            cogModule.Execute(VariableNode("$X"), inp.Exec()))
+    and_net.evaluate(
+            execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
+            execute(VariableNode("$X"), inp.execute()))
 )
 print(bl)
 print(bindlink(atomspace, bl))
