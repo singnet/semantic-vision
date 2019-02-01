@@ -12,6 +12,7 @@ def get_cached_value(atom):
     # can be generalized, e.g. ConceptNodes can be converted to their string names,
     # so string can be an argument to forward, while ConceptNode can be an argument to execute
     value = atom.get_value(atom.atomspace.add_node(types.PredicateNode, "cogNet"))
+    print(value)
     result = valueToPtrValue(value).value().cached_result
     return result
 
@@ -37,6 +38,7 @@ def execute(atom, *args):
 
 
 
+# todo: separate cog module from its usage + static methods should be moved to module (e.g. cog.Execute)
 class CogModule(torch.nn.Module):
     def __init__(self, atom): #todo: atom is optional? if not given, generate by address? string name for concept instead?
         super().__init__()
@@ -45,7 +47,11 @@ class CogModule(torch.nn.Module):
 
     @staticmethod
     def callMethod(atom, methodname, args):
-        obj = valueToPtrValue(atom.get_value(PredicateNode("cogNet"))).value()
+        key = PredicateNode("cogNet")
+        value = atom.get_value(key)
+        if value is None:
+            raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
+        obj = valueToPtrValue(value).value()
         return getattr(obj, methodname.name)(args)
 
     def execute(self, *args):
@@ -67,4 +73,9 @@ class CogModule(torch.nn.Module):
         v = torch.mean(self.cached_result)
         self.atom.truth_value(v, 1.0) #todo???
         return TruthValue(v)
+
+    @staticmethod
+    def newLink(atom):
+        print("HERE: ", atom)
+        return atom
 

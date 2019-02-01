@@ -121,6 +121,7 @@ bl = BindLink(
             execute(InheritanceLink(VariableNode("$X"), ConceptNode("color"))),
             execute(VariableNode("$X"), inp.execute()))
 )
+print("bl1")
 print(bl)
 print(bindlink(atomspace, bl))
 # somehow works, but:
@@ -146,11 +147,13 @@ bl = BindLink(
         )
     ),
     ExecutionOutputLink(
-        GroundedSchemaNode("py:cogModule.newLink"),
+        GroundedSchemaNode("py:CogModule.newLink"),
         #ListLink(QuoteLink(AndLink(VariableNode("$X"), VariableNode("$Y"))))
         #AndLink(VariableNode("$X"), VariableNode("$Y"))
         ListLink(VariableNode("$Y"))
     )
 )
 
+print("bl2")
+print(bl)
 bindlink(atomspace, bl)
