@@ -79,3 +79,14 @@ class CogModule(torch.nn.Module):
         print("HERE: ", atom)
         return atom
 
+
+class InputModule(CogModule):
+    def __init__(self, atom, im):
+        super().__init__(atom)
+        self.im = im
+    # def set_input(self, im) -- can be a method in cogModule
+    # once called, id of the current input is increase to re-call forward() from execute(),
+    # otherwise cached result can be returned... id trees can be automatically constructed by execute()...
+    def forward(self):
+        return self.im
+
