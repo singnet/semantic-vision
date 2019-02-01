@@ -7,22 +7,11 @@ from opencog.bindlink import execute_atom, satisfaction_link, bindlink
 
 import torch
 from torch.distributions import normal
-from module import CogModule, execute, get_cached_value, evaluate
+from module import CogModule, execute, get_cached_value, evaluate, InputModule
 
 
 
 # example of pytorch modules
-
-class InputModule(CogModule):
-    def __init__(self, atom, im):
-        super().__init__(atom)
-        self.im = im
-    # def set_input(self, im) -- can be a method in cogModule
-    # once called, id of the current input is increase to re-call forward() from execute(),
-    # otherwise cached result can be returned... id trees can be automatically constructed by execute()...
-    def forward(self):
-        return self.im
-
 
 class AttentionModule(CogModule):
     def __init__(self, atom):
