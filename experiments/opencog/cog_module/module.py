@@ -12,9 +12,10 @@ def get_cached_value(atom):
     # can be generalized, e.g. ConceptNodes can be converted to their string names,
     # so string can be an argument to forward, while ConceptNode can be an argument to execute
     value = atom.get_value(atom.atomspace.add_node(types.PredicateNode, "cogNet"))
-    print(value)
-    result = valueToPtrValue(value).value().cached_result
-    return result
+    if value is None:
+        raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
+    result = valueToPtrValue(value).value()
+    return getattr(result, 'cached_result', result)
 
 
 def unpack_args(*atoms):
