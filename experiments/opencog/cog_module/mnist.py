@@ -22,7 +22,7 @@ try:
     from opencog.atomspace import AtomSpace, types, PtrValue, valueToPtrValue
     from opencog.atomspace import create_child_atomspace
     from opencog.type_constructors import *
-    from opencog.utilities import initialize_opencog
+    from opencog.utilities import initialize_opencog, finalize_opencog
     from opencog.bindlink import bindlink, execute_atom
 except RuntimeWarning as e:
     pass
@@ -94,6 +94,7 @@ class MnistModel(nn.Module):
         inp1 = InputModule(atomspace.add_node(types.ConceptNode, "img1"), data[0].reshape([1,1, 28, 28]))
         inp2 = InputModule(atomspace.add_node(types.ConceptNode, "img2"), data[1].reshape([1,1, 28, 28]))
         pairs = bindlink(atomspace, self.get_query(str(int(label.sum())), atomspace))
+
         lst = []
         for pair in pairs.out:
             lst.append(self.sum_prob.execute(self.digit_prob.execute(self.mnist.execute(inp1.execute()), pair.out[0]),
@@ -101,6 +102,8 @@ class MnistModel(nn.Module):
         sum_query = self.torch_sum.execute(*lst)
         result = execute_atom(atomspace, sum_query)
         torch_value = get_cached_value(result)
+        atomspace.clear()
+        finalize_opencog()
         return torch_value
 
     def get_query(self, label, atomspace):

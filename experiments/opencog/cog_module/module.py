@@ -49,8 +49,7 @@ class CogModule(torch.nn.Module):
     def __init__(self, atom): #todo: atom is optional? if not given, generate by address? string name for concept instead?
         super().__init__()
         self.atom = atom
-        value = PtrValue(self)
-        set_value(atom, value)
+        set_value(atom, self)
 
     @staticmethod
     def callMethod(atom, methodname, args):
