@@ -29,13 +29,7 @@ def unpack_args(*atoms):
     return (get_cached_value(atom) for atom in atoms)
 
 
-def _wrap_in_list(*args, wrap_args=True):
-    if wrap_args:
-        return ListLink(*args)
-    return args
-
-
-def evaluate(atom, *args, wrap_args=True):
+def evaluate(atom, *args):
     return EvaluationLink(
         GroundedPredicateNode("py:CogModule.callMethod"),
         ListLink(atom,
@@ -43,7 +37,7 @@ def evaluate(atom, *args, wrap_args=True):
                  ListLink(*args)))
 
 
-def execute(atom, *args, wrap_args=True):
+def execute(atom, *args):
     return ExecutionOutputLink(
         GroundedSchemaNode("py:CogModule.callMethod"),
         ListLink(atom,
@@ -68,8 +62,8 @@ class CogModule(torch.nn.Module):
         obj = valueToPtrValue(value).value()
         return getattr(obj, methodname.name)(args)
 
-    def execute(self, *args, wrap_args=True):
-        return execute(self.atom, *args, wrap_args=wrap_args)
+    def execute(self, *args):
+        return execute(self.atom, *args)
 
     def evaluate(self, *args):
         return evaluate(self.atom, *args)
