@@ -50,7 +50,7 @@ class CogModule(torch.nn.Module):
         super().__init__()
         self.atom = atom
         value = PtrValue(self)
-        atom.set_value(PredicateNode("cogNet"), (value))
+        set_value(atom, value)
 
     @staticmethod
     def callMethod(atom, methodname, args):
