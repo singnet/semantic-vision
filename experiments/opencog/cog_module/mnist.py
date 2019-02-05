@@ -1,3 +1,11 @@
+"""
+Example of backpropagating error through pattern matcher queries.
+
+This example shows how to
+maximize probability of producing correct sum of X and Y
+where X and Y are digits from mnist dataset
+"""
+
 from __future__ import print_function
 import argparse
 import torch
@@ -22,8 +30,6 @@ except RuntimeWarning as e:
 
 class SumProb(CogModule):
     def forward(self, x, y):
-        print("SumProb")
-        print(x, y)
         return x * y
 
 
@@ -44,14 +50,11 @@ class MnistNet(CogModule):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         result = F.softmax(x, dim=1)
-        print("forward")
-        print(result)
         return result
 
 
 class ProbOfDigit(CogModule):
     def forward(self, probs, i):
-        print("prob of {} in {} is {}".format(i, probs, probs[0][i]))
         return probs[0][i]
 
 
@@ -87,7 +90,6 @@ class MnistModel(nn.Module):
         #  4) compute total probability
         atomspace = create_child_atomspace(self.atomspace)
         initialize_opencog(atomspace)
-        print("compute_prob")
 
         inp1 = InputModule(atomspace.add_node(types.ConceptNode, "img1"), data[0].reshape([1,1, 28, 28]))
         inp2 = InputModule(atomspace.add_node(types.ConceptNode, "img2"), data[1].reshape([1,1, 28, 28]))
@@ -128,7 +130,7 @@ def train(model, device, train_loader, optimizer, epoch, log_interval, scheduler
                 lr = group['lr']
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f},\t lr: '.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), output.item()), lr)
+                100. * batch_idx / len(train_loader), loss.item()), lr)
 
 
 def exponential_lr(decay_rate, global_step, decay_steps, staircase=False):
