@@ -18,7 +18,6 @@ def get_cached_value(atom):
         raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
     result = valueToPtrValue(value).value()
     return result
-    return getattr(result, 'cached_result', result)
 
 def set_value(atom, value):
     key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
