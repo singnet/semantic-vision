@@ -13,8 +13,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from module import CogModule, get_cached_value
+from module import CogModule, CogModel, get_cached_value
 from module import InputModule
+from module import tmp_atomspace
 
 
 try:
@@ -23,7 +24,7 @@ try:
     from opencog.atomspace import create_child_atomspace
     from opencog.type_constructors import *
     from opencog.utilities import initialize_opencog, finalize_opencog
-    from opencog.bindlink import bindlink, execute_atom
+    from opencog.bindlink import execute_atom
 except RuntimeWarning as e:
     pass
 
@@ -66,7 +67,7 @@ class TorchSum(CogModule):
         return result
 
 
-class MnistModel(nn.Module):
+class MnistModel(CogModel):
     def __init__(self, atomspace):
         super().__init__()
         self.atomspace = atomspace
@@ -88,23 +89,18 @@ class MnistModel(nn.Module):
         #  2) compute possible pairs of NumberNodes
         #  3) compute probability of earch pair
         #  4) compute total probability
-        atomspace = create_child_atomspace(self.atomspace)
-        initialize_opencog(atomspace)
+        with tmp_atomspace(self.atomspace) as atomspace:
+            inp1 = InputModule(atomspace.add_node(types.ConceptNode, "img1"), data[0].reshape([1,1, 28, 28]))
+            inp2 = InputModule(atomspace.add_node(types.ConceptNode, "img2"), data[1].reshape([1,1, 28, 28]))
+            pairs = execute_atom(atomspace, self.get_query(str(int(label.sum())), atomspace))
 
-        inp1 = InputModule(atomspace.add_node(types.ConceptNode, "img1"), data[0].reshape([1,1, 28, 28]))
-        inp2 = InputModule(atomspace.add_node(types.ConceptNode, "img2"), data[1].reshape([1,1, 28, 28]))
-        pairs = bindlink(atomspace, self.get_query(str(int(label.sum())), atomspace))
-
-        lst = []
-        for pair in pairs.out:
-            lst.append(self.sum_prob.execute(self.digit_prob.execute(self.mnist.execute(inp1.execute()), pair.out[0]),
-                                       self.digit_prob.execute(self.mnist.execute(inp2.execute()), pair.out[1])))
-        sum_query = self.torch_sum.execute(*lst)
-        result = execute_atom(atomspace, sum_query)
-        torch_value = get_cached_value(result)
-        atomspace.clear()
-        finalize_opencog()
-        return torch_value
+            lst = []
+            for pair in pairs.out:
+                lst.append(self.sum_prob.execute(self.digit_prob.execute(self.mnist.execute(inp1.execute()), pair.out[0]),
+                                           self.digit_prob.execute(self.mnist.execute(inp2.execute()), pair.out[1])))
+            sum_query = self.torch_sum.execute(*lst)
+            result = self.execute_atom(sum_query)
+            return result
 
     def get_query(self, label, atomspace):
         var_x = atomspace.add_node(types.VariableNode, "X")
@@ -146,7 +142,7 @@ def main():
     atomspace = AtomSpace()
     initialize_opencog(atomspace)
     device = 'cpu'
-    epoch = 200
+    epoch = 20
     batch_size = 2
     lr = 0.0001
     decay_rate = 0.9
@@ -162,7 +158,9 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=lr)
     l = lambda step: exponential_lr(decay_rate, step, decay_steps,staircase=True)
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=l)
-    train(model, device, train_loader, optimizer, epoch, 200, scheduler)
+    for i in range(epoch):
+        train(model, device, train_loader, optimizer, i + 1, 200, scheduler)
+        torch.save(model.state_dict(),"mnist_cnn.pt")
 
 if __name__ == '__main__':
     main()
