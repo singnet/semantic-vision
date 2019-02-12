@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import torch
 import uuid
+import weakref
 from torch.distributions import normal
 
 # Experimental design of cog.Module API for running opencog reasoning from pytorch nn.Module extension
@@ -53,7 +54,7 @@ class CogModule(torch.nn.Module):
     def __init__(self, atom): #todo: atom is optional? if not given, generate by address? string name for concept instead?
         super().__init__()
         self.atom = atom
-        set_value(atom, self)
+        set_value(atom, weakref.proxy(self))
         self._cache = dict()
 
     @staticmethod
@@ -113,14 +114,6 @@ class InputModule(CogModule):
 
     def forward(self):
         return self.im
-
-    def __del__(self):
-        atom_name = str(self.atom)
-        result = self.atom.atomspace.remove(self.atom)
-        print("removing atom {0}: {1}".format(atom_name, result))
-        super().__del__()
-
-
 
 
 @contextmanager
