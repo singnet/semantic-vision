@@ -19,7 +19,7 @@ from module import InputModule
 
 try:
     from opencog.scheme_wrapper import *
-    from opencog.atomspace import AtomSpace, types, PtrValue, valueToPtrValue
+    from opencog.atomspace import AtomSpace, types, PtrValue
     from opencog.atomspace import create_child_atomspace
     from opencog.type_constructors import *
     from opencog.utilities import initialize_opencog, finalize_opencog

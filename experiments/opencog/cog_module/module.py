@@ -4,7 +4,7 @@ from torch.distributions import normal
 
 # Experimental design of cog.Module API for running opencog reasoning from pytorch nn.Module extension
 
-from opencog.atomspace import AtomSpace, types, PtrValue, valueToPtrValue
+from opencog.atomspace import AtomSpace, types, PtrValue
 from opencog.type_constructors import *
 
 
@@ -16,7 +16,7 @@ def get_cached_value(atom):
     value = atom.get_value(key)
     if value is None:
         raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
-    result = valueToPtrValue(value).value()
+    result = value.value()
     return result
 
 def set_value(atom, value):
@@ -57,7 +57,7 @@ class CogModule(torch.nn.Module):
         value = atom.get_value(key)
         if value is None:
             raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
-        obj = valueToPtrValue(value).value()
+        obj = value.value()
         return getattr(obj, methodname.name)(args)
 
     def execute(self, *args):

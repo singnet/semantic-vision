@@ -1,6 +1,6 @@
 # Experimental design of cog.Module API for running opencog reasoning from pytorch nn.Module extension
 
-from opencog.atomspace import AtomSpace, types, PtrValue, valueToPtrValue
+from opencog.atomspace import AtomSpace, types, PtrValue
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
 from opencog.bindlink import execute_atom, satisfaction_link, bindlink
