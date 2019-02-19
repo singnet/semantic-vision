@@ -4,7 +4,7 @@ Contains TBD class to run vqa pipeline
 """
 
 from opencog.type_constructors import FloatValue, types
-from opencog import bindlink
+from opencog.bindlink import execute_atom
 
 from tbd_cog import tbd_helpers
 from pattern_matcher_vqa import PatternMatcherVqaPipeline, popAtomspace, pushAtomspace
@@ -67,7 +67,7 @@ class TransparentByDesignVQA(PatternMatcherVqaPipeline):
         self._add_scene_atom(features)
         eval_link, left, inheritance_set = tbd_helpers.return_prog(commands=tuple(reversed(program)), atomspace=self.atomspace)
         bind_link = tbd_helpers.build_bind_link(self.atomspace, eval_link, inheritance_set)
-        result = bindlink.bindlink(self.atomspace, bind_link)
+        result = execute_atom(self.atomspace, bind_link)
         answer = self.argmax(result)
         self.atomspace = popAtomspace(self.atomspace)
         return answer
