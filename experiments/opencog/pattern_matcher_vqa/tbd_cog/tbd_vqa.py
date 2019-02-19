@@ -4,7 +4,7 @@ Contains TBD class to run vqa pipeline
 """
 
 from opencog.type_constructors import FloatValue, types
-from opencog import bindlink
+from opencog.bindlink import execute_atom
 
 from tbd_cog import tbd_helpers
 from pattern_matcher_vqa import PatternMatcherVqaPipeline, popAtomspace, pushAtomspace
