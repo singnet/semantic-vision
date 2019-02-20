@@ -90,8 +90,8 @@ class MnistModel(CogModel):
         #  3) compute probability of earch pair
         #  4) compute total probability
         with tmp_atomspace(self.atomspace) as atomspace:
-            inp1 = InputModule(atomspace.add_node(types.ConceptNode, "img1"), data[0].reshape([1,1, 28, 28]))
-            inp2 = InputModule(atomspace.add_node(types.ConceptNode, "img2"), data[1].reshape([1,1, 28, 28]))
+            inp1 = InputModule(ConceptNode("img1"), data[0].reshape([1,1, 28, 28]))
+            inp2 = InputModule(ConceptNode("img2"), data[1].reshape([1,1, 28, 28]))
             pairs = execute_atom(atomspace, self.get_query(str(int(label.sum())), atomspace))
 
             lst = []
