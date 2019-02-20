@@ -1,9 +1,9 @@
 # Experimental design of cog.Module API for running opencog reasoning from pytorch nn.Module extension
 
-from opencog.atomspace import AtomSpace, types, PtrValue
+from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
-from opencog.bindlink import execute_atom, satisfaction_link, bindlink
+from opencog.bindlink import execute_atom
 
 import torch
 from torch.distributions import normal
@@ -51,7 +51,7 @@ bl = BindLink(
     ),
     VariableNode("$X")
 )
-print(bindlink(atomspace, bl))
+print(execute_atom(atomspace, bl))
 
 # ----------------
 
@@ -70,9 +70,9 @@ class AndModule(CogModule):
 
 # inheritance links are concrete links... we can bind specific objects to them
 h = InheritanceLink(ConceptNode("red"), ConceptNode("color"))
-InheritanceModule(h, torch.tensor([0.95]))
+m1 = InheritanceModule(h, torch.tensor([0.95]))
 h = InheritanceLink(ConceptNode("green"), ConceptNode("color"))
-InheritanceModule(h, torch.tensor([0.93]))
+m2 = InheritanceModule(h, torch.tensor([0.93]))
 # doesn't work with Evaluate
 print("Tensor truth value: ", get_cached_value(execute_atom(atomspace,
     execute(InheritanceLink(ConceptNode("green"), ConceptNode("color"))))))
@@ -112,7 +112,7 @@ bl = BindLink(
 )
 print("bl1")
 print(bl)
-print(bindlink(atomspace, bl))
+print(execute_atom(atomspace, bl))
 # somehow works, but:
 # - Execute should be used instead of Evaluate in internal calls - that's ok, and
 # - looks somewhat artificial
@@ -145,4 +145,8 @@ bl = BindLink(
 
 print("bl2")
 print(bl)
-bindlink(atomspace, bl)
+execute_atom(atomspace, bl)
+print(net1)
+print(net2)
+print(m1)
+print(m2)
