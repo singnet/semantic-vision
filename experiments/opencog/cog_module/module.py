@@ -24,6 +24,7 @@ def get_cached_value(atom):
     result = value.value()
     return result
 
+
 def set_value(atom, value):
     key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
     atom.set_value(key, PtrValue(value))
@@ -31,6 +32,7 @@ def set_value(atom, value):
 
 def unpack_args(*atoms):
     return (get_cached_value(atom) for atom in atoms)
+
 
 # todo: new nodes probably should be created in temporary atomspace
 def evaluate(atom, *args):
@@ -72,6 +74,11 @@ class CogModule(torch.nn.Module):
     def evaluate(self, *args):
         return evaluate(self.atom, *args)
 
+    def get_atomspace(self, args):
+        if args:
+            return args[0].atomspace
+        return self.atom.atomspace
+
     def call_forward(self, args):
         #print("Args: ", args)
         #todo: check if ListLink
@@ -79,11 +86,7 @@ class CogModule(torch.nn.Module):
         if tuple(args) in self._cache:
             return self._cache[tuple(args)]
         result = self.forward(*unpack_args(*args))
-            #*(cogm.cached_result for cogm in ...)
-        if args:
-            atomspace = args[0].atomspace
-        else:
-            atomspace = self.atom.atomspace
+        atomspace = self.get_atomspace(args)
         # todo: check new atom is not in atomspace
         id = uuid.uuid4()
         res_atom = atomspace.add_node(types.ConceptNode, 'tmp-result-' + str(id))
@@ -92,10 +95,17 @@ class CogModule(torch.nn.Module):
         return res_atom
 
     def call_forward_tv(self, args):
-        #print("Args in evaluation link: ", args)
-        res_atom = self.call_forward(args)
-        v = torch.mean(self.cached_result)
-        res_atom.truth_value(v, 1.0) #todo???
+        args = args.out
+        atomspace = self.get_atomspace(args)
+        tv_tensor = self.forward(*unpack_args(*args))
+        v = torch.mean(tv_tensor)
+        ev_link = EvaluationLink(
+            GroundedPredicateNode("py:CogModule.callMethod"),
+            ListLink(self.atom,
+                     ConceptNode("call_forward_tv"),
+                     ListLink(*args)))
+        set_value(ev_link, tv_tensor)
+        ev_link.truth_value(v, 1.0) #todo: confidence
         return TruthValue(v)
 
     def clear_cache(self):
