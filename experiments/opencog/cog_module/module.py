@@ -90,7 +90,7 @@ class CogModule(torch.nn.Module):
         result = self.forward(*unpack_args(*args))
         atomspace = self.get_atomspace(args)
         # todo: check new atom is not in atomspace
-        # use atomspace as chache
+        # use atomspace as cache
         res_atom = ExecutionOutputLink(
                          GroundedSchemaNode("py:CogModule.callMethod"),
                          ListLink(self.atom,

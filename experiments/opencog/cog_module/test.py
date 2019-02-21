@@ -5,7 +5,6 @@ from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
 from module import CogModule, CogModel, InputModule
-from module import CogModule
 
 
 import __main__
