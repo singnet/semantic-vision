@@ -10,7 +10,7 @@ from opencog.atomspace import AtomSpace, types, PtrValue
 from opencog.type_constructors import *
 from opencog.atomspace import create_child_atomspace
 from opencog.utilities import initialize_opencog, finalize_opencog
-from opencog.bindlink import execute_atom
+from opencog.bindlink import execute_atom, evaluate_atom
 
 
 # this is a very specialized version; not for general use
@@ -22,6 +22,8 @@ def get_cached_value(atom):
     if value is None:
         raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
     result = value.value()
+    if isinstance(result, InputModule):
+        return result.forward()
     return result
 
 
@@ -88,8 +90,12 @@ class CogModule(torch.nn.Module):
         result = self.forward(*unpack_args(*args))
         atomspace = self.get_atomspace(args)
         # todo: check new atom is not in atomspace
-        id = uuid.uuid4()
-        res_atom = atomspace.add_node(types.ConceptNode, 'tmp-result-' + str(id))
+        # use atomspace as chache
+        res_atom = ExecutionOutputLink(
+                         GroundedSchemaNode("py:CogModule.callMethod"),
+                         ListLink(self.atom,
+                                  ConceptNode("call_forward"),
+                                  ListLink(*args)))
         set_value(res_atom, result)
         self._cache[tuple(args)] = res_atom
         return res_atom
@@ -124,6 +130,9 @@ class InputModule(CogModule):
 
     def forward(self):
         return self.im
+
+    def call_forward(self, args):
+        return self.atom
 
 
 @contextmanager
@@ -161,6 +170,13 @@ class CogModel(torch.nn.Module):
         self.clear_cache()
         atomspace.clear()
         return value
+
+    def evaluate_atom(self, atom, atomspace=None):
+        if atomspace is None:
+            atomspace = create_child_atomspace(self.atomspace)
+        result = evaluate_atom(atomspace, atom)
+        # todo: wrap in bindlink to get tensor truth value
+        return result
 
     def clear_cache(self, atom=None):
         # todo: accept atom,
