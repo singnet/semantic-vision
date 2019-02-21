@@ -145,7 +145,7 @@ bl = BindLink(
 
 print("bl2")
 print(bl)
-execute_atom(atomspace, bl)
+print(execute_atom(atomspace, bl))
 print(net1)
 print(net2)
 print(m1)
