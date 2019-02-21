@@ -42,7 +42,7 @@ class TestBasic(unittest.TestCase):
         result = self.model.evaluate_atom(query)
         expected = colors.mean(dim=-1).mean(dim=-1) + colors.max()
         delta = 0.00000001
-        self.assertTrue(expected[GREEN] - result.mean < delta)
+        self.assertTrue(abs(expected[GREEN] - result.mean) < delta)
 
     def tearDown(self):
         self.atomspace = None
