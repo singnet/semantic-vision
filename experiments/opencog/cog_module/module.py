@@ -135,6 +135,21 @@ class InputModule(CogModule):
         return self.atom
 
 
+class InheritanceModule(CogModule):
+    def __init__(self, atom, init_tv):
+        super().__init__(atom)
+        self.tv = init_tv
+
+    def forward(self):
+        return self.tv
+
+    def execute(self):
+        return self.atom
+
+    def update_tv(self):
+        self.atom.tv = TruthValue(torch.mean(self.tv), 1.0)
+
+
 @contextmanager
 def tmp_atomspace(atomspace):
     parent_atomspace = atomspace
@@ -169,13 +184,14 @@ class CogModel(torch.nn.Module):
         value = get_value(result)
         self.clear_cache()
         atomspace.clear()
+        # todo: use ValueOfLink to get tensor value
         return value
 
     def evaluate_atom(self, atom, atomspace=None):
         if atomspace is None:
             atomspace = create_child_atomspace(self.atomspace)
         result = evaluate_atom(atomspace, atom)
-        # todo: wrap in bindlink to get tensor truth value
+        # todo: use ValueOfLink to get tensor value
         return result
 
     def clear_cache(self, atom=None):
@@ -183,4 +199,9 @@ class CogModel(torch.nn.Module):
         # clear only modules affected during execution
         for module in self.__modules:
             module.clear_cache()
+
+    def update_tv(self):
+        for module in self.__modules:
+            if isinstance(module, InheritanceModule):
+                module.update_tv()
 
