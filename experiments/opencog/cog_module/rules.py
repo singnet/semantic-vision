@@ -6,8 +6,6 @@ from opencog.type_constructors import *
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.bindlink import execute_atom
 
-import __main__
-
 
 def generate_conjunction_rule(nary):
     var_list_typed = VariableList(*[
@@ -22,7 +20,7 @@ def generate_conjunction_rule(nary):
     var_list = [VariableNode("$X-{0}".format(i)) for i in range(nary)]
     condition = AndLink(*var_list)
     conclusion = ExecutionOutputLink(
-        GroundedSchemaNode( "py: fuzzy_conjunction_introduction_formula"),
+        GroundedSchemaNode( "py: rules.fuzzy_conjunction_introduction_formula"),
         ListLink(AndLink(*var_list), SetLink(*var_list)))
     result = BindLink(var_list_typed, condition, conclusion)
     return result
@@ -35,9 +33,6 @@ def fuzzy_conjunction_introduction_formula(conj, conj_set):
     set_value(conj, result)
     conj.tv = TruthValue(float(result), 1.0)
     return conj
-
-
-__main__.fuzzy_conjunction_introduction_formula = fuzzy_conjunction_introduction_formula
 
 
 def precise_modus_ponens_strength_formula(sA, sAB, snotAB):
@@ -60,7 +55,6 @@ def gt_zero_confidence(atom):
     tensor_tv = get_value(atom)
     return TruthValue(0 < tensor_tv, 1)
 
-__main__.gt_zero_confidence = gt_zero_confidence
 
 def gen_modus_ponens_rule(link_type):
     A = VariableNode("$A")
@@ -70,20 +64,17 @@ def gen_modus_ponens_rule(link_type):
     patterns = AndLink(
           # Preconditions
           EvaluationLink(
-            GroundedPredicateNode( "py: gt_zero_confidence"), A),
+            GroundedPredicateNode( "py: rules.gt_zero_confidence"), A),
           EvaluationLink(
-              GroundedPredicateNode( "py: gt_zero_confidence"), AB),
+              GroundedPredicateNode( "py: rules.gt_zero_confidence"), AB),
           # Pattern clauses
           AB,
           A)
     rewrite = ExecutionOutputLink(
-      GroundedSchemaNode( "py: modus_ponens_formula"),
+      GroundedSchemaNode( "py: rules.modus_ponens_formula"),
       ListLink(B, AB, A))
     result = BindLink(variable_declaration, patterns, rewrite)
     return result
-
-
-__main__.modus_ponens_formula = modus_ponens_formula
 
 
 def gen_rules(rule_base):

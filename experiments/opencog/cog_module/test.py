@@ -8,10 +8,11 @@ from opencog.type_constructors import *
 from module import CogModule, CogModel, InputModule, InheritanceModule, get_value
 from rules import gen_rules
 
+import rules
 
 import __main__
 __main__.CogModule = CogModule
-
+__main__.rules = rules
 
 RED = 0
 GREEN = 1
