@@ -7,7 +7,7 @@ from opencog.bindlink import execute_atom
 
 import torch
 from torch.distributions import normal
-from module import CogModule, execute, get_cached_value, evaluate, InputModule
+from module import CogModule, execute, get_value, evaluate, InputModule
 
 
 
@@ -37,10 +37,10 @@ print(net1(inp()))
 # execution from Atomese
 prog1 = net1.execute(inp.execute())
 print(prog1)
-print(get_cached_value(execute_atom(atomspace, prog1)))
+print(get_value(execute_atom(atomspace, prog1)))
 
 prog2 = net2.execute(inp.execute())
-print(get_cached_value(execute_atom(atomspace, prog2)))
+print(get_value(execute_atom(atomspace, prog2)))
 
 bl = BindLink(
     TypedVariableLink(VariableNode("$X"), TypeNode("ConceptNode")),
@@ -61,6 +61,7 @@ class InheritanceModule(CogModule):
     def __init__(self, atom, init_tv):
         super().__init__(atom)
         self.tv = init_tv
+
     def forward(self):
         return self.tv
 
@@ -74,7 +75,7 @@ m1 = InheritanceModule(h, torch.tensor([0.95]))
 h = InheritanceLink(ConceptNode("green"), ConceptNode("color"))
 m2 = InheritanceModule(h, torch.tensor([0.93]))
 # doesn't work with Evaluate
-print("Tensor truth value: ", get_cached_value(execute_atom(atomspace,
+print("Tensor truth value: ", get_value(execute_atom(atomspace,
     execute(InheritanceLink(ConceptNode("green"), ConceptNode("color"))))))
 
 # AndLinks are created dynamically, in ad hoc fashion for queries, etc.

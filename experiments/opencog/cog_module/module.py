@@ -14,7 +14,7 @@ from opencog.bindlink import execute_atom, evaluate_atom
 
 
 # this is a very specialized version; not for general use
-def get_cached_value(atom):
+def get_value(atom):
     # can be generalized, e.g. ConceptNodes can be converted to their string names,
     # so string can be an argument to forward, while ConceptNode can be an argument to execute
     key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
@@ -22,7 +22,7 @@ def get_cached_value(atom):
     if value is None:
         raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
     result = value.value()
-    if isinstance(result, InputModule):
+    if isinstance(result, CogModule):
         return result.forward()
     return result
 
@@ -33,7 +33,7 @@ def set_value(atom, value):
 
 
 def unpack_args(*atoms):
-    return (get_cached_value(atom) for atom in atoms)
+    return (get_value(atom) for atom in atoms)
 
 
 # todo: new nodes probably should be created in temporary atomspace
@@ -135,6 +135,21 @@ class InputModule(CogModule):
         return self.atom
 
 
+class InheritanceModule(CogModule):
+    def __init__(self, atom, init_tv):
+        super().__init__(atom)
+        self.tv = init_tv
+
+    def forward(self):
+        return self.tv
+
+    def execute(self):
+        return self.atom
+
+    def update_tv(self):
+        self.atom.tv = TruthValue(torch.mean(self.tv), 1.0)
+
+
 @contextmanager
 def tmp_atomspace(atomspace):
     parent_atomspace = atomspace
@@ -166,16 +181,17 @@ class CogModel(torch.nn.Module):
         if atomspace is None:
             atomspace = create_child_atomspace(self.atomspace)
         result = execute_atom(atomspace, atom)
-        value = get_cached_value(result)
+        value = get_value(result)
         self.clear_cache()
         atomspace.clear()
+        # todo: use ValueOfLink to get tensor value
         return value
 
     def evaluate_atom(self, atom, atomspace=None):
         if atomspace is None:
             atomspace = create_child_atomspace(self.atomspace)
         result = evaluate_atom(atomspace, atom)
-        # todo: wrap in bindlink to get tensor truth value
+        # todo: use ValueOfLink to get tensor value
         return result
 
     def clear_cache(self, atom=None):
@@ -183,4 +199,9 @@ class CogModel(torch.nn.Module):
         # clear only modules affected during execution
         for module in self.__modules:
             module.clear_cache()
+
+    def update_tv(self):
+        for module in self.__modules:
+            if isinstance(module, InheritanceModule):
+                module.update_tv()
 

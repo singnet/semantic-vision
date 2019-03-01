@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from module import CogModule, CogModel, get_cached_value
+from module import CogModule, CogModel, get_value
 from module import InputModule
 from module import tmp_atomspace
 
