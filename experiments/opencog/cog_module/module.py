@@ -32,8 +32,23 @@ def set_value(atom, value):
     atom.set_value(key, PtrValue(value))
 
 
-def unpack_args(*atoms):
-    return (get_value(atom) for atom in atoms)
+def unpack_args(*atoms, tv=False):
+    """
+    Return attached tensor, if tv=True expected tensor is truth value,
+    so default value will be created in case of no tensor being attach to an atom
+    """
+    default = None
+    if tv:
+        result = []
+        for atom in atoms:
+            default = torch.tensor(0.0)
+            res = get_value(atom)
+            if res is None:
+                set_value(atom, default)
+                res = default
+            result.append(res)
+        return result
+    return [get_value(atom) for atom in atoms]
 
 
 # todo: new nodes probably should be created in temporary atomspace
