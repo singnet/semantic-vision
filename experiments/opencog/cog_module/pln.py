@@ -20,7 +20,7 @@ def generate_conjunction_rule(nary):
     var_list = [VariableNode("$X-{0}".format(i)) for i in range(nary)]
     condition = AndLink(*var_list)
     conclusion = ExecutionOutputLink(
-        GroundedSchemaNode( "py: rules.fuzzy_conjunction_introduction_formula"),
+        GroundedSchemaNode( "py: pln.fuzzy_conjunction_introduction_formula"),
         ListLink(AndLink(*var_list), SetLink(*var_list)))
     result = BindLink(var_list_typed, condition, conclusion)
     return result
@@ -64,20 +64,21 @@ def gen_modus_ponens_rule(link_type):
     patterns = AndLink(
           # Preconditions
           EvaluationLink(
-            GroundedPredicateNode( "py: rules.gt_zero_confidence"), A),
+            GroundedPredicateNode( "py: pln.gt_zero_confidence"), A),
           EvaluationLink(
-              GroundedPredicateNode( "py: rules.gt_zero_confidence"), AB),
+              GroundedPredicateNode( "py: pln.gt_zero_confidence"), AB),
           # Pattern clauses
           AB,
           A)
     rewrite = ExecutionOutputLink(
-      GroundedSchemaNode( "py: rules.modus_ponens_formula"),
+      GroundedSchemaNode( "py: pln.modus_ponens_formula"),
       ListLink(B, AB, A))
     result = BindLink(variable_declaration, patterns, rewrite)
     return result
 
 
-def gen_rules(rule_base):
+def initialize_pln():
+    rule_base = ConceptNode('PLN')
     for i in range(1, 3):
         schema = DefinedSchemaNode('fuzzy-conjuntion-rule-{0}'.format(i))
         DefineLink(schema, generate_conjunction_rule(i))

@@ -6,13 +6,13 @@ from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
 from module import CogModule, CogModel, InputModule, InheritanceModule, get_value
-from rules import gen_rules
+from pln import initialize_pln
 
-import rules
+import pln
 
 import __main__
 __main__.CogModule = CogModule
-__main__.rules = rules
+__main__.pln = pln
 
 RED = 0
 GREEN = 1
@@ -48,8 +48,7 @@ class TestBasic(unittest.TestCase):
         self.assertTrue(abs(expected[GREEN] - result.mean) < delta)
 
     def test_rule_engine(self):
-        rbs = ConceptNode("pln")
-        gen_rules(rbs)
+        rule_base = initialize_pln()
         apple = ConceptNode('apple')
         colors = torch.rand(3, 4, 4)
         colors[GREEN] = 0.8
@@ -67,7 +66,7 @@ class TestBasic(unittest.TestCase):
         # And(Evaluation(GreenPredicate, apple), Inheritance(green, color))
         conj = AndLink(green.evaluate(inp.execute()), inh_green.execute())
 
-        bc = BackwardChainer(self.atomspace, rbs, conj)
+        bc = BackwardChainer(self.atomspace, rule_base, conj)
         bc.do_chain()
         result = get_value(bc.get_results().out[0])
         self.assertEqual(torch.min(colors[GREEN].mean(), inh_green.tv), result)
