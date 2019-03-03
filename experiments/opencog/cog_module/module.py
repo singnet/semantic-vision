@@ -20,7 +20,7 @@ def get_value(atom):
     key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
     value = atom.get_value(key)
     if value is None:
-        raise RuntimeError("atom {0} has no value for {1}".format(str(atom), str(key)))
+        return value
     result = value.value()
     if isinstance(result, CogModule):
         return result.forward()
@@ -32,8 +32,23 @@ def set_value(atom, value):
     atom.set_value(key, PtrValue(value))
 
 
-def unpack_args(*atoms):
-    return (get_value(atom) for atom in atoms)
+def unpack_args(*atoms, tv=False):
+    """
+    Return attached tensor, if tv=True expected tensor is truth value,
+    so default value will be created in case of no tensor being attach to an atom
+    """
+    default = None
+    if tv:
+        result = []
+        for atom in atoms:
+            default = torch.tensor(0.0)
+            res = get_value(atom)
+            if res is None:
+                set_value(atom, default)
+                res = default
+            result.append(res)
+        return result
+    return [get_value(atom) for atom in atoms]
 
 
 # todo: new nodes probably should be created in temporary atomspace
@@ -59,7 +74,6 @@ class CogModule(torch.nn.Module):
         super().__init__()
         self.atom = atom
         set_value(atom, weakref.proxy(self))
-        self._cache = dict()
 
     @staticmethod
     def callMethod(atom, methodname, args):
@@ -82,45 +96,34 @@ class CogModule(torch.nn.Module):
         return self.atom.atomspace
 
     def call_forward(self, args):
-        #print("Args: ", args)
-        #todo: check if ListLink
         args = args.out
-        if tuple(args) in self._cache:
-            return self._cache[tuple(args)]
-        result = self.forward(*unpack_args(*args))
-        atomspace = self.get_atomspace(args)
-        # todo: check new atom is not in atomspace
-        # use atomspace as cache
         res_atom = ExecutionOutputLink(
                          GroundedSchemaNode("py:CogModule.callMethod"),
                          ListLink(self.atom,
                                   ConceptNode("call_forward"),
                                   ListLink(*args)))
+        cached_value = get_value(res_atom)
+        if cached_value is not None:
+            return res_atom
+        result = self.forward(*unpack_args(*args))
         set_value(res_atom, result)
-        self._cache[tuple(args)] = res_atom
         return res_atom
 
     def call_forward_tv(self, args):
         args = args.out
-        atomspace = self.get_atomspace(args)
+        ev_link = EvaluationLink(
+             GroundedPredicateNode("py:CogModule.callMethod"),
+             ListLink(self.atom,
+                      ConceptNode("call_forward_tv"),
+                      ListLink(*args)))
+        cached_value = get_value(ev_link)
+        if cached_value is not None:
+            return ev_link.tv
         tv_tensor = self.forward(*unpack_args(*args))
         v = torch.mean(tv_tensor)
-        ev_link = EvaluationLink(
-            GroundedPredicateNode("py:CogModule.callMethod"),
-            ListLink(self.atom,
-                     ConceptNode("call_forward_tv"),
-                     ListLink(*args)))
         set_value(ev_link, tv_tensor)
-        ev_link.truth_value(v, 1.0) #todo: confidence
-        return TruthValue(v)
-
-    def clear_cache(self):
-        self._cache = dict()
-
-    @staticmethod
-    def newLink(atom):
-        print("HERE: ", atom)
-        return atom
+        ev_link.tv = TruthValue(v, 1.0) #todo: confidence
+        return ev_link.tv
 
 
 class InputModule(CogModule):
@@ -182,7 +185,6 @@ class CogModel(torch.nn.Module):
             atomspace = create_child_atomspace(self.atomspace)
         result = execute_atom(atomspace, atom)
         value = get_value(result)
-        self.clear_cache()
         atomspace.clear()
         # todo: use ValueOfLink to get tensor value
         return value
@@ -193,12 +195,6 @@ class CogModel(torch.nn.Module):
         result = evaluate_atom(atomspace, atom)
         # todo: use ValueOfLink to get tensor value
         return result
-
-    def clear_cache(self, atom=None):
-        # todo: accept atom,
-        # clear only modules affected during execution
-        for module in self.__modules:
-            module.clear_cache()
 
     def update_tv(self):
         for module in self.__modules:
