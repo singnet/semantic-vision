@@ -439,7 +439,7 @@ class PatternMatcherVqaPipeline:
 
         results = self.sort_results(resultsData, a_extract_predicate=True)
         if not results:
-            return None, None, None
+            return '', None, None
         maxResult = results[0]
         return maxResult.get_predicate_name(), \
                maxResult.get_bounding_box_id(), \
