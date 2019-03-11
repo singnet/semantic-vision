@@ -51,7 +51,7 @@ bl = BindLink(
     ),
     VariableNode("$X")
 )
-#print(execute_atom(atomspace, bl))
+print(execute_atom(atomspace, bl))
 
 # ----------------
 
