@@ -1,6 +1,6 @@
+from enum import Enum
 from contextlib import contextmanager
 import torch
-import uuid
 import weakref
 from torch.distributions import normal
 
@@ -13,13 +13,30 @@ from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.bindlink import execute_atom, evaluate_atom
 
 
+class EVMODE(Enum):
+    FEATUREMAP = 1
+    MEAN = 2
+    STV = 3
+
+
+MEAN = 0
+CONFIDENCE = 1
+
+
 # this is a very specialized version; not for general use
-def get_value(atom):
+def get_value(atom, tv=False):
     # can be generalized, e.g. ConceptNodes can be converted to their string names,
     # so string can be an argument to forward, while ConceptNode can be an argument to execute
-    key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
+    if tv:
+        key = atom.atomspace.add_node(types.PredicateNode, "cogNet-tv")
+    else:
+        key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
     value = atom.get_value(key)
     if value is None:
+        if tv:
+            default = TTruthValue([1.0, 0.0])
+            set_value(atom, default, tv=tv)
+            return default
         return value
     result = value.value()
     if isinstance(result, CogModule):
@@ -27,8 +44,12 @@ def get_value(atom):
     return result
 
 
-def set_value(atom, value):
-    key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
+def set_value(atom, value, tv=False):
+    if tv:
+        key = atom.atomspace.add_node(types.PredicateNode, "cogNet-tv")
+        assert isinstance(value, TTruthValue) or isinstance(value, CogModule)
+    else:
+        key = atom.atomspace.add_node(types.PredicateNode, "cogNet")
     atom.set_value(key, PtrValue(value))
 
 
@@ -37,18 +58,7 @@ def unpack_args(*atoms, tv=False):
     Return attached tensor, if tv=True expected tensor is truth value,
     so default value will be created in case of no tensor being attach to an atom
     """
-    default = None
-    if tv:
-        result = []
-        for atom in atoms:
-            default = torch.tensor(0.0)
-            res = get_value(atom)
-            if res is None:
-                set_value(atom, default)
-                res = default
-            result.append(res)
-        return result
-    return [get_value(atom) for atom in atoms]
+    return [get_value(atom, tv=tv) for atom in atoms]
 
 
 # todo: new nodes probably should be created in temporary atomspace
@@ -70,10 +80,11 @@ def execute(atom, *args):
 
 # todo: separate cog module from its usage + static methods should be moved to module (e.g. cog.Execute)
 class CogModule(torch.nn.Module):
-    def __init__(self, atom): #todo: atom is optional? if not given, generate by address? string name for concept instead?
+    def __init__(self, atom, ev_mode=EVMODE.MEAN): #todo: atom is optional? if not given, generate by address? string name for concept instead?
         super().__init__()
         self.atom = atom
         set_value(atom, weakref.proxy(self))
+        self.eval_mode = ev_mode
 
     @staticmethod
     def callMethod(atom, methodname, args):
@@ -119,10 +130,17 @@ class CogModule(torch.nn.Module):
         cached_value = get_value(ev_link)
         if cached_value is not None:
             return ev_link.tv
-        tv_tensor = self.forward(*unpack_args(*args))
-        v = torch.mean(tv_tensor)
-        set_value(ev_link, tv_tensor)
-        ev_link.tv = TruthValue(v, 1.0) #todo: confidence
+        out = self.forward(*unpack_args(*args))
+        if self.eval_mode == EVMODE.MEAN:
+            assert len(out.shape) == 0
+            tv_tensor = TTruthValue([out, torch.tensor(1.0)])
+        elif self.eval_mode == EVMODE.STV:
+            assert len(out) == 2
+            tv_tensor = TTruthValue(out)
+        else:
+            raise NotImplementedError("mode not implemented")
+        set_value(ev_link, tv_tensor, tv=True)
+        ev_link.tv = TruthValue(tv_tensor[MEAN], tv_tensor[CONFIDENCE])
         return ev_link.tv
 
 
@@ -141,7 +159,10 @@ class InputModule(CogModule):
 class InheritanceModule(CogModule):
     def __init__(self, atom, init_tv):
         super().__init__(atom)
-        self.tv = init_tv
+        assert len(init_tv) == 2
+        self.tv = TTruthValue(init_tv)
+        set_value(atom, weakref.proxy(self), tv=True)
+        self.update_tv()
 
     def forward(self):
         return self.tv
@@ -150,9 +171,11 @@ class InheritanceModule(CogModule):
         return self.atom
 
     def update_tv(self):
-        self.atom.tv = TruthValue(torch.mean(self.tv), 1.0)
+        self.atom.tv = TruthValue(self.tv[MEAN], self.tv[CONFIDENCE])
 
 
+# todo: replace by tmp_atomspace from
+# atomspace after merge
 @contextmanager
 def tmp_atomspace(atomspace):
     parent_atomspace = atomspace
@@ -200,4 +223,15 @@ class CogModel(torch.nn.Module):
         for module in self.__modules:
             if isinstance(module, InheritanceModule):
                 module.update_tv()
+
+
+class TTruthValue(torch.Tensor):
+
+    @property
+    def mean(self):
+        return self[MEAN]
+
+    @property
+    def confidence(self):
+        return self[CONFIDENCE]
 
