@@ -1,5 +1,5 @@
 import torch
-from module import unpack_args, set_value, get_value
+from module import unpack_args, set_value, get_value, TTruthValue
 import opencog
 import opencog.atomspace
 from opencog.type_constructors import *
@@ -26,12 +26,20 @@ def generate_conjunction_rule(nary):
     return result
 
 
+def cog_merge_hi_conf_tv(atom, tv):
+    old_tv = get_value(atom, tv=True)
+    if old_tv.confidence < tv.confidence:
+        set_value(atom, tv, tv=True)
+        atom.tv = TruthValue(float(tv.mean), float(tv.confidence))
+
+
 def fuzzy_conjunction_introduction_formula(conj, conj_set):
     atoms = conj_set.out
-    args = list(unpack_args(*conj_set.out))
-    result = torch.min(*args)
-    set_value(conj, result)
-    conj.tv = TruthValue(float(result), 1.0)
+    args = list(unpack_args(*conj_set.out, tv=True))
+    min_s = torch.min(torch.stack(tuple(x.mean for x in args)))
+    min_c = torch.min(torch.stack(tuple(x.confidence for x in args)))
+    result = TTruthValue(torch.stack([min_s, min_c]))
+    cog_merge_hi_conf_tv(conj, result)
     return conj
 
 
@@ -40,27 +48,31 @@ def precise_modus_ponens_strength_formula(sA, sAB, snotAB):
 
 
 def modus_ponens_formula(B, AB, A):
-    sA = get_value(A)[MEAN]
-    cA = get_value(A)[CONFIDENCE]
-    sAB = get_value(AB)[MEAN]
-    cAB = get_value(AB)[CONFIDENCE]
+    sA = get_value(A, tv=True).mean
+    cA = get_value(A, tv=True).confidence
+    sAB = get_value(AB, tv=True).mean
+    cAB = get_value(AB, tv=True).confidence
     snotAB = 0.2 # Huge hack
     cnotAB = 1
-    B.tv = TruthValue(precise_modus_ponens_strength_formula(sA, sAB, snotAB),
-                   min(min(cAB, cnotAB), cA))
+    new_tv = TTruthValue(precise_modus_ponens_strength_formula(sA, sAB, snotAB),
+                min(cAB, cnotAB, cA))
+    cog_merge_hi_conf_tv(B, new_tv)
     return B
 
 
 def gt_zero_confidence(atom):
-    tensor_tv = get_value(atom)
-    return TruthValue(0 < tensor_tv, 1)
+    tensor_tv = get_value(atom, tv=True)
+    result = TruthValue(0 < tensor_tv.confidence, 1)
+    return result
 
 
 def gen_modus_ponens_rule(link_type):
     A = VariableNode("$A")
     B = VariableNode("$B")
     AB = link_type(A, B)
-    variable_declaration = VariableList(A, B)
+    # todo: scheme implementation has untyped variables
+    # but python version fails in such case
+    variable_declaration = VariableList(TypedVariableLink(A, TypeNode("ConceptNode")), TypedVariableLink(B, TypeNode("ConceptNode")))
     patterns = AndLink(
           # Preconditions
           EvaluationLink(
@@ -83,9 +95,8 @@ def initialize_pln():
         schema = DefinedSchemaNode('fuzzy-conjuntion-rule-{0}'.format(i))
         DefineLink(schema, generate_conjunction_rule(i))
         MemberLink(schema, rule_base)
-#    modus-ponens doesn't work yet due to generation of links during inference process
-#    schema = DefinedSchemaNode('modus-ponens')
-#    DefineLink(schema, gen_modus_ponens_rule(InheritanceLink))
-#    MemberLink(schema, rule_base)
+    schema = DefinedSchemaNode('modus-ponens')
+    DefineLink(schema, gen_modus_ponens_rule(InheritanceLink))
+    MemberLink(schema, rule_base)
     return rule_base
 
