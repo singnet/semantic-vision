@@ -7,7 +7,7 @@ from opencog.bindlink import execute_atom
 
 import torch
 from torch.distributions import normal
-from module import CogModule, execute, get_value, evaluate, InputModule
+from module import CogModule, execute, get_value, evaluate, InputModule, EVALMODE
 
 
 
@@ -24,7 +24,7 @@ class AttentionModule(CogModule):
 atomspace = AtomSpace()
 initialize_opencog(atomspace)
 
-inp = InputModule(ConceptNode("image"), torch.tensor([1.]))
+inp = InputModule(ConceptNode("image"), torch.tensor(1.))
 InheritanceLink(ConceptNode("red"), ConceptNode("color"))
 InheritanceLink(ConceptNode("green"), ConceptNode("color"))
 net1 = AttentionModule(ConceptNode("red"))
@@ -71,9 +71,9 @@ class AndModule(CogModule):
 
 # inheritance links are concrete links... we can bind specific objects to them
 h = InheritanceLink(ConceptNode("red"), ConceptNode("color"))
-m1 = InheritanceModule(h, torch.tensor([0.95]))
+m1 = InheritanceModule(h, torch.tensor([0.95, 1.0]))
 h = InheritanceLink(ConceptNode("green"), ConceptNode("color"))
-m2 = InheritanceModule(h, torch.tensor([0.93]))
+m2 = InheritanceModule(h, torch.tensor([0.93, 1.0]))
 # doesn't work with Evaluate
 print("Tensor truth value: ", get_value(execute_atom(atomspace,
     execute(InheritanceLink(ConceptNode("green"), ConceptNode("color"))))))
@@ -81,7 +81,7 @@ print("Tensor truth value: ", get_value(execute_atom(atomspace,
 # AndLinks are created dynamically, in ad hoc fashion for queries, etc.
 # it's cumbersome and unnecesary to bind them to individual objects
 # h = AndLink(?, ?)
-and_net = AndModule(ConceptNode("AndLink")) # GroundedObjectNode would be suitable here
+and_net = AndModule(ConceptNode("AndLink"), ev_mode=EVALMODE.STV) # GroundedObjectNode would be suitable here
 
 bl = BindLink(
     VariableNode("$X"),
