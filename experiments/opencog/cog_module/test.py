@@ -5,7 +5,7 @@ from opencog.ure import BackwardChainer
 from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
-from module import CogModule, CogModel, InputModule, InheritanceModule, get_value
+from module import CogModule, CogModel, InputModule, InheritanceModule, get_value, TTruthValue
 from pln import initialize_pln
 
 import pln
@@ -58,19 +58,17 @@ class TestBasic(unittest.TestCase):
         # green <- color
         green = GreenPredicate(ConceptNode('green'))
         inh_red = InheritanceLink(ConceptNode("red"), ConceptNode("color"))
-        inh_red.tv = TruthValue(0.8, 0.99)
-        inh_red = InheritanceModule(inh_red, torch.tensor(0.9))
+        inh_red = InheritanceModule(inh_red, torch.tensor([0.9, 0.95]))
         inh_green = InheritanceLink(ConceptNode("green"), ConceptNode("color"))
-        inh_green.tv = TruthValue(0.8, 0.99)
-        inh_green = InheritanceModule(inh_green, torch.tensor(0.6))
+        inh_green = InheritanceModule(inh_green, torch.tensor([0.6, .9]))
         # And(Evaluation(GreenPredicate, apple), Inheritance(green, color))
         conj = AndLink(green.evaluate(inp.execute()), inh_green.execute())
 
         bc = BackwardChainer(self.atomspace, rule_base, conj)
         bc.do_chain()
-        result = get_value(bc.get_results().out[0])
-        self.assertEqual(torch.min(colors[GREEN].mean(), inh_green.tv), result)
-
+        result = get_value(bc.get_results().out[0], tv=True)
+        self.assertEqual(min(colors[GREEN].mean(), inh_green.tv.mean), result.mean)
+        self.assertEqual(inh_green.tv.confidence, result.confidence)
 
     def tearDown(self):
         self.atomspace = None
