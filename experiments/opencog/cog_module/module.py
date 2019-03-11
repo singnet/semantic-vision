@@ -13,7 +13,7 @@ from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.bindlink import execute_atom, evaluate_atom
 
 
-class EVMODE(Enum):
+class EVALMODE(Enum):
     FEATUREMAP = 1
     MEAN = 2
     STV = 3
@@ -80,7 +80,7 @@ def execute(atom, *args):
 
 # todo: separate cog module from its usage + static methods should be moved to module (e.g. cog.Execute)
 class CogModule(torch.nn.Module):
-    def __init__(self, atom, ev_mode=EVMODE.MEAN): #todo: atom is optional? if not given, generate by address? string name for concept instead?
+    def __init__(self, atom, ev_mode=EVALMODE.MEAN): #todo: atom is optional? if not given, generate by address? string name for concept instead?
         super().__init__()
         self.atom = atom
         set_value(atom, weakref.proxy(self))
@@ -131,10 +131,10 @@ class CogModule(torch.nn.Module):
         if cached_value is not None:
             return ev_link.tv
         out = self.forward(*unpack_args(*args))
-        if self.eval_mode == EVMODE.MEAN:
+        if self.eval_mode == EVALMODE.MEAN:
             assert len(out.shape) == 0
             tv_tensor = TTruthValue([out, torch.tensor(1.0)])
-        elif self.eval_mode == EVMODE.STV:
+        elif self.eval_mode == EVALMODE.STV:
             assert len(out) == 2
             tv_tensor = TTruthValue(out)
         else:

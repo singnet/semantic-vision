@@ -7,7 +7,7 @@ from opencog.bindlink import execute_atom
 
 import torch
 from torch.distributions import normal
-from module import CogModule, execute, get_value, evaluate, InputModule, EVMODE
+from module import CogModule, execute, get_value, evaluate, InputModule, EVALMODE
 
 
 
@@ -81,7 +81,7 @@ print("Tensor truth value: ", get_value(execute_atom(atomspace,
 # AndLinks are created dynamically, in ad hoc fashion for queries, etc.
 # it's cumbersome and unnecesary to bind them to individual objects
 # h = AndLink(?, ?)
-and_net = AndModule(ConceptNode("AndLink"), ev_mode=EVMODE.STV) # GroundedObjectNode would be suitable here
+and_net = AndModule(ConceptNode("AndLink"), ev_mode=EVALMODE.STV) # GroundedObjectNode would be suitable here
 
 bl = BindLink(
     VariableNode("$X"),
