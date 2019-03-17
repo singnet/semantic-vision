@@ -2,11 +2,10 @@ from enum import Enum
 from contextlib import contextmanager
 import torch
 import weakref
-from torch.distributions import normal
 
 # Experimental design of cog.Module API for running opencog reasoning from pytorch nn.Module extension
 
-from opencog.atomspace import AtomSpace, types, PtrValue
+from opencog.atomspace import types, PtrValue, Atom
 from opencog.type_constructors import *
 from opencog.atomspace import create_child_atomspace
 from opencog.utilities import initialize_opencog, finalize_opencog
@@ -157,15 +156,29 @@ class InputModule(CogModule):
 
 
 class InheritanceModule(CogModule):
-    def __init__(self, atom, init_tv):
-        super().__init__(atom)
+    def __init__(self, *args, tv=None):
+        assert bool(args)
+        if len(args) == 1:
+            self.__init_link(args[0], tv)
+            return
+        assert len(args) == 2
+        self.__init_link(InheritanceLink(*args), tv)
+
+
+    def __init_link(self, inh_link, init_tv=None):
+        super().__init__(inh_link)
+        if init_tv is None:
+            init_tv = TTruthValue([0.0, 1.0])
         assert len(init_tv) == 2
         self.tv = TTruthValue(init_tv)
-        set_value(atom, weakref.proxy(self), tv=True)
+        set_value(inh_link, weakref.proxy(self), tv=True)
         self.update_tv()
 
     def forward(self):
         return self.tv
+
+    def evaluate(self):
+        return self.atom
 
     def execute(self):
         return self.atom

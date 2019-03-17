@@ -14,7 +14,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from module import CogModule, CogModel, get_value
-from module import InputModule
+from module import InputModule, set_value
 from module import tmp_atomspace
 
 
@@ -55,8 +55,8 @@ class MnistNet(CogModule):
 
 
 class ProbOfDigit(CogModule):
-    def forward(self, probs, i):
-        return probs[0][i]
+    def forward(self, probs, i, p_in_range):
+        return probs[0][i] * p_in_range
 
 
 class TorchSum(CogModule):
@@ -75,10 +75,11 @@ class MnistModel(CogModel):
         self.sum_prob = SumProb(ConceptNode("SumProb"))
         self.digit_prob = ProbOfDigit(ConceptNode("ProbOfDigit"))
         self.torch_sum = TorchSum(ConceptNode("TorchSum"))
+        self.inh_weights = torch.nn.Parameter(torch.Tensor([0.3] * 10))
         for i in range(10):
             NumberNode(str(i)).set_value(PredicateNode("cogNet"), PtrValue(i))
-            InheritanceLink(NumberNode(str(i)), ConceptNode("range"))
-
+            inh1 = InheritanceLink(NumberNode(str(i)), ConceptNode("range"))
+            set_value(inh1, self.inh_weights[i])
 
     def compute_prob(self, data, label):
         """
@@ -95,9 +96,16 @@ class MnistModel(CogModel):
             pairs = execute_atom(atomspace, self.get_query(str(int(label.sum())), atomspace))
 
             lst = []
+            p_digit = lambda mnist, digit, inh: self.digit_prob.execute(mnist, digit, inh)
             for pair in pairs.out:
-                lst.append(self.sum_prob.execute(self.digit_prob.execute(self.mnist.execute(inp1.execute()), pair.out[0]),
-                                           self.digit_prob.execute(self.mnist.execute(inp2.execute()), pair.out[1])))
+                p_digit1 = p_digit(self.mnist.execute(inp1.execute()),
+                        pair.out[0],
+                        InheritanceLink(pair.out[0], ConceptNode("range")))
+                p_digit2 = p_digit(self.mnist.execute(inp2.execute()),
+                        pair.out[1],
+                        InheritanceLink(pair.out[1], ConceptNode("range")))
+                s = self.sum_prob.execute(p_digit1, p_digit2)
+                lst.append(s)
             sum_query = self.torch_sum.execute(*lst)
             result = self.execute_atom(sum_query)
             return result
@@ -130,6 +138,7 @@ def train(model, device, train_loader, optimizer, epoch, log_interval, scheduler
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f},\t lr: '.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()), lr)
+            print(model.inh_weights)
 
 
 def exponential_lr(decay_rate, global_step, decay_steps, staircase=False):
