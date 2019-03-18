@@ -15,10 +15,9 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from module import CogModule, CogModel, get_value
 from module import InputModule, set_value
-from module import tmp_atomspace
-
 
 try:
+    from opencog.utilities import tmp_atomspace
     from opencog.scheme_wrapper import *
     from opencog.atomspace import AtomSpace, types, PtrValue
     from opencog.atomspace import create_child_atomspace
@@ -76,49 +75,61 @@ class MnistModel(CogModel):
         self.digit_prob = ProbOfDigit(ConceptNode("ProbOfDigit"))
         self.torch_sum = TorchSum(ConceptNode("TorchSum"))
         self.inh_weights = torch.nn.Parameter(torch.Tensor([0.3] * 10))
+        #  create NumberNodes
+        #  attach tensor representing p(number in range)
         for i in range(10):
             NumberNode(str(i)).set_value(PredicateNode("cogNet"), PtrValue(i))
             inh1 = InheritanceLink(NumberNode(str(i)), ConceptNode("range"))
             set_value(inh1, self.inh_weights[i])
 
-    def compute_prob(self, data, label):
+    def process(self, data, label):
         """
         Accepts batch with features and labels,
         returns probability of labels
         """
-        #  1) create NumberNodes
-        #  2) compute possible pairs of NumberNodes
-        #  3) compute probability of earch pair
-        #  4) compute total probability
-        with tmp_atomspace(self.atomspace) as atomspace:
+        with tmp_atomspace() as atomspace:
+            #  compute possible pairs of NumberNodes
+            pairs = self.get_all_pairs(label, atomspace)
+
+            # setup input images
             inp1 = InputModule(ConceptNode("img1"), data[0].reshape([1,1, 28, 28]))
             inp2 = InputModule(ConceptNode("img2"), data[1].reshape([1,1, 28, 28]))
-            pairs = execute_atom(atomspace, self.get_query(str(int(label.sum())), atomspace))
+            return self.p_correct_answer(pairs, inp1, inp2)
 
-            lst = []
-            p_digit = lambda mnist, digit, inh: self.digit_prob.execute(mnist, digit, inh)
-            for pair in pairs.out:
-                p_digit1 = p_digit(self.mnist.execute(inp1.execute()),
-                        pair.out[0],
-                        InheritanceLink(pair.out[0], ConceptNode("range")))
-                p_digit2 = p_digit(self.mnist.execute(inp2.execute()),
-                        pair.out[1],
-                        InheritanceLink(pair.out[1], ConceptNode("range")))
-                s = self.sum_prob.execute(p_digit1, p_digit2)
-                lst.append(s)
-            sum_query = self.torch_sum.execute(*lst)
-            result = self.execute_atom(sum_query)
-            return result
 
-    def get_query(self, label, atomspace):
+    def p_correct_answer(self, pairs, inp1, inp2):
+        """
+        compute probability of earch pair
+        compute total probability - sum of pairs
+        """
+        lst = []
+        p_digit = lambda mnist, digit, inh: self.digit_prob.execute(mnist, digit, inh)
+        for pair in pairs.out:
+            p_digit1 = p_digit(self.mnist.execute(inp1.execute()),
+                    pair.out[0],
+                    InheritanceLink(pair.out[0], ConceptNode("range")))
+            p_digit2 = p_digit(self.mnist.execute(inp2.execute()),
+                    pair.out[1],
+                    InheritanceLink(pair.out[1], ConceptNode("range")))
+            sum_expr = self.sum_prob.execute(p_digit1, p_digit2)
+            lst.append(sum_expr)
+        sum_query = self.torch_sum.execute(*lst)
+        result = self.execute_atom(sum_query)
+        return result
+
+    def get_all_pairs(self, label, atomspace):
+        """
+        Calculate all suitable pairs of digits for given label
+        """
+        label = str(int(label.sum()))
         var_x = atomspace.add_node(types.VariableNode, "X")
         var_y = atomspace.add_node(types.VariableNode, "Y")
         vardecl = VariableList(TypedVariableLink(var_x, TypeNode("NumberNode")), TypedVariableLink(var_y, TypeNode("NumberNode")))
         eq = EqualLink(PlusLink(var_x, var_y), NumberNode(label))
         inh1 = InheritanceLink(var_x, ConceptNode("range"))
         inh2 = InheritanceLink(var_y, ConceptNode("range"))
-        g2 = BindLink(vardecl, AndLink(inh1, inh2, eq), ListLink(var_x, var_y))
-        return g2
+        bindlink = BindLink(vardecl, AndLink(inh1, inh2, eq), ListLink(var_x, var_y))
+        return execute_atom(atomspace, bindlink)
 
 
 def train(model, device, train_loader, optimizer, epoch, log_interval, scheduler):
@@ -127,7 +138,7 @@ def train(model, device, train_loader, optimizer, epoch, log_interval, scheduler
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         model.zero_grad()
-        output = model.compute_prob(data, target)
+        output = model.process(data, target)
         loss = - torch.log(output)
         loss.backward()
         optimizer.step()
