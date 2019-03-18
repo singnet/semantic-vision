@@ -59,8 +59,8 @@ class TestBasic(unittest.TestCase):
         green = GreenPredicate(ConceptNode('green'))
         inh_red = InheritanceLink(ConceptNode("red"), ConceptNode("color"))
         inh_red = InheritanceModule(inh_red, torch.tensor([0.9, 0.95]))
-        inh_green = InheritanceLink(ConceptNode("green"), ConceptNode("color"))
-        inh_green = InheritanceModule(inh_green, torch.tensor([0.6, .9]))
+        inh_green = InheritanceModule(ConceptNode("green"), ConceptNode("color"),
+                                      tv=torch.tensor([0.6, .9]))
         # And(Evaluation(GreenPredicate, apple), Inheritance(green, color))
         conj = AndLink(green.evaluate(inp.execute()), inh_green.execute())
 
