@@ -195,7 +195,7 @@ def main(inliner_classes):
 
     #keep only train classes
     #mnist_train = [x for x in mnist_train if x[0] in inliner_classes]
-    mnist_train, _ = mnist_n(inliner_classes, True)
+    mnist_train, _ = mnist_n(inliner_classes, False)
 
     #random.seed(0)
     #random.shuffle(mnist_train)
@@ -300,14 +300,14 @@ def main2(inliner_classes, outlier_classes=False):
     z_size = 32
     
     if outlier_classes:
-        in_mnist_train, _ = mnist_n(inliner_classes, True)
+        in_mnist_train, _ = mnist_n(inliner_classes, False)
         in_mnist_train_size = in_mnist_train.shape[0]
         in_mnist_train_chunk = in_mnist_train_size // 9
         mnist_train = torch.from_numpy(np.vstack([mnist_n(i, True)[0][:in_mnist_train_chunk] for i in range(10) if i != inliner_classes]))
         #print(mnist_train.shape, in_mnist_train.shape)
         #exit()
     else:
-        mnist_train, _ = mnist_n(inliner_classes, True)
+        mnist_train, _ = mnist_n(inliner_classes, False)
     
     G = Generator(z_size).to(device)
     E = Encoder(z_size).to(device)
