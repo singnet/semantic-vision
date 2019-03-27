@@ -1,5 +1,5 @@
 import torch
-from module import unpack_args, set_value, get_value, TTruthValue
+from cognets import unpack_args, set_value, get_value, TTruthValue
 import opencog
 import opencog.atomspace
 from opencog.type_constructors import *

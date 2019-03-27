@@ -5,7 +5,7 @@ from opencog.ure import BackwardChainer
 from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
-from module import CogModule, CogModel, InputModule, InheritanceModule, get_value, TTruthValue
+from cognets import CogModule, CogModel, InputModule, InheritanceModule, get_value, TTruthValue
 from pln import initialize_pln
 
 import pln
