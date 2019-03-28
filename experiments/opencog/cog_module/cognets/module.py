@@ -22,10 +22,7 @@ MEAN = 0
 CONFIDENCE = 1
 
 
-# this is a very specialized version; not for general use
 def get_value(atom, tv=False):
-    # can be generalized, e.g. ConceptNodes can be converted to their string names,
-    # so string can be an argument to forward, while ConceptNode can be an argument to execute
     if tv:
         key = atom.atomspace.add_node(types.PredicateNode, "cogNet-tv")
     else:
@@ -33,7 +30,7 @@ def get_value(atom, tv=False):
     value = atom.get_value(key)
     if value is None:
         if tv:
-            default = TTruthValue([1.0, 0.0])
+            default = TTruthValue([atom.tv.mean, atom.tv.confidence])
             set_value(atom, default, tv=tv)
             return default
         return value
@@ -60,7 +57,6 @@ def unpack_args(*atoms, tv=False):
     return [get_value(atom, tv=tv) for atom in atoms]
 
 
-# todo: new nodes probably should be created in temporary atomspace
 def evaluate(atom, *args):
     return EvaluationLink(
         GroundedPredicateNode("py:CogModule.callMethod"),
