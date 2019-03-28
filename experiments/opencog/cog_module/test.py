@@ -6,6 +6,7 @@ from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
 from cognets import CogModule, CogModel, InputModule, InheritanceModule, get_value, TTruthValue
+from cognets import get_tv
 from pln import initialize_pln
 
 import pln
@@ -66,7 +67,7 @@ class TestBasic(unittest.TestCase):
 
         bc = BackwardChainer(self.atomspace, rule_base, conj)
         bc.do_chain()
-        result = get_value(bc.get_results().out[0], tv=True)
+        result = get_tv(bc.get_results().out[0])
         self.assertEqual(min(colors[GREEN].mean(), inh_green.tv.mean), result.mean)
         self.assertEqual(inh_green.tv.confidence, result.confidence)
 

@@ -53,6 +53,10 @@ def set_tv(atom, value):
     return set_value(atom, value, tv=True)
 
 
+def get_tv(atom):
+    return get_value(atom, tv=True)
+
+
 def unpack_args(*atoms, tv=False):
     """
     Return attached tensor, if tv=True expected tensor is truth value,
