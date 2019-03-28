@@ -49,6 +49,10 @@ def set_value(atom, value, tv=False):
     atom.set_value(key, PtrValue(value))
 
 
+def set_tv(atom, value):
+    return set_value(atom, value, tv=True)
+
+
 def unpack_args(*atoms, tv=False):
     """
     Return attached tensor, if tv=True expected tensor is truth value,
@@ -134,7 +138,7 @@ class CogModule(torch.nn.Module):
             tv_tensor = TTruthValue(out)
         else:
             raise NotImplementedError("mode not implemented")
-        set_value(ev_link, tv_tensor, tv=True)
+        set_tv(ev_link, tv_tensor)
         ev_link.tv = TruthValue(tv_tensor[MEAN], tv_tensor[CONFIDENCE])
         return ev_link.tv
 
@@ -164,10 +168,11 @@ class InheritanceModule(CogModule):
     def __init_link(self, inh_link, init_tv=None):
         super().__init__(inh_link)
         if init_tv is None:
-            init_tv = TTruthValue([0.0, 1.0])
+            init_tv = TTruthValue([inh_link.tv.mean,
+                inh_link.tv.confidence])
         assert len(init_tv) == 2
         self.tv = TTruthValue(init_tv)
-        set_value(inh_link, weakref.proxy(self), tv=True)
+        set_tv(inh_link, weakref.proxy(self))
         self.update_tv()
 
     def forward(self):
@@ -181,21 +186,6 @@ class InheritanceModule(CogModule):
 
     def update_tv(self):
         self.atom.tv = TruthValue(self.tv[MEAN], self.tv[CONFIDENCE])
-
-
-# todo: replace by tmp_atomspace from
-# atomspace after merge
-@contextmanager
-def tmp_atomspace(atomspace):
-    parent_atomspace = atomspace
-    atomspace = create_child_atomspace(parent_atomspace)
-    initialize_opencog(atomspace)
-    try:
-        yield atomspace
-    finally:
-        atomspace.clear()
-        finalize_opencog()
-        initialize_opencog(parent_atomspace)
 
 
 class CogModel(torch.nn.Module):
