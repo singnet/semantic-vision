@@ -257,7 +257,7 @@ int main()
 {
     grpc::ChannelArguments ch_args;
     ch_args.SetMaxReceiveMessageSize(-1);
-    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50051", grpc::InsecureChannelCredentials(), ch_args));
+    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:32", grpc::InsecureChannelCredentials(), ch_args));
     string image("../Woods.jpg");
     string image2("../Woods2.jpg");
 
