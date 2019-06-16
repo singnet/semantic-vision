@@ -49,11 +49,11 @@ def set_value(atom, value, tv=False):
     atom.set_value(key, PtrValue(value))
 
 
-def set_tv(atom, value):
+def set_ttv(atom, value):
     return set_value(atom, value, tv=True)
 
 
-def get_tv(atom):
+def get_ttv(atom):
     return get_value(atom, tv=True)
 
 
@@ -142,7 +142,7 @@ class CogModule(torch.nn.Module):
             tv_tensor = TTruthValue(out)
         else:
             raise NotImplementedError("mode not implemented")
-        set_tv(ev_link, tv_tensor)
+        set_ttv(ev_link, tv_tensor)
         ev_link.tv = TruthValue(tv_tensor[MEAN], tv_tensor[CONFIDENCE])
         return ev_link.tv
 
@@ -176,7 +176,7 @@ class InheritanceModule(CogModule):
                 inh_link.tv.confidence])
         assert len(init_tv) == 2
         self.tv = TTruthValue(init_tv)
-        set_tv(inh_link, weakref.proxy(self))
+        set_ttv(inh_link, weakref.proxy(self))
         self.update_tv()
 
     def forward(self):
