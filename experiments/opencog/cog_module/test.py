@@ -6,6 +6,7 @@ from opencog.atomspace import AtomSpace, types
 from opencog.utilities import initialize_opencog, finalize_opencog
 from opencog.type_constructors import *
 from cognets import CogModule, CogModel, InputModule, InheritanceModule, get_value, TTruthValue
+from cognets import get_ttv, set_ttv
 from pln import initialize_pln
 
 import pln
@@ -66,9 +67,20 @@ class TestBasic(unittest.TestCase):
 
         bc = BackwardChainer(self.atomspace, rule_base, conj)
         bc.do_chain()
-        result = get_value(bc.get_results().out[0], tv=True)
+        result = get_ttv(bc.get_results().out[0])
         self.assertEqual(min(colors[GREEN].mean(), inh_green.tv.mean), result.mean)
         self.assertEqual(inh_green.tv.confidence, result.confidence)
+
+    def test_modus_ponens(self):
+        rule_base = initialize_pln()
+        set_ttv(ConceptNode("apple"), TTruthValue((0.8, 0.9)))
+        inh = InheritanceModule(ConceptNode("apple"),
+                ConceptNode("fruit"),
+                tv=torch.tensor((0.8, 0.4)))
+        bc = BackwardChainer(self.atomspace, rule_base, ConceptNode("fruit"))
+        bc.do_chain()
+        result = get_ttv(bc.get_results().out[0])
+        self.assertTrue((0.68 - float(result.mean)) < 0.00000000000001)
 
     def tearDown(self):
         self.atomspace = None
