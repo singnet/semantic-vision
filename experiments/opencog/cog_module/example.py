@@ -7,7 +7,7 @@ from opencog.bindlink import execute_atom
 
 import torch
 from torch.distributions import normal
-from module import CogModule, execute, get_value, evaluate, InputModule, EVALMODE
+from cognets import CogModule, execute, get_value, evaluate, InputModule, EVALMODE
 
 
 
