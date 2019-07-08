@@ -6,8 +6,8 @@ find_package(OpenCV 4.0 REQUIRED)
 find_package(Protobuf REQUIRED)
 #message("Protobuf include dirs " ${Protobuf_INCLUDE_DIRS})
 
-set(PYTHON_LIBRARY "/home/daddywesker/anaconda3/envs/pgconda/lib/libpython3.6m.so")
-set(PYTHON_INCLUDE_DIR "/home/daddywesker/anaconda3/envs/pgconda/include/python3.6m")
+#set(PYTHON_LIBRARY "/home/daddywesker/anaconda3/envs/pgconda/lib/libpython3.6m.so")
+#set(PYTHON_INCLUDE_DIR "/home/daddywesker/anaconda3/envs/pgconda/include/python3.6m")
 
 find_package(PythonLibs REQUIRED)
 #message("Python include dir " ${PYTHON_INCLUDE_DIR})
@@ -24,7 +24,7 @@ add_executable(Server Server.cpp MatchingAPI.grpc.pb.h MatchingAPI.pb.cc Matchin
         DetectInterface.h FeaturesInterface.h Includes.h Detect.cpp Features.cpp CheckParam.h
         argvParser.cpp argvParser.h get_functions.cpp get_functions.h fromResponseFunctions.cpp fromResponseFunctions.h
         Transformations.cpp Transformations.h additionalTransformations.cpp additionalTransformations.h
-        additionalFunctionForTransforms.cpp additionalFunctionForTransforms.h pythonModelsWrapper.cpp)
+        additionalFunctionForTransforms.cpp additionalFunctionForTransforms.h)
 
 
 #set(PYTHON_INCLUDE_PATH "$ENV{HOME}/anaconda3/envs/py3.6")
