@@ -8,7 +8,8 @@ class IDetector
 {
 public:
     virtual void setParameters(map<string, double> params) = 0;
-    virtual vector<KeyPoint> getPoints(Mat image) = 0;
+    virtual vector<KeyPoint> getPoints(string image) = 0;
+    virtual void releaseDetector() = 0;
 };
 
 IDetector* ChooseDetector(const char *name);
@@ -18,8 +19,9 @@ class ORBDetector: public IDetector
 public:
     ORBDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static ORBDetector* create();
+    void releaseDetector() override;
 
 private:
     int nfeatures;
@@ -34,8 +36,9 @@ class KAZEDetector: public IDetector
 public:
     KAZEDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static KAZEDetector* create();
+    void releaseDetector() override;
 
 private:
     float  	threshold;
@@ -50,8 +53,9 @@ class AKAZEDetector: public IDetector
 public:
     AKAZEDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static AKAZEDetector* create();
+    void releaseDetector() override;
 
 private:
     float threshold;
@@ -66,8 +70,9 @@ class AGASTDetector: public IDetector
 public:
     AGASTDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static AGASTDetector* create();
+    void releaseDetector() override;
 
 private:
     int 	threshold;
@@ -81,8 +86,9 @@ class GFTDetector: public IDetector
 public:
     GFTDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static GFTDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	maxCorners;
@@ -98,8 +104,9 @@ class MSERDetector: public IDetector
 public:
     MSERDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static MSERDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	_delta;
@@ -118,8 +125,9 @@ class BRISKDetector: public IDetector
 public:
     BRISKDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static BRISKDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	thresh;
@@ -131,8 +139,9 @@ class FASTDetector: public IDetector
 public:
     FASTDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static FASTDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	threshold;
@@ -146,8 +155,9 @@ class BLOBDetector: public IDetector
 public:
     BLOBDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static BLOBDetector* create();
+    void releaseDetector() override;
 };
 
 class STARDetector: public IDetector
@@ -155,8 +165,9 @@ class STARDetector: public IDetector
 public:
     STARDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static STARDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	maxSize;
@@ -171,8 +182,9 @@ class MSDSDetector: public IDetector
 public:
     MSDSDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static MSDSDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	m_patch_radius;
@@ -191,8 +203,9 @@ class HLFDDetector: public IDetector
 public:
     HLFDDetector();
     void setParameters(map<string, double> params) override;
-    vector<KeyPoint> getPoints(Mat image) override;
+    vector<KeyPoint> getPoints(string image) override;
     static HLFDDetector* create();
+    void releaseDetector() override;
 
 private:
     int  	numOctaves;
@@ -200,6 +213,32 @@ private:
     float  	DOG_thresh;
     int  	maxCorners;
     int  	num_layers;
+};
+
+class MPDetector: public IDetector
+{
+public:
+    MPDetector();
+    void setParameters(map<string, double> params) override;
+    vector<KeyPoint> getPoints(string image) override;
+    static MPDetector* create();
+    void releaseDetector() override;
+
+private:
+    float threshold;
+};
+
+class SPDetector: public IDetector
+{
+public:
+    SPDetector();
+    void setParameters(map<string, double> params) override;
+    vector<KeyPoint> getPoints(string image) override;
+    static SPDetector* create();
+    void releaseDetector() override;
+
+private:
+    float threshold;
 };
 
 #endif

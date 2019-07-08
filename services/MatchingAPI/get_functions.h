@@ -4,13 +4,13 @@
 
 #include "Includes.h"
 
-string MatchApi_getKeypoint(string image, string detector, string detector_parameters, vector<KeyPoint> * output);
+string getKeypoint(string image, string detector, string detector_parameters, vector<KeyPoint> * output);
 
-string MatchApi_getDescriptorByImage(string image, string detector, string detector_parameters, string descriptor,
+string getDescriptorByImage(string image, string detector, string detector_parameters, string descriptor,
                                      string descriptor_parameters, vector<vector<float>> *resultF,
                                      vector<vector<int>> *resultU, vector<KeyPoint> *kps);
 
-string MatchApi_getDescriptorByKps(string image, string descriptor, string descriptor_parameters, vector<KeyPoint> kps,
+string getDescriptorByKps(string image, string descriptor, string descriptor_parameters, vector<KeyPoint> &kps,
                                     vector<vector<float>> *resultF, vector<vector<int>> *resultU);
 
 string getMatches(Mat desc1, Mat desc2, vector<DMatch>* matches);

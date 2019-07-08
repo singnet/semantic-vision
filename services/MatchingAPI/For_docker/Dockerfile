@@ -111,4 +111,12 @@ RUN cd \
     && cd ../.. \
 && rm 4.0.0.zip
 
+RUN cd \
+    && git clone https://github.com/rpautrat/SuperPoint.git \
+    && cd SuperPoint \
+    && pip install -e . \
+    && echo "DATA_PATH = './'" >> ./superpoint/settings.py \
+    && echo "EXPER_PATH = '../MatchingAPI/models/saved_models/'" >> ./superpoint/settings.py \
+    && cd
+
 WORKDIR ${SINGNET_REPOS}

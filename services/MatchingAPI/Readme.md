@@ -35,7 +35,7 @@ descriptor name etc you can edit them inside python example files getSomething.p
 Cpp usage can be located in Client.cpp. There you can find usage of all currently done functions. 
 In folder py_examples are examples of getting something (descriptors, keypoints etc) in Python for this service.
  
-See Readme_service.md for examples of how to use snet service and further explanation of input parameters.
+See also Readme_service.md for further explanation of input parameters.
 
 See README_Detectors_Api.md for possible detectors and their input parameters.
 See README_Features_Api.md for possible descriptors and their input parameters.

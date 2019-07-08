@@ -1,5 +1,12 @@
+#define NPY_NO_DEPRECATED_APINPY_1_7_API_VERSION
+
 #include "FeaturesInterface.h"
 #include <limits>
+
+#include <Python.h>
+#include "numpy/arrayobject.h"
+
+#include <memory>
 
 int boolRange[] = {0, 1};
 
@@ -7,6 +14,14 @@ int imax_value = std::numeric_limits<int>::max();
 float fmax_value = std::numeric_limits<float>::max();
 double dmax_value = std::numeric_limits<double>::max();
 
+static Mat getMat(string imageBytes)
+{
+    size_t length = imageBytes.size();
+    Mat imageMat;
+    vector<char> data((char *) imageBytes.c_str(), (char *) imageBytes.c_str() + length);
+    imageMat = imdecode(data, IMREAD_UNCHANGED);
+    return imageMat;
+}
 
 IDescribe* ChooseFeatures(const char *name)
 {
@@ -70,6 +85,11 @@ IDescribe* ChooseFeatures(const char *name)
         cout << "Using PCT features" << endl;
         return pctFeatures::create();
     }
+    else if (strncmp(name, (char*)"Superpoint", 4) == 0)
+    {
+        cout << "Using Superpoint features" << endl;
+        return superpointFeatures::create();
+    }
     else
     {
         cout << "No descriptor was chosen or there is a mistake in the name. Using ORB by default" << endl;
@@ -94,13 +114,17 @@ orbFeatures* orbFeatures::create()
     return ptr_Orb;
 }
 
-Mat orbFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat orbFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<ORB> featureDescriptor = ORB::create(500, 1.2f, 8, 31, 0, WTA_K);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
+
     return descriptors;
 }
+
+void orbFeatures::releaseDescriptor() {delete this;}
 
 kazeFeatures::kazeFeatures()
 {
@@ -129,13 +153,16 @@ kazeFeatures* kazeFeatures::create()
     return ptr_Kaze;
 }
 
-Mat kazeFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat kazeFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<KAZE> featureDescriptor = KAZE::create(extended, upright, 0.001f, 4, 4, (KAZE::DiffusivityType)diffusivityType);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+void kazeFeatures::releaseDescriptor() {delete this;}
+
 
 akazeFeatures::akazeFeatures()
 {
@@ -182,14 +209,17 @@ akazeFeatures* akazeFeatures::create()
     return ptr_Akaze;
 }
 
-Mat akazeFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat akazeFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<AKAZE> featureDescriptor = AKAZE::create((AKAZE::DescriptorType)descriptor_type, descriptor_size,
             descriptor_channels, 0.001f, 4, 4, (KAZE::DiffusivityType)diffusivityType);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void akazeFeatures::releaseDescriptor() {delete this;}
 
 briskFeatures::briskFeatures()
 {
@@ -207,13 +237,16 @@ briskFeatures* briskFeatures::create()
     return ptr_Brisk;
 }
 
-Mat briskFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat briskFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<BRISK> featureDescriptor = BRISK::create(30, 3, patternScale);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void briskFeatures::releaseDescriptor() {delete this;}
 
 briefFeatures::briefFeatures()
 {
@@ -235,13 +268,16 @@ briefFeatures* briefFeatures::create()
     return ptr_Brief;
 }
 
-Mat briefFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat briefFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<BriefDescriptorExtractor> featureDescriptor = BriefDescriptorExtractor::create(bytes, use_orientation);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void briefFeatures::releaseDescriptor() {delete this;}
 
 freakFeatures::freakFeatures()
 {
@@ -269,13 +305,16 @@ freakFeatures* freakFeatures::create()
     return ptr_Freak;
 }
 
-Mat freakFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat freakFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<FREAK> featureDescriptor = FREAK::create(orientationNormalized, scaleNormalized, patternScale, nOctaves);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void freakFeatures::releaseDescriptor() {delete this;}
 
 lucidFeatures::lucidFeatures()
 {
@@ -297,13 +336,16 @@ lucidFeatures* lucidFeatures::create()
     return ptr_Lucid;
 }
 
-Mat lucidFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat lucidFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<LUCID> featureDescriptor = LUCID::create(lucid_kernel, blur_kernel);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void lucidFeatures::releaseDescriptor() {delete this;}
 
 latchFeatures::latchFeatures()
 {
@@ -313,11 +355,12 @@ latchFeatures::latchFeatures()
     sigma = 2.0;
 }
 
-Mat latchFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat latchFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<LATCH> featureDescriptor = LATCH::create(bytes, rotationInvariance, half_ssd_size, sigma);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
 
@@ -337,6 +380,8 @@ void latchFeatures::setParameters(map<string, double> parameters)
 
     CheckParam_no_ifin <double> (parameters, (char*)"sigma", &sigma, 0, dmax_value);
 }
+
+void latchFeatures::releaseDescriptor() {delete this;}
 
 daisyFeatures::daisyFeatures()
 {
@@ -379,14 +424,17 @@ daisyFeatures* daisyFeatures::create()
     return ptr_Daisy;
 }
 
-Mat daisyFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat daisyFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<DAISY> featureDescriptor = DAISY::create(radius, q_radius, q_theta, q_hist,
             (DAISY::NormalizationType)norm, H, interpolation, use_orientation);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void daisyFeatures::releaseDescriptor() {delete this;}
 
 vggFeatures::vggFeatures()
 {
@@ -425,14 +473,17 @@ vggFeatures* vggFeatures::create()
     return ptr_Vgg;
 }
 
-Mat vggFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat vggFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<VGG> featureDescriptor = VGG::create(desc, isigma, img_normalize, use_scale_orientation, scale_factor,
             dsc_normalize);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void vggFeatures::releaseDescriptor() {delete this;}
 
 boostFeatures::boostFeatures()
 {
@@ -465,13 +516,16 @@ boostFeatures* boostFeatures::create()
     return ptr_Boost;
 }
 
-Mat boostFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat boostFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<BoostDesc> featureDescriptor = BoostDesc::create(desc, use_scale_orientation, scale_factor);
-    featureDescriptor->compute(image, input, descriptors);
+    featureDescriptor->compute(imageMat, (*input), descriptors);
     return descriptors;
 }
+
+void boostFeatures::releaseDescriptor() {delete this;}
 
 pctFeatures::pctFeatures()
 {
@@ -500,10 +554,80 @@ pctFeatures* pctFeatures::create()
     return ptr_PCT;
 }
 
-Mat pctFeatures::getFeatures(vector<KeyPoint> input, Mat image)
+Mat pctFeatures::getFeatures(vector<KeyPoint>* input, string image)
 {
+    Mat imageMat = getMat(image);
     Mat descriptors;
     Ptr<PCTSignatures> featureDescriptor = PCTSignatures::create(initSampleCount, initSeedCount, pointDistribution);
-    featureDescriptor->computeSignature(image, descriptors);
-    return descriptors;
+    featureDescriptor->computeSignature(imageMat, descriptors);
+    double min, max;
+    cv::minMaxLoc(descriptors, &min, &max);
+    cout << endl << "min " << min << " max " << max << endl;
+    return descriptors.clone();
 }
+
+void pctFeatures::releaseDescriptor() {delete this;}
+
+superpointFeatures::superpointFeatures()
+{
+    threshold = 0.015;
+}
+
+void superpointFeatures::setParameters(map<string, double> parameters)
+{
+    CheckParam_no_ifin <double> (parameters, (char*)"threshold", &threshold, 0, dmax_value);
+}
+
+superpointFeatures* superpointFeatures::create()
+{
+    auto* ptr_superpoint = new superpointFeatures();
+    return ptr_superpoint;
+}
+
+Mat superpointFeatures::getFeatures(vector<KeyPoint>* input, string image)
+{
+    const char* pyName = "getSuperPointKPs";
+
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
+    PyObject* pName = PyUnicode_FromString(pyName);
+    PyObject* pModule = PyImport_Import(pName);
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "getSuperPointDescriptors");
+    PyObject* pArgs = PyTuple_New(2);
+    PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));
+    PyTuple_SetItem(pArgs, 1, PyFloat_FromDouble(threshold));
+    PyObject* pValue = PyObject_CallObject(pFunc, pArgs);
+    PyObject* desc = PyTuple_GetItem(pValue, 1);
+    long* x = (long*)PyArray_DATA(PyTuple_GetItem(PyTuple_GetItem(pValue, 0), 1));
+    long* y = (long*)PyArray_DATA(PyTuple_GetItem(PyTuple_GetItem(pValue, 0), 0));
+    float* descs = (float*)PyArray_DATA(desc);
+    int height = PyArray_DIM(desc, 0);
+    int width = PyArray_DIM(desc, 1);
+
+    float * descsClone = new float [height*width];
+
+    memcpy(descsClone, descs, height*width*sizeof(float));
+    Mat descMat(height, width, CV_32F, descsClone);
+
+    input->clear();
+    for (int i = 0; i < height; i++)
+    {
+        KeyPoint buf;
+        buf.pt.x = (int)x[i];
+        buf.pt.y = (int)y[i];
+        input->push_back(buf);
+    }
+
+    Py_DECREF(pArgs);
+    Py_DECREF(pModule);
+    Py_DECREF(pFunc);
+    Py_DECREF(pValue);
+    Mat result(height, width, CV_32F);
+    descMat.copyTo(result);
+    delete [] descsClone;
+    PyGILState_Release(gstate);
+    return result;
+}
+
+void superpointFeatures::releaseDescriptor() {delete this;}

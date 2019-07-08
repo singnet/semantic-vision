@@ -9,7 +9,7 @@ def main():
     detector_params = ''
     descriptor = 'ORB'
     descriptor_params = ''
-    channel = grpc.insecure_channel('localhost:32', options=[('grpc.max_send_message_length', -1), (
+    channel = grpc.insecure_channel('localhost:50051', options=[('grpc.max_send_message_length', -1), (
         'grpc.max_receive_message_length', -1)])
     service = MatchingAPI_pb2_grpc.MatchApiStub(channel)
     request = MatchingAPI_pb2.descriptorRequest()

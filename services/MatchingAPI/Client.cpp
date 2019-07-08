@@ -1,12 +1,11 @@
 #include <grpc/grpc.h>
-#include <grpcpp/channel.h>
-#include <grpcpp/client_context.h>
-#include <grpcpp/create_channel.h>
-#include <grpcpp/security/credentials.h>
+#include <grpc++/channel.h>
+#include <grpc++/client_context.h>
+#include <grpc++/create_channel.h>
+#include <grpc++/security/credentials.h>
 #include "MatchingAPI.grpc.pb.h"
 
 #include "Includes.h"
-#include "fromResponseFunctions.h"
 
 using grpc::Channel;
 using grpc::ChannelArguments;
@@ -72,6 +71,30 @@ static bool checkKazeAkaze(string descriptor, string detector)
     return true;
 }
 
+template <class T> static void fillFeaturesF(const vector<vector<float>>* featuresVec, T* reply)
+{
+    for (auto& oneVec : (*featuresVec))
+    {
+        MatchingApi::oneDescriptor* buf = reply->add_features();
+        for (auto& oneValue : oneVec)
+        {
+            buf->add_onedescf(oneValue);
+        }
+    }
+}
+
+template <class T> static void fillFeaturesU(const vector<vector<int>>* featuresVec, T* reply)
+{
+    for (auto& oneVec : (*featuresVec))
+    {
+        MatchingApi::oneDescriptor* buf = reply->add_features();
+        for (auto& oneValue : oneVec)
+        {
+            buf->add_onedescu(oneValue);
+        }
+    }
+}
+
 static string getImageString(string path)
 {
     FILE *in_file  = fopen(path.c_str(), "rb");
@@ -119,7 +142,7 @@ public:
         return checkStatus(status, response);
     }
 
-    string getDescByKp(string image, string descriptor, string descparams, keypointResponse inputKeypoints,
+    string getDescByKp(string image, string descriptor, string descparams, keypointResponse &inputKeypoints,
             descriptorResponse* response)
     {
         cout << "Please ensure that if you want KAZE/AKAZE descriptor then you need to send KAZE/AKAZE "
@@ -136,6 +159,12 @@ public:
             fillKeypoint(kp, buf);
         }
         Status status = stub_->getDescByKps(&context, request, response);
+        inputKeypoints.clear_keypoints();
+        for (auto& kp : response->keypoints())
+        {
+            MatchingApi::keyPoint* buf = inputKeypoints.add_keypoints();
+            fillKeypoint(kp, buf);
+        }
         return checkStatus(status, response);
     }
 
@@ -252,27 +281,25 @@ private:
 };
 
 
-
 int main()
 {
     grpc::ChannelArguments ch_args;
     ch_args.SetMaxReceiveMessageSize(-1);
-    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:32", grpc::InsecureChannelCredentials(), ch_args));
+    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50051", grpc::InsecureChannelCredentials(), ch_args));
     string image("../Woods.jpg");
     string image2("../Woods2.jpg");
 
-    string detector("ORB");
     string descriptor("ORB");
+    string detector("ORB");
     string detector_params("");
     string desc_params("");
     string transf_type("Bilinear");
     string transf_params_in("");
     string reply;
-    Mat imageMat1 = imread(image);
-    Mat imageMat2 = imread(image2);
 
     string image_bytes = getImageString(image);
     string image_bytes2 = getImageString(image2);
+
 
     //getKP usage
     {
@@ -298,6 +325,7 @@ int main()
         cout << "get descriptor by keypoints " << reply << endl;
     }
 
+
     //getMatch usage
     {
         descriptorResponse responseDesc1, responseDesc2;
@@ -313,7 +341,8 @@ int main()
     //getMatchByImg usage
     {
         matchingByImageResponse mresponse;
-        reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor, desc_params, &mresponse);
+        reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor,
+                                       desc_params, &mresponse);
         cout << "get match by images " << reply << endl;
     }
 
@@ -321,23 +350,23 @@ int main()
     {
         keypointResponse responsekp1, responsekp2;
         reply = client.getKP(image_bytes, detector, detector_params, &responsekp1);
-        cout << "get keypoints " << reply << endl;
         reply = client.getKP(image_bytes2, detector, detector_params, &responsekp2);
-        cout << "get keypoints " << reply << endl;
         descriptorResponse responsedesc1, responsedesc2;
         reply = client.getDescByKp(image_bytes, descriptor, desc_params, responsekp1, &responsedesc1);
-        cout << "get descriptor by keypoints " << reply << endl;
-        reply = client.getDescByKp(image_bytes, descriptor, desc_params, responsekp2, &responsedesc2);
-        cout << "get descriptor by keypoints " << reply << endl;
-        matchingByImageResponse mresponse;
-        reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor, desc_params, &mresponse);
-        cout << "get match by images " << reply << endl;
+        reply = client.getDescByKp(image_bytes2, descriptor, desc_params, responsekp2, &responsedesc2);
+
+        matchingResponse mresponse;
+
+        reply = client.getMatch(responsedesc1, responsedesc2, &mresponse);
+
         transformResponse responseTransform;
-        reply = client.getTransformParameters(transf_type, transf_params_in, responsekp1.keypoints(), responsekp2.keypoints(),
+        reply = client.getTransformParameters(transf_type, transf_params_in, responsekp1.keypoints(),
+                                              responsekp2.keypoints(),
                                               mresponse.all_matches(), &responseTransform);
+
         cout << "get transform by matched keypoints " << reply << endl;
         cout << "Transform parameters are: " << endl;
-        for (auto& oneParam : responseTransform.transform_parameters())
+        for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
     }
@@ -345,14 +374,18 @@ int main()
     //getTransformByImage usage
     {
         transformResponse responseTransform;
-        reply = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params, descriptor, desc_params,
-                transf_type, transf_params_in, &responseTransform);
+        reply = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params,
+                                                     descriptor, desc_params,
+                                                     transf_type, transf_params_in, &responseTransform);
+
         cout << "get transform by images " << reply << endl;
         cout << "Transform parameters are: " << endl;
-        for (auto& oneParam : responseTransform.transform_parameters())
+        for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
     }
 
     return 0;
 }
+
+

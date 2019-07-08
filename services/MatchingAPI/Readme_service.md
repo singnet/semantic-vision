@@ -35,20 +35,12 @@ consists of float size, float angle, float x, float y, float response, int octav
 taken from the cv::KeyPoint structure and used to fulfill cv::KeyPoint in further usage
 
 #### usage example:
-    snet client call $ORGANIZATION_ID $SERVICE_ID getKP '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "parameters" : "nfeatures 1000 scaleFactor 1.5 nlevels 7 edgeThreshold 100 firstLevel 0"  }'
-
-you will receive something like that (but more keypoints of course):
-
-    keypoints {
-      size: 156.9375
-      angle: 249.16946411132812
-      x: 1599.75
-      y: 602.4375
-      response: 5.275914645608282e-06
-      octave: 4
-      class_id: -1
-    }
-    status: "Success"
+    string image("path/image.extension");
+    string detector("ORB");
+    string detector_params("nfeatures 2000 nlevels 7");
+    string image_bytes = getImageString(image); //getImageString is the function which will upload image from path to string of chars
+    keypointResponse responsekp;
+    string reply = client.getKP(image_bytes, detector, detector_params, &responsekp);
     
 ### getDescByImage
 As it could be seen from name, this one computes descriptor and requires image as input.
@@ -90,43 +82,14 @@ float onedescF, bytes (string) onedescU. Depending on the descriptor type (float
 contain descriptor for keypoint. 
 
 #### usage example
-    snet client call $ORGANIZATION_ID $SERVICE_ID getDescByImage '{ "file@image": "Woods.jpg", "descriptor_name" : "ORB", "desc_parameters" : "WTA_K 4", "detector_name" : "ORB", "det_parameters" : "nfeatures 1000 scaleFactor 1.5 nlevels 7 edgeThreshold 100 firstLevel 0"  }'
-
-Descriptor for ORB will look like this:
-    features {
-      onedescU: 120
-      onedescU: 137
-      onedescU: 36
-      onedescU: 24
-      onedescU: 139
-      onedescU: 88
-      onedescU: 153
-      onedescU: 120
-      onedescU: 33
-      onedescU: 46
-      onedescU: 16
-      onedescU: 143
-      onedescU: 225
-      onedescU: 32
-      onedescU: 29
-      onedescU: 142
-      onedescU: 86
-      onedescU: 194
-      onedescU: 171
-      onedescU: 179
-      onedescU: 108
-      onedescU: 46
-      onedescU: 23
-      onedescU: 173
-      onedescU: 233
-      onedescU: 142
-      onedescU: 245
-      onedescU: 237
-      onedescU: 96
-      onedescU: 152
-      onedescU: 203
-      onedescU: 69
-    }
+    string image("path/image.extension");
+    string detector("ORB");
+    string detector_params("nfeatures 2000 nlevels 7");
+    string descriptor("ORB");
+    string desc_params("WTA_K 4")
+    string image_bytes = getImageString(image);
+    descriptorResponse response;
+    string reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
 
 ### getDescByKp
 This function computes descriptor of input keypoints.
@@ -142,7 +105,16 @@ type keypointResponse. This thing is an output of getKP. Just use it.
 Same thing as in getDescByImage but keypoints are empty.
 
 #### usage example
-    Currently no usage through snet. Use ByImage version
+    string image("path/image.extension");
+    string detector("ORB");
+    string detector_params("nfeatures 2000 nlevels 7");
+    string image_bytes = getImageString(image); //getImageString is the function which will upload image from path to string of chars
+    keypointResponse responsekp;
+    string reply = client.getKP(image_bytes, detector, detector_params, &responsekp);
+    string descriptor("ORB");
+    string desc_params("WTA_K 4")
+    descriptorResponse response_bykps;
+    reply = client.getDescByKp(image_bytes2, descriptor, desc_params, responsekp, &response_bykps);
     
 ### getMatch
 This function matches two descriptors and outputs matches. Currently it's just simple brute force matcher.
@@ -167,7 +139,24 @@ int queryIdx, int trainIdx, int imgIdx, float distance. Same as cv::DMatch and c
 to for example drawKeypoints
 
 #### example of usage
-Currently no usage through snet. use ByImage version instead.
+    matchingResponse mresponse;
+    string reply = client.getMatch(response, response2, &mresponse); //response and response2 are outputs of getDescBy methods
+
+#### example of what to do with matches
+    vector<DMatch> matches;
+    for (auto& oneMatch : mresponse.all_matches())
+    {matches.emplace_back(oneMatch.queryidx(), oneMatch.trainidx(), oneMatch. imgidx(), oneMatch.distance());}
+
+    Mat img_matches;
+    Mat imageMat1 = imread(image);
+    Mat imageMat2 = imread(image2);
+    vector<KeyPoint> points = kpsFromResponse(responsekp1);
+    vector<KeyPoint> points2 = kpsFromResponse(responsekp2);
+    drawMatches(imageMat1, points, imageMat2, points2, matches, img_matches);
+    imshow("matches", img_matches);
+    waitKey();
+
+This simple code will draw matches which client will recieve from getMatches
 
 ### getMatchByImage
 
@@ -205,14 +194,20 @@ Keypoints which were detected. Since method takes only image as input, they are 
 usage, client will get these keypoints alongside with transform parameters. To see what's inside see getKP.
 
 #### usage
-    snet client call $ORGANIZATION_ID $SERVICE_ID getMatchByImage '{ "file@image_first": "../Woods.jpg", "file@image_second" : "../Woods2.jpg", "descriptor_name" : "ORB", "desc_parameters" : "WTA_K 4", "detector_name" : "ORB", "det_parameters" : "nfeatures 1000 scaleFactor 1.5 nlevels 7 edgeThreshold 100 firstLevel 0" }'
 
-You will receive something like this:
-    all_matches {
-      queryIdx: 4
-      trainIdx: 58
-      distance: 336.1026611328125
-    }
+    string image("../Woods.jpg");
+    string image2("../Woods2.jpg");
+
+    string detector("ORB");
+    string descriptor("ORB");
+    string detector_params("");
+    string desc_params("");
+    
+    string image_bytes = getImageString(image);
+    string image_bytes2 = getImageString(image2);
+    
+    matchingByImageResponse response;
+    string status = getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor, desc_params, &response);
 
 ### getTransformParameters
 
@@ -249,7 +244,13 @@ Array with transform parameters for given points
 
 #### usage
 
-Currently no usage through snet. Use ByImage version instead.
+    transformResponse reply;
+    string transform_type = "Bilinear"
+    string transform_input_parameters = "" //no parameters needed for that transform
+    string status = getTransformParameters(transform_type, transform_input_parameters, first_kps, second_kps,  matches,
+            &reply)
+
+Possible transforms and parameters you can find in README_transform_Api.
 
 ### getTransformParametersByImage
 
@@ -283,21 +284,19 @@ Parameters for transform. Note that not every transform has parameters
 same as for getTransformParameters
 
 #### usage
-    snet client call $ORGANIZATION_ID $SERVICE_ID getTransformParametersByImage '{ "file@image_first": "../Woods.jpg", "file@image_second" : "../Woods2.jpg", "descriptor_name" : "ORB", "desc_parameters" : "WTA_K 4", "detector_name" : "ORB", "det_parameters" : "nfeatures 1000 scaleFactor 1.5 nlevels 7 edgeThreshold 100 firstLevel 0", "transform_type" : "Bilinear", "transform_input_parameters" : "" }'
 
-You will receive something like that
+    string image("../Woods.jpg");
+    string image2("../Woods2.jpg");
 
-transform_parameters: 252.20627262266166
-transform_parameters: 0.011269062626934574
-transform_parameters: 0.01949454307748601
-transform_parameters: 0.0
-transform_parameters: 1.1279451100671525e-06
-transform_parameters: 0.0
-transform_parameters: 256.33048083023186
-transform_parameters: 0.014174183414889147
-transform_parameters: 0.032841365983950634
-transform_parameters: 0.0
-transform_parameters: -3.340623914930427e-05
-transform_parameters: 0.0
+    string detector("ORB");
+    string descriptor("ORB");
+    string detector_params("");
+    string desc_params("");
 
-
+    string image_bytes = getImageString(image);
+    string image_bytes2 = getImageString(image2);
+    string transf_type("Bilinear");
+    string transf_params_in("");
+    transformResponse transfReply;
+    string status = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params, 
+        descriptor, desc_params, transf_type, transf_params_in, &transfReply);

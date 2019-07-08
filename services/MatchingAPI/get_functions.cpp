@@ -7,7 +7,7 @@
 
 #include <fstream>
 
-string descToVec(vector<vector<float>> *resultF,
+static string descToVec(vector<vector<float>> *resultF,
             vector<vector<int>> *resultU, Mat desc_result)
 {
     int type = desc_result.type();
@@ -37,7 +37,7 @@ string descToVec(vector<vector<float>> *resultF,
     }
 }
 
-Mat getMat(string imageBytes)
+static Mat getMat(string imageBytes)
 {
     size_t length = imageBytes.size();
     Mat imageMat;
@@ -46,25 +46,24 @@ Mat getMat(string imageBytes)
     return imageMat;
 }
 
-string MatchApi_getKeypoint(string image, string detector, string detector_parameters, vector<KeyPoint> * output)
+string getKeypoint(string image, string detector, string detector_parameters, vector<KeyPoint> * output)
 {
-    Mat imageMat = getMat(image);
     IDetector* ptr_detector = ChooseDetector(detector.c_str());
     map<string, double> params;
     parseClient(detector_parameters, &params);
     ptr_detector->setParameters(params);
     cout << endl;
-    *output = ptr_detector->getPoints(imageMat);
+    *output = ptr_detector->getPoints(image);
+    ptr_detector->releaseDetector();
     if ((*output).size() == 0)
         return "Zero_keypoints_detected";
     return "Success";
 }
 
-string MatchApi_getDescriptorByImage(string image, string detector, string detector_parameters, string descriptor,
+string getDescriptorByImage(string image, string detector, string detector_parameters, string descriptor,
                                      string descriptor_parameters, vector<vector<float>> *resultF,
                                      vector<vector<int>> *resultU, vector<KeyPoint> *kps)
 {
-    Mat imageMat = getMat(image);
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
     IDetector* ptr_detector = ChooseDetector(detector.c_str());
 
@@ -78,14 +77,19 @@ string MatchApi_getDescriptorByImage(string image, string detector, string detec
     cout << endl << endl << "Setting parameters for descriptor:" << endl;
     ptr_describe->setParameters(desc_params);
 
-    (*kps) = ptr_detector->getPoints(imageMat);
-    if ((*kps).size() == 0)
+    (*kps) = ptr_detector->getPoints(image);
+    ptr_detector->releaseDetector();
+    if ((*kps).size() == 0) {
+        ptr_describe->releaseDescriptor();
         return "Zero keypoints detected";
-    Mat desc_result = ptr_describe->getFeatures((*kps), imageMat);
+    }
+    Mat desc_result = ptr_describe->getFeatures(kps, image);
+
+    ptr_describe->releaseDescriptor();
     return descToVec(resultF, resultU, desc_result);
 }
 
-string MatchApi_getDescriptorByKps(string image, string descriptor, string descriptor_parameters, vector<KeyPoint> kps,
+string getDescriptorByKps(string image, string descriptor, string descriptor_parameters, vector<KeyPoint> &kps,
                                    vector<vector<float>> *resultF, vector<vector<int>> *resultU)
 {
     if (kps.size() == 0)
@@ -97,7 +101,9 @@ string MatchApi_getDescriptorByKps(string image, string descriptor, string descr
     parseClient(descriptor_parameters, &desc_params);
     ptr_describe->setParameters(desc_params);
 
-    Mat desc_result = ptr_describe->getFeatures(kps, imageMat);
+    Mat desc_result = ptr_describe->getFeatures(&kps, image);
+
+    ptr_describe->releaseDescriptor();
     return descToVec(resultF, resultU, desc_result);
 }
 
@@ -107,14 +113,13 @@ string getMatches(Mat desc1, Mat desc2, vector<DMatch>* matches)
     matcher.match(desc1, desc2, (*matches));
     if ((*matches).size() == 0)
         return "No matches found";
+
     return "Matching done";
 }
 
 string getMatchesByImg(string image1, string image2, string detector, string detector_parameters, string descriptor,
         string descriptor_parameters, vector<KeyPoint> *kps1, vector<KeyPoint> *kps2, vector<DMatch>* matches)
 {
-    Mat imageMat1 = getMat(image1);
-    Mat imageMat2 = getMat(image2);
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
     IDetector* ptr_detector = ChooseDetector(detector.c_str());
 
@@ -128,18 +133,25 @@ string getMatchesByImg(string image1, string image2, string detector, string det
     cout << endl << endl << "Setting parameters for descriptor:" << endl;
     ptr_describe->setParameters(desc_params);
 
-    (*kps1) = ptr_detector->getPoints(imageMat1);
-    if ((*kps1).size() == 0)
+    (*kps1) = ptr_detector->getPoints(image1);
+    if ((*kps1).size() == 0) {
+        ptr_describe->releaseDescriptor();
+        ptr_detector->releaseDetector();
         return "Zero keypoints detected for the first image";
+    }
 
-    (*kps2) = ptr_detector->getPoints(imageMat2);
-    if ((*kps2).size() == 0)
+    (*kps2) = ptr_detector->getPoints(image2);
+    if ((*kps2).size() == 0) {
+        ptr_describe->releaseDescriptor();
+        ptr_detector->releaseDetector();
         return "Zero keypoints detected for the second image";
+    }
 
-    Mat desc_result1 = ptr_describe->getFeatures((*kps1), imageMat1);
-    Mat desc_result2 = ptr_describe->getFeatures((*kps2), imageMat2);
+    Mat desc_result1 = ptr_describe->getFeatures(kps1, image1);
+    Mat desc_result2 = ptr_describe->getFeatures(kps2, image2);
 
-
+    ptr_describe->releaseDescriptor();
+    ptr_detector->releaseDetector();
     BFMatcher matcher(NORM_L2);
     matcher.match(desc_result1, desc_result2, (*matches));
     if ((*matches).size() == 0)
@@ -165,6 +177,7 @@ string getTransformParams(string transformType, string transform_input_parameter
     (*transform_parameters) = ptr_transform->getTransform(first_kps, second_kps, matches_in);
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
+    ptr_transform->releaseTransform();
     return "Transform parameters extraction is done";
 }
 
@@ -172,8 +185,6 @@ string getTransformParamsByImg(string image1, string image2, string detector, st
                                string descriptor, string descriptor_parameters, string transformType, string transform_input_parameters,
                                vector<double> * transform_parameters)
 {
-    Mat imageMat1 = getMat(image1);
-    Mat imageMat2 = getMat(image2);
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
     IDetector* ptr_detector = ChooseDetector(detector.c_str());
     ITransform* ptr_transform = ChooseTransform(transformType.c_str());
@@ -193,26 +204,40 @@ string getTransformParamsByImg(string image1, string image2, string detector, st
     cout << endl << "Setting parameters for transform:" << endl;
     ptr_transform->setParameters(transf_params);
 
-    kps1 = ptr_detector->getPoints(imageMat1);
-    if (kps1.size() == 0)
+    kps1 = ptr_detector->getPoints(image1);
+    if (kps1.size() == 0) {
+        ptr_describe->releaseDescriptor();
+        ptr_detector->releaseDetector();
+        ptr_transform->releaseTransform();
         return "Zero keypoints detected for the first image";
+    }
 
-    kps2 = ptr_detector->getPoints(imageMat2);
-    if (kps2.size() == 0)
+    kps2 = ptr_detector->getPoints(image2);
+    if (kps2.size() == 0) {
+        ptr_describe->releaseDescriptor();
+        ptr_detector->releaseDetector();
+        ptr_transform->releaseTransform();
         return "Zero keypoints detected for the second image";
-
-    Mat desc_result1 = ptr_describe->getFeatures(kps1, imageMat1);
-    Mat desc_result2 = ptr_describe->getFeatures(kps2, imageMat2);
+    }
+    Mat desc_result1 = ptr_describe->getFeatures(&kps1, image1);
+    Mat desc_result2 = ptr_describe->getFeatures(&kps2, image2);
 
     BFMatcher matcher(NORM_L2);
     matcher.match(desc_result1, desc_result2, matches);
-    if (matches.size() == 0)
+    if (matches.size() == 0) {
+        ptr_describe->releaseDescriptor();
+        ptr_detector->releaseDetector();
+        ptr_transform->releaseTransform();
         return "No matches found";
+    }
 
     sort(matches.begin(), matches.end(), [](DMatch a, DMatch b) { return a.distance < b.distance; });
 
     (*transform_parameters) = ptr_transform->getTransform(kps1, kps2, matches);
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
+    ptr_describe->releaseDescriptor();
+    ptr_detector->releaseDetector();
+    ptr_transform->releaseTransform();
     return "Transform parameters extraction is done";
 }

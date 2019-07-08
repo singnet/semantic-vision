@@ -23,5 +23,6 @@ template <class T> vector<KeyPoint> kpsFromResponse(T request)
 }
 void descsFromMatchRequest(matchingRequest request, Mat * desc1, Mat * desc2);
 void matchesFromRequest(transformRequest request, vector<DMatch> * matches);
+Mat matFromFeatures(google::protobuf::RepeatedPtrField<MatchingApi::oneDescriptor> features);
 
 #endif //MATCHINGAPI_FROMRESPONSEFUNCTIONS_H

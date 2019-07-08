@@ -1,6 +1,19 @@
 #include "DetectInterface.h"
 #include <limits>
 
+#include "Python.h"
+#include "numpy/arrayobject.h"
+
+static Mat getMat(string imageBytes)
+{
+    size_t length = imageBytes.size();
+    Mat imageMat;
+    vector<char> data((char *) imageBytes.c_str(), (char *) imageBytes.c_str() + length);
+    imageMat = imdecode(data, IMREAD_UNCHANGED);
+    return imageMat;
+}
+
+
 IDetector* ChooseDetector(const char *name)
 {
     if (strncmp(name, (char*)"ORB", 3) == 0)
@@ -63,6 +76,16 @@ IDetector* ChooseDetector(const char *name)
         cout << "Using HLFD detector" << endl;
         return HLFDDetector::create();
     }
+    else if (strncmp(name, (char*)"Superpoint", 10) == 0)
+    {
+        cout << "Using Superpoint detector" << endl;
+        return SPDetector::create();
+    }
+    else if (strncmp(name, (char*)"Magicpoint", 10) == 0)
+    {
+        cout << "Using Magicpoint detector" << endl;
+        return MPDetector::create();
+    }
     else
     {
         cout << "No detector was chosen or there is a mistake in the name. Using ORB by default" << endl;
@@ -94,11 +117,12 @@ void ORBDetector::setParameters(map<string, double> params)
     CheckParam_no_ifin<int> (params, (char*)"firstLevel", &firstLevel, 0, 0);
 }
 
-vector<KeyPoint> ORBDetector::getPoints(Mat image)
+vector<KeyPoint> ORBDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<ORB> featureDetector = ORB::create(nfeatures, scaleFactor, nlevels, edgeThreshold, firstLevel, 2, ORB::HARRIS_SCORE, 31, 20);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -107,6 +131,8 @@ ORBDetector* ORBDetector::create()
     auto* ptr_detector = new ORBDetector();
     return ptr_detector;
 }
+
+void ORBDetector::releaseDetector() {delete this;}
 
 KAZEDetector::KAZEDetector()
 {
@@ -133,11 +159,12 @@ void KAZEDetector::setParameters(map<string, double> params)
     cout << " - " << diffTypes[diffusivity];
 }
 
-vector<KeyPoint> KAZEDetector::getPoints(Mat image)
+vector<KeyPoint> KAZEDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<KAZE> featureDetector = KAZE::create(false, false, threshold, nOctaves, nOctaveLayers, (KAZE::DiffusivityType)diffusivity);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -146,6 +173,8 @@ KAZEDetector* KAZEDetector::create()
     auto* ptr_detector = new KAZEDetector();
     return ptr_detector;
 }
+
+void KAZEDetector::releaseDetector() {delete this;}
 
 AKAZEDetector::AKAZEDetector()
 {
@@ -172,11 +201,12 @@ void AKAZEDetector::setParameters(map<string, double> params)
     cout << " - " << diffTypes[diffusivity];
 }
 
-vector<KeyPoint> AKAZEDetector::getPoints(Mat image)
+vector<KeyPoint> AKAZEDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<AKAZE> featureDetector = AKAZE::create(AKAZE::DESCRIPTOR_MLDB, 0, 3,  threshold, nOctaves, nOctaveLayers, (KAZE::DiffusivityType)diffusivity);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -185,6 +215,8 @@ AKAZEDetector* AKAZEDetector::create()
     auto* ptr_detector = new AKAZEDetector();
     return ptr_detector;
 }
+
+void AKAZEDetector::releaseDetector() {delete this;}
 
 AGASTDetector::AGASTDetector()
 {
@@ -209,11 +241,12 @@ void AGASTDetector::setParameters(map<string, double> params)
     cout << " - " << types[type];
 }
 
-vector<KeyPoint> AGASTDetector::getPoints(Mat image)
+vector<KeyPoint> AGASTDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<AgastFeatureDetector> featureDetector = AgastFeatureDetector::create(threshold, nonmaxSuppression, (AgastFeatureDetector::DetectorType)type);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -222,6 +255,8 @@ AGASTDetector* AGASTDetector::create()
     auto* ptr_detector = new AGASTDetector();
     return ptr_detector;
 }
+
+void AGASTDetector::releaseDetector() {delete this;}
 
 GFTDetector::GFTDetector()
 {
@@ -250,13 +285,14 @@ void GFTDetector::setParameters(map<string, double> params)
     CheckParam_no_ifin<double> (params, (char*)"k", &k, 0, imax);
 }
 
-vector<KeyPoint> GFTDetector::getPoints(Mat image)
+vector<KeyPoint> GFTDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<GFTTDetector> featureDetector = GFTTDetector::create(maxCorners, qualityLevel, minDistance, blockSize,
                                                              useHarrisDetector,
                                                              k );
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -265,6 +301,8 @@ GFTDetector* GFTDetector::create()
     auto* ptr_detector = new GFTDetector();
     return ptr_detector;
 }
+
+void GFTDetector::releaseDetector() {delete this;}
 
 MSERDetector::MSERDetector()
 {
@@ -302,12 +340,13 @@ void MSERDetector::setParameters(map<string, double> params)
     CheckParam_no_ifin<int> (params, (char*)"_edge_blur_size", &_edge_blur_size, 0, 9);
 }
 
-vector<KeyPoint> MSERDetector::getPoints(Mat image)
+vector<KeyPoint> MSERDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<MSER> featureDetector = MSER::create(_delta,_min_area,_max_area,_max_variation,_min_diversity,_max_evolution,
                                              _area_threshold,_min_margin,_edge_blur_size );
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -316,6 +355,8 @@ MSERDetector* MSERDetector::create()
     auto* ptr_detector = new MSERDetector();
     return ptr_detector;
 }
+
+void MSERDetector::releaseDetector() {delete this;}
 
 BRISKDetector::BRISKDetector()
 {
@@ -330,11 +371,12 @@ void BRISKDetector::setParameters(map<string, double> params)
     CheckParam_no_ifin<int> (params, (char*)"octaves", &octaves, 0, 9);
 }
 
-vector<KeyPoint> BRISKDetector::getPoints(Mat image)
+vector<KeyPoint> BRISKDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<BRISK> featureDetector = BRISK::create(thresh, octaves);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -343,6 +385,8 @@ BRISKDetector* BRISKDetector::create()
     auto* ptr_detector = new BRISKDetector();
     return ptr_detector;
 }
+
+void BRISKDetector::releaseDetector() {delete this;}
 
 FASTDetector::FASTDetector()
 {
@@ -365,11 +409,12 @@ void FASTDetector::setParameters(map<string, double> params)
     cout << " - " << types[type];
 }
 
-vector<KeyPoint> FASTDetector::getPoints(Mat image)
+vector<KeyPoint> FASTDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<FastFeatureDetector> featureDetector = FastFeatureDetector::create(threshold, nonmaxSuppression, (FastFeatureDetector::DetectorType)type);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -379,6 +424,8 @@ FASTDetector* FASTDetector::create()
     return ptr_detector;
 }
 
+void FASTDetector::releaseDetector() {delete this;}
+
 BLOBDetector::BLOBDetector() = default;
 
 void BLOBDetector::setParameters(map<string, double> params)
@@ -386,11 +433,12 @@ void BLOBDetector::setParameters(map<string, double> params)
     cout << endl << "No parameters needed for this detector" << endl;
 }
 
-vector<KeyPoint> BLOBDetector::getPoints(Mat image)
+vector<KeyPoint> BLOBDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<SimpleBlobDetector> featureDetector = SimpleBlobDetector::create();
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -399,6 +447,8 @@ BLOBDetector* BLOBDetector::create()
     auto* ptr_detector = new BLOBDetector();
     return ptr_detector;
 }
+
+void BLOBDetector::releaseDetector() {delete this;}
 
 STARDetector::STARDetector()
 {
@@ -424,12 +474,13 @@ void STARDetector::setParameters(map<string, double> params)
     CheckParam_no_ifin<int> (params, (char*)"suppressNonmaxSize", &suppressNonmaxSize, 0, 39);
 }
 
-vector<KeyPoint> STARDetector::getPoints(Mat image)
+vector<KeyPoint> STARDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<xfeatures2d::StarDetector> featureDetector = xfeatures2d::StarDetector::create(maxSize,responseThreshold,lineThresholdProjected,
                                                                                        lineThresholdBinarized, suppressNonmaxSize);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -438,6 +489,8 @@ STARDetector* STARDetector::create()
     auto* ptr_detector = new STARDetector();
     return ptr_detector;
 }
+
+void STARDetector::releaseDetector() {delete this;}
 
 MSDSDetector::MSDSDetector()
 {
@@ -476,12 +529,13 @@ void MSDSDetector::setParameters(map<string, double> params)
     CheckParam_no_ifin<bool> (params, (char*)"m_compute_orientation", &m_compute_orientation, false, true);
 }
 
-vector<KeyPoint> MSDSDetector::getPoints(Mat image)
+vector<KeyPoint> MSDSDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<xfeatures2d::MSDDetector> featureDetector = xfeatures2d::MSDDetector::create(m_patch_radius,m_search_area_radius,m_nms_radius,
                                                                                      m_nms_scale_radius,m_th_saliency,m_kNN,m_scale_factor,m_n_scales,m_compute_orientation);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -490,6 +544,8 @@ MSDSDetector* MSDSDetector::create()
     auto* ptr_detector = new MSDSDetector();
     return ptr_detector;
 }
+
+void MSDSDetector::releaseDetector() {delete this;}
 
 HLFDDetector::HLFDDetector()
 {
@@ -516,12 +572,13 @@ void HLFDDetector::setParameters(map<string, double> params)
     CheckParam<int> (params, (char*)"num_layers", &num_layers, range, 2);
 }
 
-vector<KeyPoint> HLFDDetector::getPoints(Mat image)
+vector<KeyPoint> HLFDDetector::getPoints(string image)
 {
+    Mat imageMat = getMat(image);
     vector<KeyPoint> keypoints;
     Ptr<xfeatures2d::HarrisLaplaceFeatureDetector> featureDetector = xfeatures2d::HarrisLaplaceFeatureDetector::create(numOctaves,
                                                                                                                        corn_thresh, DOG_thresh, maxCorners, num_layers);
-    featureDetector->detect(image, keypoints);
+    featureDetector->detect(imageMat, keypoints);
     return keypoints;
 }
 
@@ -530,3 +587,112 @@ HLFDDetector* HLFDDetector::create()
     auto* ptr_detector = new HLFDDetector();
     return ptr_detector;
 }
+
+void HLFDDetector::releaseDetector() {delete this;}
+
+MPDetector::MPDetector()
+{
+    threshold = 0;
+}
+
+void MPDetector::setParameters(map<string, double> params)
+{
+    float fmax = std::numeric_limits<float>::max();
+    CheckParam_no_ifin<float> (params, (char*)"threshold", &threshold, 1, fmax);
+}
+
+vector<KeyPoint> MPDetector::getPoints(string image)
+{
+    const char* pyName = "getSuperPointKPs";
+
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
+    PyObject* pName = PyUnicode_FromString(pyName);
+    PyObject* pModule = PyImport_Import(pName);
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "getMagicPointKps");
+    PyObject* pArgs = PyTuple_New(2);
+    PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));
+    PyTuple_SetItem(pArgs, 1, PyFloat_FromDouble(threshold));
+    PyObject* pValue = PyObject_CallObject(pFunc, pArgs);
+    long* x = (long*)PyArray_DATA(PyTuple_GetItem(pValue, 1));
+    long* y = (long*)PyArray_DATA(PyTuple_GetItem(pValue, 0));
+    int length = PyArray_DIM(PyTuple_GetItem(pValue, 1), 0);
+
+    vector<KeyPoint> result;
+    for (int i = 0; i < length; i++)
+    {
+        KeyPoint buf;
+        buf.pt.x = (int)x[i];
+        buf.pt.y = (int)y[i];
+        result.push_back(buf);
+    }
+    Py_DECREF(pArgs);
+    Py_DECREF(pModule);
+    Py_DECREF(pFunc);
+    Py_DECREF(pValue);
+    PyGILState_Release(gstate);
+    return result;
+}
+
+MPDetector* MPDetector::create()
+{
+    auto* ptr_detector = new MPDetector();
+    return ptr_detector;
+}
+
+void MPDetector::releaseDetector() {delete this;}
+
+SPDetector::SPDetector()
+{
+    threshold = 0;
+}
+
+void SPDetector::setParameters(map<string, double> params)
+{
+    float fmax = std::numeric_limits<float>::max();
+    CheckParam_no_ifin<float> (params, (char*)"threshold", &threshold, 1, fmax);
+}
+
+vector<KeyPoint> SPDetector::getPoints(string image)
+{
+    const char* pyName = "getSuperPointKPs";
+
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
+    PyObject* pName = PyUnicode_FromString(pyName);
+    PyObject* pModule = PyImport_Import(pName);
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "getSuperPointKps");
+    PyObject* pArgs = PyTuple_New(2);
+    PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));
+    PyTuple_SetItem(pArgs, 1, PyFloat_FromDouble(threshold));
+    PyObject* pValue = PyObject_CallObject(pFunc, pArgs);
+    long* x = (long*)PyArray_DATA(PyTuple_GetItem(pValue, 1));
+    long* y = (long*)PyArray_DATA(PyTuple_GetItem(pValue, 0));
+    int length = PyArray_DIM(PyTuple_GetItem(pValue, 1), 0);
+
+    vector<KeyPoint> result;
+    for (int i = 0; i < length; i++)
+    {
+        KeyPoint buf;
+        buf.pt.x = (int)x[i];
+        buf.pt.y = (int)y[i];
+        result.push_back(buf);
+    }
+
+    Py_DECREF(pArgs);
+    Py_DECREF(pModule);
+    Py_DECREF(pFunc);
+    Py_DECREF(pValue);
+    PyGILState_Release(gstate);
+    return result;
+}
+
+SPDetector* SPDetector::create()
+{
+    auto* ptr_detector = new SPDetector();
+    return ptr_detector;
+}
+
+void SPDetector::releaseDetector() {delete this;}

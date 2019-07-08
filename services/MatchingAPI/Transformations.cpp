@@ -94,6 +94,8 @@ vector<double> AffineTransform::getTransform(vector<KeyPoint> first, vector<KeyP
     return transformParameters;
 }
 
+void AffineTransform::releaseTransform() {delete this;}
+
 PerspectiveTransform::PerspectiveTransform() = default;
 
 void PerspectiveTransform::setParameters(map<string, double> params)
@@ -124,6 +126,8 @@ vector<double> PerspectiveTransform::getTransform(vector<KeyPoint> first, vector
     }
     return transformParameters;
 }
+
+void PerspectiveTransform::releaseTransform() {delete this;}
 
 EssentialMatrix::EssentialMatrix()
 {
@@ -181,6 +185,8 @@ EssentialMatrix* EssentialMatrix::create()
     return ptr_detector;
 }
 
+void EssentialMatrix::releaseTransform() {delete this;}
+
 FundamentalMatrix::FundamentalMatrix()
 {
     methodNames[1] = (char*)"FM_7POINT";
@@ -230,6 +236,8 @@ FundamentalMatrix* FundamentalMatrix::create()
     auto* ptr_detector = new FundamentalMatrix();
     return ptr_detector;
 }
+
+void FundamentalMatrix::releaseTransform() {delete this;}
 
 Homography::Homography()
 {
@@ -283,6 +291,8 @@ Homography* Homography::create()
     auto* ptr_detector = new Homography();
     return ptr_detector;
 }
+
+void Homography::releaseTransform() {delete this;}
 
 Similarity::Similarity()
 {
@@ -340,6 +350,8 @@ Similarity* Similarity::create()
     return ptr_detector;
 }
 
+void Similarity::releaseTransform() {delete this;}
+
 Shift::Shift() = default;
 
 void Shift::setParameters(map<string, double> params)
@@ -371,6 +383,8 @@ Shift* Shift::create()
     return ptr_detector;
 }
 
+void Shift::releaseTransform() {delete this;}
+
 ShiftScale::ShiftScale() = default;
 
 void ShiftScale::setParameters(map<string, double> params)
@@ -401,6 +415,8 @@ ShiftScale* ShiftScale::create()
     return ptr_detector;
 }
 
+void ShiftScale::releaseTransform() {delete this;}
+
 ShiftRot::ShiftRot() = default;
 
 void ShiftRot::setParameters(map<string, double> params)
@@ -430,6 +446,8 @@ ShiftRot* ShiftRot::create()
     auto* ptr_detector = new ShiftRot();
     return ptr_detector;
 }
+
+void ShiftRot::releaseTransform() {delete this;}
 
 Poly::Poly() = default;
 
@@ -464,6 +482,8 @@ Poly* Poly::create()
     return ptr_detector;
 }
 
+void Poly::releaseTransform() {delete this;}
+
 Bilinear::Bilinear() = default;
 
 void Bilinear::setParameters(map<string, double> params)
@@ -496,3 +516,5 @@ Bilinear* Bilinear::create()
     auto* ptr_detector = new Bilinear();
     return ptr_detector;
 }
+
+void Bilinear::releaseTransform() {delete this;}

@@ -1,9 +1,11 @@
 #include <grpc/grpc.h>
-#include <grpcpp/server.h>
-#include <grpcpp/server_builder.h>
-#include <grpcpp/server_context.h>
-#include <grpcpp/security/server_credentials.h>
+#include <grpc++/server.h>
+#include <grpc++/server_builder.h>
+#include <grpc++/server_context.h>
+#include <grpc++/security/server_credentials.h>
 #include "MatchingAPI.grpc.pb.h"
+
+#include <Python.h>
 
 #include "Includes.h"
 #include "get_functions.h"
@@ -82,7 +84,7 @@ class MatchingApiServer final : public MatchApi::Service {
     Status getKP(ServerContext* context, const keypointRequest* request,
                     keypointResponse* reply) override {
         vector<KeyPoint> keypointsFromMAPI;
-        string result = MatchApi_getKeypoint(request->image(), request->detector_name(), request->parameters(), &keypointsFromMAPI);
+        string result = getKeypoint(request->image(), request->detector_name(), request->parameters(), &keypointsFromMAPI);
         if (strcmp(result.c_str(), "Zero_keypoints_detected") == 0) {
             (*reply).set_status(result);
             return Status::OK;
@@ -104,7 +106,7 @@ class MatchingApiServer final : public MatchApi::Service {
         vector<KeyPoint> keypointsFromMAPI;
         vector<vector<float>> featuresF;
         vector<vector<int>> featuresU;
-        string result = MatchApi_getDescriptorByImage(request->image(), request->detector_name(),
+        string result = getDescriptorByImage(request->image(), request->detector_name(),
                                                       request->det_parameters(),
                                                       request->descriptor_name(), request->desc_parameters(),
                                                       &featuresF, &featuresU, &keypointsFromMAPI);
@@ -135,12 +137,17 @@ class MatchingApiServer final : public MatchApi::Service {
         vector<vector<int>> featuresU;
         vector<KeyPoint> keypointsFromMAPI = kpsFromResponse((*request).keypoints());
 
-        string result = MatchApi_getDescriptorByKps(request->image(), request->descriptor_name(),
+        string result = getDescriptorByKps(request->image(), request->descriptor_name(),
                 request->desc_parameters(), keypointsFromMAPI, &featuresF, &featuresU);
 
         cout << endl;
         fillFeaturesF(&featuresF,reply);
         fillFeaturesU(&featuresU,reply);
+        for (auto& oneVec : keypointsFromMAPI)
+        {
+            MatchingApi::keyPoint* buf = reply->add_keypoints();
+            fillKeypoint(buf, oneVec);
+        }
         reply->set_status(result);
         return Status::OK;
     }
@@ -197,6 +204,7 @@ class MatchingApiServer final : public MatchApi::Service {
         {
             reply->add_transform_parameters(oneParam);
         }
+        cout << endl;
         reply->set_status(result);
         return Status::OK;
     }
@@ -207,6 +215,7 @@ class MatchingApiServer final : public MatchApi::Service {
         string result = getTransformParamsByImg(request->image_first(), request->image_second(), request->detector_name(),
                 request->det_parameters(), request->descriptor_name(), request->desc_parameters(), request->transform_type(),
                 request->transform_input_parameters(), &transform_parameters);
+
 
         for (auto& oneParam : transform_parameters)
         {
@@ -219,7 +228,7 @@ class MatchingApiServer final : public MatchApi::Service {
 };
 
 void RunServer() {
-    std::string server_address("0.0.0.0:32");
+    std::string server_address("0.0.0.0:50051");
     MatchingApiServer service;
 
     ServerBuilder builder;
@@ -232,7 +241,9 @@ void RunServer() {
 }
 
 int main(int argc, char** argv) {
+    setenv("PYTHONPATH", "../models/", 1);
+    Py_InitializeEx(0);
     RunServer();
-
+    Py_FinalizeEx();
     return 0;
 }
