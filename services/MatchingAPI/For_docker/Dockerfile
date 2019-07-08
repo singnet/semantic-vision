@@ -57,10 +57,10 @@ RUN apt -y remove x264 libx264-dev && \
     libjpeg8-dev libpng-dev \
     software-properties-common
 
-RUN apt -y install python-pip
-RUN python -m pip install --upgrade pip
-RUN python -m pip install grpcio
-RUN python -m pip install grpcio-tools
+RUN apt -y install python-pip3
+RUN python -m pip3 install --upgrade pip3
+RUN python -m pip3 install grpcio
+RUN python -m pip3 install grpcio-tools
 
 RUN add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
 RUN apt -y update
@@ -111,12 +111,17 @@ RUN cd \
     && cd ../.. \
 && rm 4.0.0.zip
 
+RUN pip3 install opencv-contrib-python \
+    && pip3 install tensorflow-gpu \
+    && pip3 install matplotlib \
+    && pip3 install tqdm \
+
 RUN cd \
     && git clone https://github.com/rpautrat/SuperPoint.git \
     && cd SuperPoint \
-    && pip install -e . \
+    && pip3 install -e . \
     && echo "DATA_PATH = './'" >> ./superpoint/settings.py \
-    && echo "EXPER_PATH = '../MatchingAPI/models/saved_models/'" >> ./superpoint/settings.py \
+    && echo "EXPER_PATH = '../models/saved_models/'" >> ./superpoint/settings.py \
     && cd
 
 WORKDIR ${SINGNET_REPOS}

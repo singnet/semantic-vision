@@ -46,7 +46,6 @@ def getMagicPointKps(image, confidence_threshold):
     image = np.expand_dims(image, 2)
     with experiment._init_graph(config, with_dataset=False) as (net):
         net.load(str(checkpoint))
-        # net.train(False)
         prob = net.predict({'image': image}, keys='prob_nms')
         pts = select_top_k(prob, thresh=confidence_threshold)
         return pts
@@ -70,7 +69,6 @@ def getSuperPointKps(image, confidence_threshold):
     image = np.expand_dims(image, 2)
     with experiment._init_graph(config, with_dataset=False) as (net):
         net.load(str(checkpoint))
-        # net.train(False)
         prob = net.predict({'image': image}, keys='prob_nms')
         pts = select_top_k(prob, thresh=confidence_threshold)
         return pts
@@ -92,13 +90,10 @@ def getSuperPointDescriptors(image, confidence_threshold):
 
     with experiment._init_graph(config, with_dataset=False) as (net):
         net.load(str(checkpoint))
-        # net.train(False)
 
         prob = net.predict({'image': image}, keys=['prob_nms', 'descriptors'])
-        # import pdb; pdb.set_trace()
         pts = select_top_k(prob['prob_nms'], thresh=confidence_threshold)
         desc = prob['descriptors'][pts[0], pts[1]]
-        # cv2.imwrite("check.png", desc)
         return pts, desc
 
 #image_path_1 = '../Woods.jpg'
