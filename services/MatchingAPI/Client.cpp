@@ -384,7 +384,6 @@ int main()
             cout << oneParam << " ";
         cout << endl;
     }
-
     return 0;
 }
 

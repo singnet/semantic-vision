@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
 ARG language
 
@@ -57,10 +57,10 @@ RUN apt -y remove x264 libx264-dev && \
     libjpeg8-dev libpng-dev \
     software-properties-common
 
-RUN apt -y install python-pip3
-RUN python -m pip3 install --upgrade pip3
-RUN python -m pip3 install grpcio
-RUN python -m pip3 install grpcio-tools
+RUN apt -y install python3-pip
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install grpcio
+RUN python3 -m pip install grpcio-tools
 
 RUN add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
 RUN apt -y update
@@ -114,7 +114,7 @@ RUN cd \
 RUN pip3 install opencv-contrib-python \
     && pip3 install tensorflow-gpu \
     && pip3 install matplotlib \
-    && pip3 install tqdm \
+    && pip3 install tqdm
 
 RUN cd \
     && git clone https://github.com/rpautrat/SuperPoint.git \
