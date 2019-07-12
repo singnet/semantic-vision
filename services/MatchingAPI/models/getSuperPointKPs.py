@@ -8,6 +8,7 @@ import experiment
 from superpoint.settings import EXPER_PATH
 
 import os
+from multiprocessing import Pool
 import matplotlib.pyplot
 matplotlib.pyplot.switch_backend('agg')
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ def select_top_k(prob, thresh=0, num=300):
     pts = (pts[0][idx], pts[1][idx])
     return pts
 
-def getMagicPointKps(image, confidence_threshold):
+def _getMagicPointKps(image, confidence_threshold):
     nparr = np.fromstring(image, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
     parser = argparse.ArgumentParser()
@@ -50,7 +51,11 @@ def getMagicPointKps(image, confidence_threshold):
         pts = select_top_k(prob, thresh=confidence_threshold)
         return pts
 
-def getSuperPointKps(image, confidence_threshold):
+def getMagicPointKps(image, confidence_threshold):
+    with Pool(1) as p:
+        return p.apply(_getMagicPointKps, (image, confidence_threshold))
+
+def _getSuperPointKps(image, confidence_threshold):
     nparr = np.fromstring(image, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
     parser = argparse.ArgumentParser()
@@ -73,7 +78,11 @@ def getSuperPointKps(image, confidence_threshold):
         pts = select_top_k(prob, thresh=confidence_threshold)
         return pts
 
-def getSuperPointDescriptors(image, confidence_threshold):
+def getSuperPointKps(image, confidence_threshold):
+    with Pool(1) as p:
+        return p.apply(_getSuperPointKps, (image, confidence_threshold))
+
+def _getSuperPointDescriptors(image, confidence_threshold):
     nparr = np.fromstring(image, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
     parser = argparse.ArgumentParser()
@@ -96,10 +105,6 @@ def getSuperPointDescriptors(image, confidence_threshold):
         desc = prob['descriptors'][pts[0], pts[1]]
         return pts, desc
 
-#image_path_1 = '../Woods.jpg'
-#img1 = cv2.imread(image_path_1, 0)
-
-# kps = getSuperPointKps(img1, 0.015)
-# kps = getMagicPointKps(img1, 0.015)
-#kps, desc = getSuperPointDescriptors(img1, 0.015)
-# kps2, desc2 = getSuperPointDescriptors(img1, 0.015)
+def getSuperPointDescriptors(image, confidence_threshold):
+    with Pool(1) as p:
+        return p.apply(_getSuperPointDescriptors, (image, confidence_threshold))
