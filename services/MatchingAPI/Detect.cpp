@@ -664,20 +664,13 @@ vector<KeyPoint> SPDetector::getPoints(string image)
     PyObject* pName = PyUnicode_FromString(pyName);
     PyObject* pModule = PyImport_Import(pName);
     PyObject* pFunc = PyObject_GetAttrString(pModule, "getSuperPointKps");
-    cout << "1" << endl;
     PyObject* pArgs = PyTuple_New(2);
     PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));
-    cout << "2" << endl;
     PyTuple_SetItem(pArgs, 1, PyFloat_FromDouble(threshold));
-    cout << "3" << endl;
     PyObject* pValue = PyObject_CallObject(pFunc, pArgs);
-    cout << "4" << endl;
     long* x = (long*)PyArray_DATA(PyTuple_GetItem(pValue, 1));
-    cout << "5" << endl;
     long* y = (long*)PyArray_DATA(PyTuple_GetItem(pValue, 0));
-    cout << "6" << endl;
     int length = PyArray_DIM(PyTuple_GetItem(pValue, 1), 0);
-    cout << "7" << endl;
 
     vector<KeyPoint> result;
     for (int i = 0; i < length; i++)
