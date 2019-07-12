@@ -11,6 +11,8 @@
 #include "get_functions.h"
 #include "fromResponseFunctions.h"
 
+#include <csignal>
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -77,6 +79,11 @@ template <class T> static void fillMatches(const vector<DMatch>* matches, T* rep
         buf->set_queryidx(oneMatch.queryIdx);
         buf->set_trainidx(oneMatch.trainIdx);
     }
+}
+
+static void signalHandler( int signum ) {
+    cout << "Interrupt signal (" << signum << ") received.\n";
+    exit(signum);
 }
 
 
@@ -242,6 +249,7 @@ void RunServer() {
 
 int main(int argc, char** argv) {
     setenv("PYTHONPATH", "../models/", 1);
+    signal(SIGINT, signalHandler);
     Py_InitializeEx(0);
     RunServer();
     Py_FinalizeEx();

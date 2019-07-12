@@ -608,8 +608,7 @@ vector<KeyPoint> MPDetector::getPoints(string image)
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 
-    PyObject* pName = PyUnicode_FromString(pyName);
-    PyObject* pModule = PyImport_Import(pName);
+    PyObject* pModule = PyImport_ImportModule(pyName);
     PyObject* pFunc = PyObject_GetAttrString(pModule, "getMagicPointKps");
     PyObject* pArgs = PyTuple_New(2);
     PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));
@@ -661,8 +660,7 @@ vector<KeyPoint> SPDetector::getPoints(string image)
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 
-    PyObject* pName = PyUnicode_FromString(pyName);
-    PyObject* pModule = PyImport_Import(pName);
+    PyObject* pModule = PyImport_ImportModule(pyName);
     PyObject* pFunc = PyObject_GetAttrString(pModule, "getSuperPointKps");
     PyObject* pArgs = PyTuple_New(2);
     PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));
