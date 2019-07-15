@@ -575,7 +575,7 @@ superpointFeatures::superpointFeatures()
 
 void superpointFeatures::setParameters(map<string, double> parameters)
 {
-    CheckParam_no_ifin <double> (parameters, (char*)"threshold", &threshold, 0, dmax_value);
+    CheckParam_no_ifin <double> (parameters, (char*)"threshold", &threshold, 0, fmax_value);
 }
 
 superpointFeatures* superpointFeatures::create()

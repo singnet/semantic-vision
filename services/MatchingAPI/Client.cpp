@@ -290,7 +290,7 @@ int main()
     string image2("../Woods2.jpg");
 
     string descriptor("ORB");
-    string detector("ORB");
+    string detector("Superpoint");
     string detector_params("");
     string desc_params("");
     string transf_type("Bilinear");

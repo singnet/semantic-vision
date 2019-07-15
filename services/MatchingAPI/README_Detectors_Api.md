@@ -147,3 +147,8 @@ Parameters:
 **maxCorners**  Maximum number of detected points.
 
 **num_layers**  Takes one of the two possible values: 2 or 4.
+
+## Superpoint/Magicpoint
+Parameters:
+
+**threshold** The higher threshold is, the less points you'll get. Double. Possible values - [0 - max_double_value]. Default value is 0.015.

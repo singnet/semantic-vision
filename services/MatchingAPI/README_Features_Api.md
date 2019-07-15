@@ -155,3 +155,7 @@ Parameters:
 **pointDistribution**. Possible values - [0, 1, 2]. Type enum. Distribution of generated points.
 0 - PointDistribution::UNIFORM, 1 - PointDistribution::REGULAR, 2 - PointDistribution::NORMAL
  
+## Superpoint features
+
+**threshold** Affects on detector which will detect keypoints to be descripted. Can't be stacked with ANY other detectors since Superpoint uses it's own keypoints.
+The higher threshold is, the less points you'll get. Double. Possible values - [0 - max_double_value]. Default value is 0.015.

@@ -598,7 +598,7 @@ MPDetector::MPDetector()
 void MPDetector::setParameters(map<string, double> params)
 {
     float fmax = std::numeric_limits<float>::max();
-    CheckParam_no_ifin<float> (params, (char*)"threshold", &threshold, 1, fmax);
+    CheckParam_no_ifin<float> (params, (char*)"threshold", &threshold, 0, fmax);
 }
 
 vector<KeyPoint> MPDetector::getPoints(string image)
@@ -650,7 +650,7 @@ SPDetector::SPDetector()
 void SPDetector::setParameters(map<string, double> params)
 {
     float fmax = std::numeric_limits<float>::max();
-    CheckParam_no_ifin<float> (params, (char*)"threshold", &threshold, 1, fmax);
+    CheckParam_no_ifin<float> (params, (char*)"threshold", &threshold, 0, fmax);
 }
 
 vector<KeyPoint> SPDetector::getPoints(string image)
