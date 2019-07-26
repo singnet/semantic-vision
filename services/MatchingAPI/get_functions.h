@@ -25,5 +25,9 @@ string getTransformParamsByImg(string image1, string image2, string detector, st
         string descriptor, string descriptor_parameters, string transformType, string transform_input_parameters,
         vector<double> * transform_parameters);
 
+string getClosestImg(string q_image, vector<string>& imageBase, string descriptor, string descriptor_parameters,
+        string detector, string detector_parameters, int numOfClusters, int numOfImagesToRetrieve, vector<string>* retrievedImages,
+                     vector<float> * distances);
+
 #endif //MATCHINGAPI_GET_FUNCTIONS_H
 

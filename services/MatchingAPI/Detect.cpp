@@ -661,6 +661,7 @@ vector<KeyPoint> SPDetector::getPoints(string image)
     gstate = PyGILState_Ensure();
 
     PyObject* pModule = PyImport_ImportModule(pyName);
+    PyErr_Print();
     PyObject* pFunc = PyObject_GetAttrString(pModule, "getSuperPointKps");
     PyObject* pArgs = PyTuple_New(2);
     PyTuple_SetItem(pArgs, 0, PyBytes_FromStringAndSize(image.c_str(), Py_ssize_t(image.size())));

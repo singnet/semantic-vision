@@ -14,6 +14,23 @@ matplotlib.pyplot.switch_backend('agg')
 import matplotlib.pyplot as plt
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
+# img1 = cv2.imread('../Woods.jpg',0)
+# img2 = cv2.imread('../Woods2.jpg',0)
+# sift = cv2.ORB_create()
+# kp1, des1 = sift.detectAndCompute(img1,None)
+# kp2, des2 = sift.detectAndCompute(img2,None)
+# bf = cv2.BFMatcher()
+# matches = bf.knnMatch(des1,des2, k=2)
+# good = []
+# for m,n in matches:
+#     if m.distance < 0.75*n.distance:
+#         good.append([m])
+# # cv.drawMatchesKnn expects list of lists as matches.
+# img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,flags=2)
+# plt.imshow(img3),plt.show()
+
+
+
 
 def draw_keypoints(img, corners, color=(0, 255, 0), radius=3, s=3):
     img = np.repeat(cv2.resize(img, None, fx=s, fy=s)[..., np.newaxis], 3, -1)

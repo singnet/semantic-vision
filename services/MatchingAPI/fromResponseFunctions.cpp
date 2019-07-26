@@ -50,3 +50,16 @@ void matchesFromRequest(transformRequest request, vector<DMatch> * matches)
         (*matches).push_back(buf);
     }
 }
+
+void matchesFromAllMatches (google::protobuf::RepeatedPtrField< ::MatchingApi::matchedPoint > requestMatches, vector<DMatch> &matches)
+{
+    for (auto& oneMatch: requestMatches)
+    {
+        DMatch buf;
+        buf.trainIdx = oneMatch.trainidx();
+        buf.queryIdx = oneMatch.queryidx();
+        buf.imgIdx = oneMatch.imgidx();
+        buf.distance = oneMatch.distance();
+        matches.push_back(buf);
+    }
+}

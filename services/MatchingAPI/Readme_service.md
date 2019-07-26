@@ -300,3 +300,41 @@ same as for getTransformParameters
     transformResponse transfReply;
     string status = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params, 
         descriptor, desc_params, transf_type, transf_params_in, &transfReply);
+
+### getClosestImage
+
+This is the image retrieval algorithm. It will get you several closest images to the input image.
+
+Simple database which can be used for this service is here https://yadi.sk/d/PpLotfo4ORikFw
+
+#### input
+
+##### input_image
+As before, image in bytes.
+
+##### image_base
+Several images, type "repeated bytes".
+
+##### descriptor_name, desc_parameters, detector_name, det_parameters
+Same as before
+
+##### numOfImagesToRetrieve
+Number of closest images to numOfImagesToRetrieve
+
+##### numOfClusters
+Parameter for Bag of words clusterization. How much words will be in the bag.
+
+#### output
+
+##### images
+repeated bytes of images. Size is equal to numOfImagesToRetrieve.
+
+##### distances
+repeated float of distances between images in descriptor space.
+
+##### status
+String. Contains status of operation
+
+#### usage
+
+See client.cpp -> main -> //getClosestImages usage

@@ -108,6 +108,25 @@ message transformByImageRequest
   string transform_input_parameters = 8;
 }
 
+message imageRetrievalRequest
+{
+  bytes input_image = 1;
+  repeated bytes image_base = 2;
+  string descriptor_name = 3;
+  string desc_parameters = 4;
+  string detector_name = 5;
+  string det_parameters = 6;
+  int32 numOfImagesToRetrieve = 7;
+  int32 numOfClusters = 8;
+}
+
+message imageRetrievalResponse
+{
+  repeated bytes images = 1;
+  repeated float distances = 2;
+  string status = 3;
+}
+
 service MatchApi {
   rpc getKP(keypointRequest) returns (keypointResponse) {}
   rpc getDescByImage(descriptorRequest) returns (descriptorResponse) {}
@@ -116,4 +135,5 @@ service MatchApi {
   rpc getMatchByImage(matchingByImageRequest) returns (matchingByImageResponse) {}
   rpc getTransformParameters(transformRequest) returns (transformResponse) {}
   rpc getTransformParametersByImage(transformByImageRequest) returns (transformResponse) {}
+  rpc getClosestImages(imageRetrievalRequest) returns (imageRetrievalResponse) {}
 }

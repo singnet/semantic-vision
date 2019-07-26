@@ -5,6 +5,7 @@
 #include <grpc++/security/credentials.h>
 #include "MatchingAPI.grpc.pb.h"
 
+#include <dirent.h>
 #include "Includes.h"
 
 using grpc::Channel;
@@ -23,6 +24,8 @@ using MatchingApi::matchingByImageResponse;
 using MatchingApi::transformRequest;
 using MatchingApi::transformResponse;
 using MatchingApi::transformByImageRequest;
+using MatchingApi::imageRetrievalResponse;
+using MatchingApi::imageRetrievalRequest;
 using MatchingApi::MatchApi;
 
 template <class T> static string checkStatus(Status status, T* response)
@@ -105,7 +108,17 @@ static string getImageString(string path)
     char imageBytes[sz];
     fread(imageBytes, sizeof *imageBytes, sz, in_file);
     string image_bytes(imageBytes, sz);
+    fclose(in_file);
     return image_bytes;
+}
+
+static Mat getMat(string imageBytes)
+{
+    size_t length = imageBytes.size();
+    Mat imageMat;
+    vector<char> data((char*)imageBytes.c_str(), (char*)imageBytes.c_str() + length);
+    imageMat = imdecode(data, IMREAD_UNCHANGED);
+    return imageMat;
 }
 
 class MatchingAPIClient{
@@ -276,6 +289,28 @@ public:
         Status status = stub_->getTransformParametersByImage(&context, request, reply);
         return checkStatus(status, reply);
     }
+
+    string getClosestImages(string q_image, vector<string> image_base, string detector, string det_params, string descriptor,
+                                         string desc_params, int numImagesToRetrieve, int numOfClusters, imageRetrievalResponse* reply)
+    {
+        imageRetrievalRequest request;
+        ClientContext context;
+        request.set_desc_parameters(desc_params);
+        request.set_descriptor_name(descriptor);
+        request.set_det_parameters(det_params);
+        request.set_detector_name(detector);
+        request.set_input_image(q_image);
+
+        for (auto& oneImage : image_base)
+        {
+            string * buf = request.add_image_base();
+            (*buf) = oneImage;
+        }
+        request.set_numofimagestoretrieve(numImagesToRetrieve);
+        request.set_numofclusters(numOfClusters);
+        Status status = stub_->getClosestImages(&context, request, reply);
+        return checkStatus(status, reply);
+    }
 private:
     std::unique_ptr<MatchApi::Stub> stub_;
 };
@@ -289,8 +324,8 @@ int main()
     string image("../Woods.jpg");
     string image2("../Woods2.jpg");
 
-    string descriptor("ORB");
-    string detector("Superpoint");
+    string descriptor("LUCID");
+    string detector("MSER");
     string detector_params("");
     string desc_params("");
     string transf_type("Bilinear");
@@ -382,6 +417,53 @@ int main()
         cout << "Transform parameters are: " << endl;
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
+        cout << endl;
+    }
+
+    //getClosestImages usage
+    {
+        imageRetrievalResponse retrievalResponse;
+        vector<string> database;
+        struct dirent *entry = nullptr;
+        DIR *dp = nullptr;
+        dp = opendir("../../PizzaDatabase/Train"); //set your own path to database of your chose
+        if (dp != nullptr) {
+            while ((entry = readdir(dp))) {
+                char path[100];
+                strcpy(path, "../../PizzaDatabase/Train/");
+                strcat(path, entry->d_name);
+                FILE *in_file = fopen(path, "rb");
+
+                fseek(in_file, 0L, SEEK_END);
+                int sz = ftell(in_file);
+                if (sz < 0)
+                    continue;
+                database.emplace_back(getImageString(path));
+                fclose(in_file);
+            }
+        }
+        closedir(dp);
+
+        string q_image = getImageString("../../PizzaDatabase/Query/pizza-2766682_960_720.jpg");
+        reply = client.getClosestImages(q_image, database, detector, detector_params,
+                                                     descriptor, desc_params,
+                                                     10, 1000, &retrievalResponse);
+        Mat concatted, concattedPre;
+        Mat original = getMat(q_image);
+        concattedPre = original.clone();
+        int width = 640;
+        int height = 480;
+        resize(concattedPre, concatted, Size(width, height), 0, 0, INTER_CUBIC);
+        string distance = "Distance ";
+        for (auto &oneImage : retrievalResponse.images()) {
+            Mat buf = getMat(oneImage);
+            Mat buf2;
+            resize(buf, buf2, Size(width, height), 0, 0, INTER_CUBIC);
+            hconcat(concatted, buf2, concatted);
+        }
+        imwrite("check.png", concatted);
+
+        cout << "get closest image " << reply << endl;
         cout << endl;
     }
     return 0;

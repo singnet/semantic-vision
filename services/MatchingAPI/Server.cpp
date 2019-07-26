@@ -33,6 +33,9 @@ using MatchingApi::transformRequest;
 using MatchingApi::transformResponse;
 using MatchingApi::transformByImageRequest;
 using MatchingApi::MatchApi;
+using MatchingApi::imageRetrievalRequest;
+using MatchingApi::imageRetrievalResponse;
+
 
 static void fillKeypoint(MatchingApi::keyPoint* kp, KeyPoint oneVec)
 {
@@ -85,7 +88,6 @@ static void signalHandler( int signum ) {
     cout << "Interrupt signal (" << signum << ") received.\n";
     exit(signum);
 }
-
 
 class MatchingApiServer final : public MatchApi::Service {
     Status getKP(ServerContext* context, const keypointRequest* request,
@@ -229,6 +231,32 @@ class MatchingApiServer final : public MatchApi::Service {
             reply->add_transform_parameters(oneParam);
         }
         reply->set_status(result);
+        return Status::OK;
+    }
+
+    Status getClosestImages(ServerContext* context, const imageRetrievalRequest* request, imageRetrievalResponse* reply) override
+    {
+        vector<float> distances;
+        vector<string> retrievedImages;
+        vector<string> dataBase;
+        for (auto& oneImg : request->image_base())
+        {
+            dataBase.push_back(oneImg);
+        }
+        string result = getClosestImg(request->input_image(), dataBase, request->descriptor_name(), request->desc_parameters(),
+                request->detector_name(), request->det_parameters(), request->numofclusters(), request->numofimagestoretrieve(), &retrievedImages,
+                &distances);
+
+        reply->set_status(result);
+        for (auto& distance : distances)
+        {
+            reply->add_distances(distance);
+        }
+        for (auto& rImage: retrievedImages)
+        {
+            reply->add_images(rImage);
+        }
+
         return Status::OK;
     }
 
