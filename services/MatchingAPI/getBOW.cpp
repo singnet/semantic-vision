@@ -12,9 +12,14 @@ void getBowVoc(vector<Mat> baseDescs, Mat descs, Mat &vocabulary, int clusterCou
     bowide.setVocabulary(vocabulary);
     for (auto& oneDesc : baseDescs) {
         oneDesc.convertTo(oneFDesc, CV_32F);
-        vector<vector<int>> idxs;
         Mat bowDesc;
-        bowide.compute(oneFDesc, bowDesc, &idxs);
+        try {
+            bowide.compute(oneFDesc, bowDesc);
+        }
+        catch (cv::Exception)
+        {
+            cout << "Cv exception catched" << endl;
+        }
         processedBase->push_back(bowDesc);
         processedBaseMat.push_back(bowDesc);
     }

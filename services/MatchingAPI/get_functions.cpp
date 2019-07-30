@@ -25,7 +25,7 @@ static string descToVec(vector<vector<float>> *resultF,
             }
             (*resultU).push_back(buf);
         }
-        return "Success. Features' type uchar";
+        return "Success";
     }
     else if (type == 5)
     {
@@ -34,7 +34,7 @@ static string descToVec(vector<vector<float>> *resultF,
             const float *p = desc_result.ptr<float>(i);
             (*resultF).emplace_back(p, p + desc_result.cols);
         }
-        return "Success. Features' type float";
+        return "Success";
     }
 }
 
@@ -90,9 +90,15 @@ string getDescriptorByImage(string image, string detector, string detector_param
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
     cout << endl << endl << "Setting parameters for descriptor:" << endl;
     ptr_describe->setParameters(desc_params);
-    Mat desc_result = ptr_describe->getFeatures(kps, image);
-
-    ptr_describe->releaseDescriptor();
+    Mat desc_result;
+    try {
+        desc_result = ptr_describe->getFeatures(kps, image);
+    }
+    catch (cv::Exception)
+    {
+        ptr_describe->releaseDescriptor();
+        return "Features couldn't be computed for this combination of descriptor+detector for this image";
+    }
     return descToVec(resultF, resultU, desc_result);
 }
 
@@ -107,8 +113,15 @@ string getDescriptorByKps(string image, string descriptor, string descriptor_par
     map<string, double> det_params, desc_params;
     parseClient(descriptor_parameters, &desc_params);
     ptr_describe->setParameters(desc_params);
-
-    Mat desc_result = ptr_describe->getFeatures(&kps, image);
+    Mat desc_result;
+    try {
+        desc_result = ptr_describe->getFeatures(&kps, image);
+    }
+    catch (cv::Exception)
+    {
+        ptr_describe->releaseDescriptor();
+        return "Features couldn't be computed for this combination of descriptor+detector for this image";
+    }
 
     ptr_describe->releaseDescriptor();
     return descToVec(resultF, resultU, desc_result);
@@ -131,7 +144,7 @@ string getMatches(Mat desc1, Mat desc2, vector<DMatch>* matches)
         return "No matches found";
     std::vector<DMatch> Gmatches;
     sort(matches->begin(), matches->end(), matchCompare);
-    return "Matching done";
+    return "Success";
 }
 
 string getMatchesByImg(string image1, string image2, string detector, string detector_parameters, string descriptor,
@@ -161,9 +174,27 @@ string getMatchesByImg(string image1, string image2, string detector, string det
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
     cout << endl << endl << "Setting parameters for descriptor:" << endl;
     ptr_describe->setParameters(desc_params);
-    Mat desc_result1 = ptr_describe->getFeatures(kps1, image1);
-    Mat desc_result2 = ptr_describe->getFeatures(kps2, image2);
+    Mat desc_result1, desc_result2;
+    try {
+        desc_result1 = ptr_describe->getFeatures(kps1, image1);
+    }
+    catch (cv::Exception)
+    {
+        ptr_describe->releaseDescriptor();
+        return "Features couldn't be computed for this combination of descriptor+detector for the first image";
+    }
+
+    try {
+        desc_result2 = ptr_describe->getFeatures(kps2, image2);
+    }
+    catch (cv::Exception)
+    {
+        ptr_describe->releaseDescriptor();
+        return "Features couldn't be computed for this combination of descriptor+detector for the second image";
+    }
+
     ptr_describe->releaseDescriptor();
+
     return getMatches(desc_result1, desc_result2, matches);
 }
 
@@ -186,7 +217,7 @@ string getTransformParams(string transformType, string transform_input_parameter
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
     ptr_transform->releaseTransform();
-    return "Transform parameters extraction is done";
+    return "Success";
 }
 
 string getTransformParamsByImg(string image1, string image2, string detector, string detector_parameters,
@@ -217,8 +248,25 @@ string getTransformParamsByImg(string image1, string image2, string detector, st
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
     cout << endl << endl << "Setting parameters for descriptor:" << endl;
     ptr_describe->setParameters(desc_params);
-    Mat desc_result1 = ptr_describe->getFeatures(&kps1, image1);
-    Mat desc_result2 = ptr_describe->getFeatures(&kps2, image2);
+    Mat desc_result1, desc_result2;
+
+    try {
+        desc_result1 = ptr_describe->getFeatures(&kps1, image1);
+    }
+    catch (cv::Exception)
+    {
+        ptr_describe->releaseDescriptor();
+        return "Features couldn't be computed for this combination of descriptor+detector for the first image";
+    }
+
+    try {
+        desc_result2 = ptr_describe->getFeatures(&kps2, image2);
+    }
+    catch (cv::Exception)
+    {
+        ptr_describe->releaseDescriptor();
+        return "Features couldn't be computed for this combination of descriptor+detector for the second image";
+    }
     ptr_describe->releaseDescriptor();
     getMatches(desc_result1, desc_result2, &matches);
     if (matches.size() == 0)
@@ -231,7 +279,7 @@ string getTransformParamsByImg(string image1, string image2, string detector, st
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
     ptr_transform->releaseTransform();
-    return "Transform parameters extraction is done";
+    return "Success";
 }
 
 string getClosestImg(string q_image, vector<string>& imageBase, string descriptor, string descriptor_parameters,
@@ -256,7 +304,15 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
         if (kps.size() == 0)
             idxsToDel.push_back(i);
         else {
-            Mat desc_result = ptr_describe->getFeatures(&kps, imageBase[i]);
+            Mat desc_result;
+            try {
+                desc_result = ptr_describe->getFeatures(&kps, imageBase[i]);
+            }
+            catch (cv::Exception)
+            {
+                idxsToDel.push_back(i);
+                continue;
+            }
             baseDescs.push_back(desc_result);
             vectorBaseDescs.push_back(desc_result);
         }
@@ -278,7 +334,14 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
         ptr_detector->releaseDetector();
         return "No keypoints detected on query image";
     }
-    Mat q_desc = ptr_describe->getFeatures(&q_kps, q_image);
+    Mat q_desc;
+    try {
+        q_desc = ptr_describe->getFeatures(&q_kps, q_image);
+    }
+    catch (cv::Exception)
+    {
+        return "Features can't be computed for this combination detector+descriptor for query image";
+    }
 
     vector<vector<DMatch>> matches = processOneDesc(q_desc, vocabulary, processedBaseMat, numOfImagesToRetrieve);
 
@@ -289,5 +352,5 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
     }
     ptr_describe->releaseDescriptor();
     ptr_detector->releaseDetector();
-    return "Images retrieved succesfully";
+    return "Success";
 }

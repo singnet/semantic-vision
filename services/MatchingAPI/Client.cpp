@@ -185,7 +185,14 @@ public:
     {
         matchingRequest request;
         ClientContext context;
-
+        if (inputFeatures_first.features_size() == 0)
+        {
+            return "No features given for the first image";
+        }
+        if (inputFeatures_second.features_size() == 0)
+        {
+            return "No features given for the first image";
+        }
         if ((*inputFeatures_first.features().data())->onedescu().size() > 0)
         {
             for (auto& oneFeature : inputFeatures_first.features())
@@ -260,6 +267,8 @@ public:
             MatchingApi::keyPoint* buf = request.add_keypoints_second();
             fillKeypoint(kp, buf);
         }
+        if (matches.size() == 0)
+            return "No matches given";
         for (auto& oneMatch : matches)
         {
             auto buf = request.add_all_matches();
@@ -324,8 +333,8 @@ int main()
     string image("../Woods.jpg");
     string image2("../Woods2.jpg");
 
-    string descriptor("LUCID");
-    string detector("MSER");
+    string descriptor("DAISY");
+    string detector("Superpoint");
     string detector_params("");
     string desc_params("");
     string transf_type("Bilinear");
@@ -347,7 +356,7 @@ int main()
     {
         descriptorResponse response;
         reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
-        cout << "get descriptor by image " << reply << endl;
+        cout << "get descriptor by image " << reply << " " << response.status() << endl;
     }
 
     //getDescByKps usage
@@ -444,25 +453,26 @@ int main()
         }
         closedir(dp);
 
-        string q_image = getImageString("../../PizzaDatabase/Query/pizza-2766682_960_720.jpg");
+        string q_image = getImageString("../../PizzaDatabase/Query/pizza-442059_960_720.jpg");
         reply = client.getClosestImages(q_image, database, detector, detector_params,
                                                      descriptor, desc_params,
                                                      10, 1000, &retrievalResponse);
-        Mat concatted, concattedPre;
-        Mat original = getMat(q_image);
-        concattedPre = original.clone();
-        int width = 640;
-        int height = 480;
-        resize(concattedPre, concatted, Size(width, height), 0, 0, INTER_CUBIC);
-        string distance = "Distance ";
-        for (auto &oneImage : retrievalResponse.images()) {
-            Mat buf = getMat(oneImage);
-            Mat buf2;
-            resize(buf, buf2, Size(width, height), 0, 0, INTER_CUBIC);
-            hconcat(concatted, buf2, concatted);
+        if (retrievalResponse.distances_size() != 0) {
+            Mat concatted, concattedPre;
+            Mat original = getMat(q_image);
+            concattedPre = original.clone();
+            int width = 640;
+            int height = 480;
+            resize(concattedPre, concatted, Size(width, height), 0, 0, INTER_CUBIC);
+            string distance = "Distance ";
+            for (auto &oneImage : retrievalResponse.images()) {
+                Mat buf = getMat(oneImage);
+                Mat buf2;
+                resize(buf, buf2, Size(width, height), 0, 0, INTER_CUBIC);
+                hconcat(concatted, buf2, concatted);
+            }
+            imwrite("check.png", concatted);
         }
-        imwrite("check.png", concatted);
-
         cout << "get closest image " << reply << endl;
         cout << endl;
     }
