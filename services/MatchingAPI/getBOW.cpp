@@ -1,39 +1,29 @@
 #include "getBOW.h"
 
-void getBowVoc(vector<Mat> baseDescs, Mat descs, Mat &vocabulary, int clusterCount, vector<Mat> * processedBase, Mat &processedBaseMat)
+void getBowVoc(vector<Mat> baseDescs, Vocabulary * vocabulary, vector<fBow> * processedBase)
 {
-    BOWKMeansTrainer bowtrainer(clusterCount);
-    Mat fdescs, oneFDesc;
-    descs.convertTo(fdescs, CV_32F);
-    bowtrainer.add(fdescs);
-    vocabulary = bowtrainer.cluster();
-    BFMatcher* matcher = new BFMatcher;
-    BOWImgDescriptorExtractor bowide(matcher);
-    bowide.setVocabulary(vocabulary);
-    for (auto& oneDesc : baseDescs) {
-        oneDesc.convertTo(oneFDesc, CV_32F);
-        Mat bowDesc;
-        try {
-            bowide.compute(oneFDesc, bowDesc);
-        }
-        catch (cv::Exception)
-        {
-            cout << "Cv exception catched" << endl;
-        }
-        processedBase->push_back(bowDesc);
-        processedBaseMat.push_back(bowDesc);
-    }
+    fbow::VocabularyCreator::Params params;
+    params.k = 10;
+    params.L = 6;
+    params.nthreads=4;
+    params.maxIters=3;
+    params.verbose=false;
+    srand(0);
+    VocabularyCreator voc_creator;
+    voc_creator.create((*vocabulary),baseDescs,"", params);
+    for (auto& oneFeature : baseDescs)
+        (*processedBase).push_back((*vocabulary).transform(oneFeature));
 }
 
-vector<vector<DMatch>> processOneDesc(Mat oneDesc, Mat vocabulary, Mat processedBase, int num)
+vector<pair<double, int>> processOneDesc(vector<fBow> processedBase, Mat oneDesc, Vocabulary &vocabulary, int num)
 {
-    BFMatcher * matcher = new BFMatcher;
-    BOWImgDescriptorExtractor bowide(matcher);
-    bowide.setVocabulary(vocabulary);
-    Mat bowDesc, oneFDesc;
-    oneDesc.convertTo(oneFDesc, CV_32F);
-    bowide.compute(oneFDesc, bowDesc);
-    vector<vector<DMatch>> matches;
-    matcher->knnMatch(bowDesc, processedBase,matches,num);
-    return matches;
+    fBow vv = vocabulary.transform(oneDesc);
+    vector<pair<double, int>> scores;
+    for (int j = 0; j < processedBase.size(); j++)
+        scores.emplace_back(vv.score(vv, processedBase[j]), j);
+    sort(scores.begin(), scores.end());
+    vector<pair<double, int>> result;
+    for (int i = 0; i < num; i++)
+        result.push_back(scores[scores.size()-1-i]);
+    return result;
 }

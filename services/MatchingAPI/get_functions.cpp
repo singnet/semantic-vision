@@ -142,7 +142,7 @@ string getMatches(Mat desc1, Mat desc2, vector<DMatch>* matches)
     }
     if ((*matches).size() == 0)
         return "No matches found";
-    std::vector<DMatch> Gmatches;
+
     sort(matches->begin(), matches->end(), matchCompare);
     return "Success";
 }
@@ -288,14 +288,12 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
 {
     IDetector* ptr_detector = ChooseDetector(detector.c_str());
     IDescribe* ptr_describe = ChooseFeatures(descriptor.c_str());
-    Mat vocabulary;
     map<string, double> det_params, desc_params;
     parseClient(detector_parameters, &det_params);
     parseClient(descriptor_parameters, &desc_params);
     ptr_detector->setParameters(det_params);
     ptr_describe->setParameters(desc_params);
 
-    Mat baseDescs;
     vector<Mat> vectorBaseDescs;
     vector<int> idxsToDel;
     for (int i = 0; i < imageBase.size(); i++)
@@ -313,7 +311,6 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
                 idxsToDel.push_back(i);
                 continue;
             }
-            baseDescs.push_back(desc_result);
             vectorBaseDescs.push_back(desc_result);
         }
     }
@@ -321,11 +318,17 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
     {
         imageBase.erase(imageBase.begin()+idxsToDel[i]);
     }
-
-    vector<Mat> processedBase;
-    Mat processedBaseMat;
-
-    getBowVoc(vectorBaseDescs, baseDescs, vocabulary, numOfClusters, &processedBase, processedBaseMat);
+    
+    if (imageBase.size() == 0)
+    {
+        ptr_describe->releaseDescriptor();
+        ptr_detector->releaseDetector();
+        return "No keypoints detected on input database. Check input detector, descriptor and parameters for them";
+    }
+    
+    vector<fBow> processedBase;
+    fbow::Vocabulary vocabulary;
+    getBowVoc(vectorBaseDescs, &vocabulary, &processedBase);
 
     vector<KeyPoint> q_kps = ptr_detector->getPoints(q_image);
     if (q_kps.size() == 0)
@@ -343,12 +346,13 @@ string getClosestImg(string q_image, vector<string>& imageBase, string descripto
         return "Features can't be computed for this combination detector+descriptor for query image";
     }
 
-    vector<vector<DMatch>> matches = processOneDesc(q_desc, vocabulary, processedBaseMat, numOfImagesToRetrieve);
+    vector<pair<double, int>> matches = processOneDesc(processedBase, q_desc, vocabulary, numOfImagesToRetrieve);
 
-    for (auto &oneMatch : matches[0]) {
-        string buf = imageBase[oneMatch.trainIdx];
+
+    for (auto &oneMatch : matches) {
+        string buf = imageBase[oneMatch.second];
         (*retrievedImages).push_back(buf);
-        (*distances).push_back(oneMatch.distance);
+        (*distances).push_back(oneMatch.first);
     }
     ptr_describe->releaseDescriptor();
     ptr_detector->releaseDetector();

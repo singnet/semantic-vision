@@ -42,6 +42,10 @@ taken from the cv::KeyPoint structure and used to fulfill cv::KeyPoint in furthe
     keypointResponse responsekp;
     string reply = client.getKP(image_bytes, detector, detector_params, &responsekp);
     
+#### Snet usage example
+
+    snet client call snet match-service getKP '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "parameters" : "WTA_K 4"  }'
+    
 ### getDescByImage
 As it could be seen from name, this one computes descriptor and requires image as input.
 
@@ -90,6 +94,9 @@ contain descriptor for keypoint.
     string image_bytes = getImageString(image);
     descriptorResponse response;
     string reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
+
+#### Snet usage example
+    snet client call snet match-service getDescByImage '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
 
 ### getDescByKp
 This function computes descriptor of input keypoints.
@@ -209,6 +216,9 @@ usage, client will get these keypoints alongside with transform parameters. To s
     matchingByImageResponse response;
     string status = getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor, desc_params, &response);
 
+#### Snet usage
+    snet client call snet match-service getMatchByImage '{ "file@image_first": "Woods.jpg", "file@image_second": "Woods2.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
+
 ### getTransformParameters
 
 This function returns parameters of an input transform given 2 images, detected keypoints and matches. 
@@ -300,6 +310,9 @@ same as for getTransformParameters
     transformResponse transfReply;
     string status = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params, 
         descriptor, desc_params, transf_type, transf_params_in, &transfReply);
+
+#### Snet usage
+    snet client call snet match-service getTransformParametersByImage '{ "file@image_first": "Woods.jpg", "file@image_second": "Woods2.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
 
 ### getClosestImage
 

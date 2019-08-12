@@ -560,9 +560,6 @@ Mat pctFeatures::getFeatures(vector<KeyPoint>* input, string image)
     Mat descriptors;
     Ptr<PCTSignatures> featureDescriptor = PCTSignatures::create(initSampleCount, initSeedCount, pointDistribution);
     featureDescriptor->computeSignature(imageMat, descriptors);
-    double min, max;
-    cv::minMaxLoc(descriptors, &min, &max);
-    cout << endl << "min " << min << " max " << max << endl;
     return descriptors.clone();
 }
 

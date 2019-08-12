@@ -124,4 +124,12 @@ RUN cd \
     && echo "EXPER_PATH = '../models/saved_models/'" >> ./superpoint/settings.py \
     && cd
 
+RUN cd \
+    && git clone https://github.com/rmsalinas/fbow.git \
+    && cd fbow \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make install
+
 WORKDIR ${SINGNET_REPOS}

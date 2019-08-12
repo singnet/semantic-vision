@@ -36,7 +36,6 @@ using MatchingApi::MatchApi;
 using MatchingApi::imageRetrievalRequest;
 using MatchingApi::imageRetrievalResponse;
 
-
 static void fillKeypoint(MatchingApi::keyPoint* kp, KeyPoint oneVec)
 {
     kp->set_angle(oneVec.angle);
@@ -326,7 +325,6 @@ class MatchingApiServer final : public MatchApi::Service {
 
         return Status::OK;
     }
-
 };
 
 void RunServer() {

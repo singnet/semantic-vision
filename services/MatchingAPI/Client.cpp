@@ -117,7 +117,7 @@ static Mat getMat(string imageBytes)
     size_t length = imageBytes.size();
     Mat imageMat;
     vector<char> data((char*)imageBytes.c_str(), (char*)imageBytes.c_str() + length);
-    imageMat = imdecode(data, IMREAD_UNCHANGED);
+    imageMat = imdecode(data, IMREAD_COLOR);
     return imageMat;
 }
 
@@ -333,8 +333,8 @@ int main()
     string image("../Woods.jpg");
     string image2("../Woods2.jpg");
 
-    string descriptor("DAISY");
-    string detector("Superpoint");
+    string descriptor("LUCID");
+    string detector("MSER");
     string detector_params("");
     string desc_params("");
     string transf_type("Bilinear");
@@ -343,7 +343,6 @@ int main()
 
     string image_bytes = getImageString(image);
     string image_bytes2 = getImageString(image2);
-
 
     //getKP usage
     {
@@ -436,8 +435,10 @@ int main()
         struct dirent *entry = nullptr;
         DIR *dp = nullptr;
         dp = opendir("../../PizzaDatabase/Train"); //set your own path to database of your chose
-        if (dp != nullptr) {
-            while ((entry = readdir(dp))) {
+        if (dp != nullptr)
+        {
+            while ((entry = readdir(dp)))
+            {
                 char path[100];
                 strcpy(path, "../../PizzaDatabase/Train/");
                 strcat(path, entry->d_name);
@@ -453,11 +454,35 @@ int main()
         }
         closedir(dp);
 
-        string q_image = getImageString("../../PizzaDatabase/Query/pizza-442059_960_720.jpg");
+        vector<string> q_database;
+        struct dirent *qentry = nullptr;
+        DIR *qdp = nullptr;
+        qdp = opendir("../../PizzaDatabase/Query");
+        if (qdp != nullptr)
+        {
+            while ((qentry = readdir(qdp)))
+            {
+                char path[100];
+                strcpy(path, "../../PizzaDatabase/Query/");
+                strcat(path, qentry->d_name);
+                FILE *in_file = fopen(path, "rb");
+
+                fseek(in_file, 0L, SEEK_END);
+                int sz = ftell(in_file);
+                if (sz < 0)
+                    continue;
+                q_database.emplace_back(getImageString(path));
+                fclose(in_file);
+            }
+        }
+        closedir(qdp);
+        cout << "detector " << detector << " descriptor " << descriptor << endl;
+        string q_image = getImageString("../../PizzaDatabase/Query/pizza-2780415_960_720.jpg");
         reply = client.getClosestImages(q_image, database, detector, detector_params,
-                                                     descriptor, desc_params,
-                                                     10, 1000, &retrievalResponse);
-        if (retrievalResponse.distances_size() != 0) {
+                                        descriptor, desc_params,
+                                        10, 1000, &retrievalResponse);
+        if (retrievalResponse.distances_size() != 0)
+        {
             Mat concatted, concattedPre;
             Mat original = getMat(q_image);
             concattedPre = original.clone();
@@ -465,13 +490,17 @@ int main()
             int height = 480;
             resize(concattedPre, concatted, Size(width, height), 0, 0, INTER_CUBIC);
             string distance = "Distance ";
-            for (auto &oneImage : retrievalResponse.images()) {
+            for (auto &oneImage : retrievalResponse.images())
+            {
                 Mat buf = getMat(oneImage);
                 Mat buf2;
                 resize(buf, buf2, Size(width, height), 0, 0, INTER_CUBIC);
                 hconcat(concatted, buf2, concatted);
             }
-            imwrite("check.png", concatted);
+            std::string out_string;
+            std::stringstream ss;
+            out_string = ss.str();
+            imwrite("IR_result.png", concatted);
         }
         cout << "get closest image " << reply << endl;
         cout << endl;
