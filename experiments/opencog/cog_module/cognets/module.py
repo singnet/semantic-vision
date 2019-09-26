@@ -111,11 +111,11 @@ class CogModule(torch.nn.Module):
 
     def call_forward(self, args):
         args = args.out
-        res_atom = ExecutionOutputLink(
+        res_atom = QuoteLink(ExecutionOutputLink(
                          GroundedSchemaNode("py:CogModule.callMethod"),
                          ListLink(self.atom,
                                   ConceptNode("call_forward"),
-                                  ListLink(*args)))
+                                  ListLink(*args))))
         cached_value = get_value(res_atom)
         if cached_value is not None:
             return res_atom

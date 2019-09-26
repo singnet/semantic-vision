@@ -13,8 +13,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from module import CogModule, CogModel, get_value
-from module import InputModule, set_value
+from cognets import CogModule, CogModel, get_value
+from cognets import InputModule, set_value
 
 try:
     from opencog.utilities import tmp_atomspace
