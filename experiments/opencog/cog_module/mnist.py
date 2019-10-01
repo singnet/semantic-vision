@@ -28,9 +28,11 @@ except RuntimeWarning as e:
     pass
 
 
-class SumProb(CogModule):
+class Product(CogModule):
     def forward(self, x, y):
-        return x * y
+        result =  x * y
+        assert result <= 1.0
+        return result
 
 
 class MnistNet(CogModule):
@@ -54,13 +56,16 @@ class MnistNet(CogModule):
 
 
 class ProbOfDigit(CogModule):
-    def forward(self, probs, i, p_in_range):
-        return probs[0][i] * p_in_range
+    def forward(self, probs, i):
+        return probs[0][i]
 
 
 class TorchSum(CogModule):
     def forward(self, *args):
-        result = sum(args)
+        if len(args) == 1:
+            result = sum(*args)
+        else:
+            result = sum(args)
         if result > 1:
             import pdb;pdb.set_trace()
         return result
@@ -71,7 +76,7 @@ class MnistModel(CogModel):
         super().__init__()
         self.atomspace = atomspace
         self.mnist = MnistNet(ConceptNode("mnist"))
-        self.sum_prob = SumProb(ConceptNode("SumProb"))
+        self.prod = Product(ConceptNode("Product"))
         self.digit_prob = ProbOfDigit(ConceptNode("ProbOfDigit"))
         self.torch_sum = TorchSum(ConceptNode("TorchSum"))
         self.inh_weights = torch.nn.Parameter(torch.Tensor([0.3] * 10))
@@ -80,7 +85,6 @@ class MnistModel(CogModel):
         for i in range(10):
             NumberNode(str(i)).set_value(PredicateNode("cogNet"), PtrValue(i))
             inh1 = InheritanceLink(NumberNode(str(i)), ConceptNode("range"))
-            set_value(inh1, self.inh_weights[i])
 
     def process(self, data, label):
         """
@@ -89,32 +93,27 @@ class MnistModel(CogModel):
         """
         with tmp_atomspace() as atomspace:
             #  compute possible pairs of NumberNodes
-            pairs = self.get_all_pairs(label, atomspace)
+            vardecl, and_link = self.get_all_pairs(label, atomspace)
 
             # setup input images
             inp1 = InputModule(ConceptNode("img1"), data[0].reshape([1,1, 28, 28]))
             inp2 = InputModule(ConceptNode("img2"), data[1].reshape([1,1, 28, 28]))
-            return self.p_correct_answer(pairs, inp1, inp2)
+            return self.p_correct_answer(inp1, inp2, vardecl, and_link)
 
 
-    def p_correct_answer(self, pairs, inp1, inp2):
+    def p_correct_answer(self, inp1, inp2, vardecl, and_link):
         """
         compute probability of earch pair
         compute total probability - sum of pairs
         """
         lst = []
-        p_digit = lambda mnist, digit, inh: self.digit_prob.execute(mnist, digit, inh)
-        for pair in pairs.out:
-            p_digit1 = p_digit(self.mnist.execute(inp1.execute()),
-                    pair.out[0],
-                    InheritanceLink(pair.out[0], ConceptNode("range")))
-            p_digit2 = p_digit(self.mnist.execute(inp2.execute()),
-                    pair.out[1],
-                    InheritanceLink(pair.out[1], ConceptNode("range")))
-            sum_expr = self.sum_prob.execute(p_digit1, p_digit2)
-            lst.append(sum_expr)
-        sum_query = self.torch_sum.execute(*lst)
-        result = self.execute_atom(sum_query)
+        p_digit = lambda mnist, digit: self.digit_prob.execute(mnist, digit)
+        pd1 = p_digit(self.mnist.execute(inp1.execute()), VariableNode("X"))
+        pd2 = p_digit(self.mnist.execute(inp2.execute()), VariableNode("Y"))
+        prod_expr = self.prod.execute(pd1, pd2)
+        bind1 = BindLink(vardecl, and_link, prod_expr)
+        prob_sum = self.torch_sum.execute(bind1)
+        result = self.execute_atom(prob_sum)
         return result
 
     def get_all_pairs(self, label, atomspace):
@@ -128,12 +127,12 @@ class MnistModel(CogModel):
         eq = EqualLink(PlusLink(var_x, var_y), NumberNode(label))
         inh1 = InheritanceLink(var_x, ConceptNode("range"))
         inh2 = InheritanceLink(var_y, ConceptNode("range"))
-        bindlink = BindLink(vardecl, AndLink(inh1, inh2, eq), ListLink(var_x, var_y))
-        return execute_atom(atomspace, bindlink)
+        return vardecl, AndLink(inh1, inh2, eq)
 
 
 def train(model, device, train_loader, optimizer, epoch, log_interval, scheduler):
     model.train()
+    mean = 0.0
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
@@ -143,13 +142,14 @@ def train(model, device, train_loader, optimizer, epoch, log_interval, scheduler
         loss.backward()
         optimizer.step()
         scheduler.step()
+        mean = mean * 0.99 + 0.01 * output.detach().numpy()
         if batch_idx % log_interval == 0:
             for group in optimizer.param_groups:
                 lr = group['lr']
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f},\t lr: '.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()), lr)
-            print(model.inh_weights)
+            print("probability P(d1,d2)={0}".format(mean))
 
 
 def exponential_lr(decay_rate, global_step, decay_steps, staircase=False):
@@ -179,7 +179,7 @@ def main():
     l = lambda step: exponential_lr(decay_rate, step, decay_steps,staircase=True)
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=l)
     for i in range(epoch):
-        train(model, device, train_loader, optimizer, i + 1, 200, scheduler)
+        train(model, device, train_loader, optimizer, i + 1, 100, scheduler)
         torch.save(model.state_dict(),"mnist_cnn.pt")
 
 if __name__ == '__main__':
