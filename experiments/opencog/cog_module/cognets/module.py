@@ -23,6 +23,9 @@ CONFIDENCE = 1
 
 
 def get_value(atom, tv=False):
+    # SetLinks are returned by BindLinks and don't have value
+    if atom.type == types.SetLink:
+        return {get_value(a) for a in atom.out}
     if tv:
         key = atom.atomspace.add_node(types.PredicateNode, "cogNet-tv")
     else:
@@ -79,6 +82,7 @@ def execute(atom, *args):
         ListLink(atom,
                  ConceptNode("call_forward"),
                  ListLink(*args)))
+
 
 
 # todo: separate cog module from its usage + static methods should be moved to module (e.g. cog.Execute)
