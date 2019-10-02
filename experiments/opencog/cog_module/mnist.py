@@ -81,7 +81,6 @@ class MnistModel(CogModel):
         self.torch_sum = TorchSum(ConceptNode("TorchSum"))
         self.inh_weights = torch.nn.Parameter(torch.Tensor([0.3] * 10))
         #  create NumberNodes
-        #  attach tensor representing p(number in range)
         for i in range(10):
             NumberNode(str(i)).set_value(PredicateNode("cogNet"), PtrValue(i))
             inh1 = InheritanceLink(NumberNode(str(i)), ConceptNode("range"))
