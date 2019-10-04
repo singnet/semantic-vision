@@ -7,6 +7,8 @@ from models import create_model
 from util.visualizer import save_images
 from util import html
 
+import cv2
+
 import imageio
 import io
 import torch
@@ -15,6 +17,14 @@ import numpy as np
 
 def getCycleGanTransform(image_bytes, dataroot):
     image = imageio.imread(io.BytesIO(image_bytes))
+    [h, w, c] = np.shape(image)
+    scale = 1
+    if ((h > 512) or (w > 512)):
+        if (h > w):
+            scale = h // 512 + 1
+        else:
+            scale = w // 512 + 1
+    image = cv2.resize(image, dsize=(int(w / scale), int(h / scale)))
     t_image = torch.from_numpy(np.expand_dims(np.transpose(image, (2,0,1)), 0)).cuda().float()
     model = "cycle_gan"
     opt = TestOptions()

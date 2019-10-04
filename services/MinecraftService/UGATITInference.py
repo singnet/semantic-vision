@@ -7,6 +7,7 @@ from utils import *
 from glob import glob
 import imageio
 import io
+import cv2
 
 """parsing and configuration"""
 
@@ -66,6 +67,14 @@ def check_args(args):
 
 def getUGATITTransform(input_image, dataset):
     image = imageio.imread(io.BytesIO(input_image))
+    [h,w,c] = np.shape(image)
+    scale = 1
+    if((h > 512) or (w > 512)):
+        if (h > w):
+            scale = h // 512 + 1
+        else:
+            scale = w // 512 + 1
+    image = cv2.resize(image, dsize=(int(w/scale), int(h/scale)))
     t_image = torch.from_numpy(np.expand_dims(np.transpose(image, (2, 0, 1)), 0)).cuda().float()
     args = parse_args()
     args.light = True
