@@ -41,7 +41,7 @@ def main():
 
     response = getMinecraftiziedImage(channel, "2.jpg", "cycle_gan", "minecraft_landscapes")
 
-    base64_to_jpg(response.output, "check_conversion.jpg")
+    base64_to_jpg(response.output, "result.jpg")
     print(response.status)
 
 
