@@ -330,7 +330,7 @@ int main()
 {
     grpc::ChannelArguments ch_args;
     ch_args.SetMaxReceiveMessageSize(-1);
-    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50055", grpc::InsecureChannelCredentials(), ch_args));
+    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50051", grpc::InsecureChannelCredentials(), ch_args));
     string image("../Woods_shiftrot_300.jpg");
     string image2("../Woods.jpg");
 
@@ -356,7 +356,7 @@ int main()
         cout << "get keypoints " << reply << endl;
     }
 
-    /*//getDescByImg usage
+    //getDescByImg usage
     {
         descriptorResponse response;
         reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
@@ -384,7 +384,7 @@ int main()
         matchingResponse mresponse;
         reply = client.getMatch(responseDesc1, responseDesc2, &mresponse);
         cout << "get match using computed descriptors " << reply << endl;
-    }*/
+    }
 
     //getMatchByImg usage
     {
@@ -398,7 +398,7 @@ int main()
         cout << "get match by images " << reply << endl;
     }
 
-    /*//getTransformParameters usage
+    //getTransformParameters usage
     {
         keypointResponse responsekp1, responsekp2;
         reply = client.getKP(image_bytes, detector, detector_params, &responsekp1);
@@ -421,7 +421,7 @@ int main()
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
-    }*/
+    }
 
     //getTransformByImage usage
     {
@@ -448,7 +448,7 @@ int main()
         cout << endl;
     }
 
-    /*//getClosestImages usage
+    //getClosestImages usage
     {
         imageRetrievalResponse retrievalResponse;
         vector<string> database;
@@ -524,7 +524,7 @@ int main()
         }
         cout << "get closest image " << reply << endl;
         cout << endl;
-    }*/
+    }
     return 0;
 }
 
