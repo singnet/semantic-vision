@@ -7,6 +7,7 @@
 
 #include <dirent.h>
 #include "Includes.h"
+#include "base64.h"
 
 using grpc::Channel;
 using grpc::ChannelArguments;
@@ -329,29 +330,33 @@ int main()
 {
     grpc::ChannelArguments ch_args;
     ch_args.SetMaxReceiveMessageSize(-1);
-    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50051", grpc::InsecureChannelCredentials(), ch_args));
-    string image("../Woods.jpg");
-    string image2("../Woods2.jpg");
+    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50055", grpc::InsecureChannelCredentials(), ch_args));
+    string image("../Woods_shiftrot_300.jpg");
+    string image2("../Woods.jpg");
 
-    string descriptor("LUCID");
-    string detector("MSER");
+    string descriptor("AKAZE");
+    string detector("AKAZE");
     string detector_params("");
     string desc_params("");
-    string transf_type("Bilinear");
+    string transf_type("ShiftRot");
     string transf_params_in("");
     string reply;
-
     string image_bytes = getImageString(image);
     string image_bytes2 = getImageString(image2);
+
 
     //getKP usage
     {
         keypointResponse responsekp;
         reply = client.getKP(image_bytes, detector, detector_params, &responsekp);
+        string kpImage = responsekp.keypointimage();
+        string decoded = base64_decode(kpImage);
+        Mat checkKp = getMat(decoded);
+        imwrite("check_kp.png", checkKp);
         cout << "get keypoints " << reply << endl;
     }
 
-    //getDescByImg usage
+    /*//getDescByImg usage
     {
         descriptorResponse response;
         reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
@@ -379,17 +384,21 @@ int main()
         matchingResponse mresponse;
         reply = client.getMatch(responseDesc1, responseDesc2, &mresponse);
         cout << "get match using computed descriptors " << reply << endl;
-    }
+    }*/
 
     //getMatchByImg usage
     {
         matchingByImageResponse mresponse;
         reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor,
                                        desc_params, &mresponse);
+        string mImage = mresponse.matchimage();
+        string decoded_M = base64_decode(mImage);
+        Mat checkM = getMat(decoded_M);
+        imwrite("check_m.png", checkM);
         cout << "get match by images " << reply << endl;
     }
 
-    //getTransformParameters usage
+    /*//getTransformParameters usage
     {
         keypointResponse responsekp1, responsekp2;
         reply = client.getKP(image_bytes, detector, detector_params, &responsekp1);
@@ -412,7 +421,7 @@ int main()
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
-    }
+    }*/
 
     //getTransformByImage usage
     {
@@ -421,14 +430,25 @@ int main()
                                                      descriptor, desc_params,
                                                      transf_type, transf_params_in, &responseTransform);
 
+
         cout << "get transform by images " << reply << endl;
         cout << "Transform parameters are: " << endl;
+        string rImage = responseTransform.resultimage();
+        string decoded_R = base64_decode(rImage);
+        Mat checkR = getMat(decoded_R);
+        imwrite("check_r.png", checkR);
+
+        string mixedImage = responseTransform.mixedimage();
+        string decoded_mixed = base64_decode(mixedImage);
+        Mat checkMixed = getMat(decoded_mixed);
+        imwrite("check_mixed.png", checkMixed);
+
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
     }
 
-    //getClosestImages usage
+    /*//getClosestImages usage
     {
         imageRetrievalResponse retrievalResponse;
         vector<string> database;
@@ -504,7 +524,7 @@ int main()
         }
         cout << "get closest image " << reply << endl;
         cout << endl;
-    }
+    }*/
     return 0;
 }
 

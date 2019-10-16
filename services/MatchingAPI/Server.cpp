@@ -10,8 +10,11 @@
 #include "Includes.h"
 #include "get_functions.h"
 #include "fromResponseFunctions.h"
+#include "base64.h"
 
 #include <csignal>
+
+#include <random>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -35,6 +38,25 @@ using MatchingApi::transformByImageRequest;
 using MatchingApi::MatchApi;
 using MatchingApi::imageRetrievalRequest;
 using MatchingApi::imageRetrievalResponse;
+
+static Mat getMat(string imageBytes)
+{
+    size_t length = imageBytes.size();
+    Mat imageMat;
+    vector<char> data((char *) imageBytes.c_str(), (char *) imageBytes.c_str() + length);
+    imageMat = imdecode(data, IMREAD_UNCHANGED);
+    return imageMat;
+}
+
+static string convertImgToString (Mat img)
+{
+    vector<uchar> buf;
+    imencode(".jpg", img, buf );
+    auto *enc_msg = new uchar[buf.size()];
+    for(int i=0; i < buf.size(); i++) enc_msg[i] = buf[i];
+    string encoded = base64_encode(enc_msg, buf.size());
+    return encoded;
+}
 
 static void fillKeypoint(MatchingApi::keyPoint* kp, KeyPoint oneVec)
 {
@@ -97,6 +119,12 @@ class MatchingApiServer final : public MatchApi::Service {
             (*reply).set_status(result);
             return Status::CANCELLED;
         }
+
+        Mat in = getMat(request->image());
+        Mat imageKP;
+        drawKeypoints(in, keypointsFromMAPI, imageKP);
+        string encoded = convertImgToString(imageKP);
+        reply->set_keypointimage(encoded);
         cout << endl;
         for (auto& oneVec : keypointsFromMAPI)
         {
@@ -215,8 +243,13 @@ class MatchingApiServer final : public MatchApi::Service {
             Status status(grpc::INVALID_ARGUMENT, result);
             return status;
         }
-
+        Mat firstImg = getMat(request->image_first());
+        Mat secondImg = getMat(request->image_second());
+        Mat matchImage;
+        drawMatches(firstImg, kps1, secondImg, kps2, matches, matchImage);
         fillMatches(&matches, reply);
+        string encoded = convertImgToString(matchImage);
+        reply->set_matchimage(encoded);
 
         for (auto& oneVec : kps1)
         {
@@ -278,9 +311,15 @@ class MatchingApiServer final : public MatchApi::Service {
     Status getTransformParametersByImage(ServerContext* context, const transformByImageRequest* request, transformResponse* reply) override
     {
         vector<double> transform_parameters;
+        Mat resImage, mixedImage;
         string result = getTransformParamsByImg(request->image_first(), request->image_second(), request->detector_name(),
                 request->det_parameters(), request->descriptor_name(), request->desc_parameters(), request->transform_type(),
-                request->transform_input_parameters(), &transform_parameters);
+                request->transform_input_parameters(), &transform_parameters, resImage, mixedImage);
+        int rnd = rand();
+        string encoded = convertImgToString(resImage);
+        string encodedMixed = convertImgToString(mixedImage);
+        reply->set_mixedimage(encodedMixed);
+        reply->set_resultimage(encoded);
         cout << endl;
         if (strcmp(result.c_str(), "Success") != 0) {
             (*reply).set_status(result);
@@ -328,7 +367,7 @@ class MatchingApiServer final : public MatchApi::Service {
 };
 
 void RunServer() {
-    std::string server_address("0.0.0.0:50051");
+    std::string server_address("0.0.0.0:50055");
     MatchingApiServer service;
 
     ServerBuilder builder;

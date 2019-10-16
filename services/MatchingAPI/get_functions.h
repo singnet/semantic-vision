@@ -23,7 +23,7 @@ string getTransformParams(string transformType, string transform_input_parameter
 
 string getTransformParamsByImg(string image1, string image2, string detector, string detector_parameters,
         string descriptor, string descriptor_parameters, string transformType, string transform_input_parameters,
-        vector<double> * transform_parameters);
+        vector<double> * transform_parameters, Mat &resImage, Mat &mixedImage);
 
 string getClosestImg(string q_image, vector<string>& imageBase, string descriptor, string descriptor_parameters,
         string detector, string detector_parameters, int numOfClusters, int numOfImagesToRetrieve, vector<string>* retrievedImages,

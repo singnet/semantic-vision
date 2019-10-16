@@ -9,7 +9,7 @@ class ITransform
 {
 public:
     virtual void setParameters(map<string, double> params) = 0;
-    virtual vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) = 0;
+    virtual vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) = 0;
     virtual void releaseTransform() = 0;
 };
 
@@ -20,7 +20,7 @@ class AffineTransform : public ITransform
 public:
     AffineTransform();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static AffineTransform* create();
     void releaseTransform() override;
 };
@@ -30,7 +30,7 @@ class PerspectiveTransform : public ITransform
 public:
     PerspectiveTransform();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static PerspectiveTransform* create();
     void releaseTransform() override;
 };
@@ -40,7 +40,7 @@ class EssentialMatrix : public ITransform
 public:
     EssentialMatrix();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static EssentialMatrix* create();
     void releaseTransform() override;
 private:
@@ -57,7 +57,7 @@ class FundamentalMatrix : public ITransform {
 public:
     FundamentalMatrix();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static FundamentalMatrix *create();
     void releaseTransform() override;
 
@@ -72,7 +72,7 @@ class Homography : public ITransform {
 public:
     Homography();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static Homography *create();
     void releaseTransform() override;
 
@@ -88,7 +88,7 @@ class Similarity : public ITransform {
 public:
     Similarity();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static Similarity *create();
     void releaseTransform() override;
 
@@ -105,7 +105,7 @@ class Shift : public ITransform {
 public:
     Shift();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static Shift *create();
     void releaseTransform() override;
 };
@@ -114,7 +114,7 @@ class ShiftScale : public ITransform {
 public:
     ShiftScale();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static ShiftScale *create();
     void releaseTransform() override;
 };
@@ -123,7 +123,7 @@ class ShiftRot : public ITransform {
 public:
     ShiftRot();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static ShiftRot *create();
     void releaseTransform() override;
 };
@@ -133,7 +133,7 @@ class Poly : public ITransform
 public:
     Poly();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static Poly *create();
     void releaseTransform() override;
 };
@@ -143,7 +143,7 @@ class Bilinear : public ITransform
 public:
     Bilinear();
     void setParameters(map<string, double> params) override;
-    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches) override;
+    vector<double> getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image) override;
     static Bilinear *create();
     void releaseTransform() override;
 };

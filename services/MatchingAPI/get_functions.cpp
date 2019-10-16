@@ -7,6 +7,7 @@
 #include "getBOW.h"
 
 #include <fstream>
+#include <opencv2/core/mat.hpp>
 
 static string descToVec(vector<vector<float>> *resultF,
             vector<vector<int>> *resultU, Mat desc_result)
@@ -213,7 +214,8 @@ string getTransformParams(string transformType, string transform_input_parameter
     cout << endl << "Setting parameters for transform:" << endl;
     ptr_transform->setParameters(transf_params);
 
-    (*transform_parameters) = ptr_transform->getTransform(first_kps, second_kps, matches_in);
+    Mat stub;
+    (*transform_parameters) = ptr_transform->getTransform(first_kps, second_kps, matches_in, stub, stub);
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
     ptr_transform->releaseTransform();
@@ -222,7 +224,7 @@ string getTransformParams(string transformType, string transform_input_parameter
 
 string getTransformParamsByImg(string image1, string image2, string detector, string detector_parameters,
                                string descriptor, string descriptor_parameters, string transformType, string transform_input_parameters,
-                               vector<double> * transform_parameters)
+                               vector<double> * transform_parameters, Mat& resImage, Mat& mixedImage)
 {
     IDetector* ptr_detector = ChooseDetector(detector.c_str());
     map<string, double> det_params, desc_params, transf_params;
@@ -275,7 +277,13 @@ string getTransformParamsByImg(string image1, string image2, string detector, st
     ITransform* ptr_transform = ChooseTransform(transformType.c_str());
     cout << endl << "Setting parameters for transform:" << endl;
     ptr_transform->setParameters(transf_params);
-    (*transform_parameters) = ptr_transform->getTransform(kps1, kps2, matches);
+    Mat dst = getMat(image2);
+    Mat transformedImage = Mat::zeros(dst.size(), dst.type());
+    (*transform_parameters) = ptr_transform->getTransform(kps1, kps2, matches, getMat(image1), transformedImage);
+    if (transformedImage.cols != 0) {
+        resImage = transformedImage.clone();
+        addWeighted(transformedImage, 0.5, dst, 0.5, 0.0, mixedImage);
+    }
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
     ptr_transform->releaseTransform();

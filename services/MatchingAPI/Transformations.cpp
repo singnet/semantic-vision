@@ -1,3 +1,4 @@
+#include <opencv2/core/mat.hpp>
 #include "Transformations.h"
 
 ITransform* ChooseTransform(const char *name)
@@ -77,7 +78,7 @@ AffineTransform* AffineTransform::create()
     return ptr_detector;
 }
 
-vector<double> AffineTransform::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> AffineTransform::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> transformParameters;
     vector<Point2f> first_3_only, second_3_only;
@@ -91,6 +92,7 @@ vector<double> AffineTransform::getTransform(vector<KeyPoint> first, vector<KeyP
     {
         transformParameters.push_back(affParams.at<double>(i));
     }
+    warpAffine(src, image, affParams, image.size());
     return transformParameters;
 }
 
@@ -110,7 +112,7 @@ PerspectiveTransform* PerspectiveTransform::create()
 }
 
 vector<double> PerspectiveTransform::getTransform(vector<KeyPoint> first, vector<KeyPoint> second,
-        vector<DMatch> matches)
+        vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> transformParameters;
     vector<Point2f> first_4_only, second_4_only;
@@ -124,6 +126,7 @@ vector<double> PerspectiveTransform::getTransform(vector<KeyPoint> first, vector
     {
         transformParameters.push_back(perspParams.at<double>(i));
     }
+    warpPerspective(src, image, perspParams, image.size());
     return transformParameters;
 }
 
@@ -161,7 +164,7 @@ void EssentialMatrix::setParameters(map<string, double> params)
     CheckParam_no_ifin<double> (params, (char*)"threshold", &threshold, dmin, dmax);
 }
 
-vector<double> EssentialMatrix::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> EssentialMatrix::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> transformParameters;
     vector<Point2f> first_kps_filtered, second_kps_filtered;
@@ -170,12 +173,12 @@ vector<double> EssentialMatrix::getTransform(vector<KeyPoint> first, vector<KeyP
         first_kps_filtered.push_back(first[oneMatch.queryIdx].pt);
         second_kps_filtered.push_back(second[oneMatch.trainIdx].pt);
     }
-
     Mat essMat = findEssentialMat(first_kps_filtered, second_kps_filtered, focal, Point2d(pp_x,pp_y), method, prob, threshold);
     for (int i = 0; i < essMat.cols*essMat.rows; i++)
     {
         transformParameters.push_back(essMat.at<double>(i));
     }
+    image = Mat::zeros(0,0,16);
     return transformParameters;
 }
 
@@ -213,7 +216,7 @@ void FundamentalMatrix::setParameters(map<string, double> params)
     CheckParam_no_ifin<double> (params, (char*)"confidence", &confidence, 1e-308, 1 - 1e-308);
 }
 
-vector<double> FundamentalMatrix::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> FundamentalMatrix::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> transformParameters;
     vector<Point2f> first_kps_filtered, second_kps_filtered;
@@ -228,6 +231,7 @@ vector<double> FundamentalMatrix::getTransform(vector<KeyPoint> first, vector<Ke
     {
         transformParameters.push_back(fundMat.at<double>(i));
     }
+    image = Mat::zeros(0,0,16);
     return transformParameters;
 }
 
@@ -268,7 +272,7 @@ void Homography::setParameters(map<string, double> params)
     CheckParam_no_ifin<double> (params, (char*)"confidence", &confidence, 1e-308, 1 - 1e-308);
 }
 
-vector<double> Homography::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> Homography::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> transformParameters;
     vector<Point2f> first_kps_filtered, second_kps_filtered;
@@ -283,6 +287,7 @@ vector<double> Homography::getTransform(vector<KeyPoint> first, vector<KeyPoint>
     {
         transformParameters.push_back(homoMat.at<double>(i));
     }
+    perspectiveTransform(src, image, homoMat);
     return transformParameters;
 }
 
@@ -325,12 +330,13 @@ void Similarity::setParameters(map<string, double> params)
     CheckParam_no_ifin<int> (params, (char*)"refineIters", &refineIters, 0, imax);
 }
 
-vector<double> Similarity::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> Similarity::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> transformParameters;
     vector<Point2f> first_kps_filtered, second_kps_filtered;
     for (auto& oneMatch : matches)
     {
+
         first_kps_filtered.push_back(first[oneMatch.queryIdx].pt);
         second_kps_filtered.push_back(second[oneMatch.trainIdx].pt);
     }
@@ -341,6 +347,7 @@ vector<double> Similarity::getTransform(vector<KeyPoint> first, vector<KeyPoint>
     {
         transformParameters.push_back(similarity.at<double>(i));
     }
+    warpAffine(src, image, similarity, image.size());
     return transformParameters;
 }
 
@@ -359,20 +366,27 @@ void Shift::setParameters(map<string, double> params)
     cout << endl << "No parameters needed for that transform" << endl;
 }
 
-vector<double> Shift::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> Shift::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y;
     vector<double> transformParameters;
-    for (auto& oneMatch : matches)
+    for (int i = 0; i < 3; i++)
     {
+        auto& oneMatch = matches[i];
         first_kps_filtered_x.push_back(first[oneMatch.queryIdx].pt.x);
         second_kps_filtered_x.push_back(second[oneMatch.trainIdx].pt.x);
 
         first_kps_filtered_y.push_back(first[oneMatch.queryIdx].pt.y);
         second_kps_filtered_y.push_back(second[oneMatch.trainIdx].pt.y);
     }
-
     findShift(first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y, &transformParameters);
+    float shiftMat[6];
+    shiftMat[0] = shiftMat[4] = 1;
+    shiftMat[1] = shiftMat[3] = 0;
+    shiftMat[2] = transformParameters[0];
+    shiftMat[5] = transformParameters[1];
+    Mat affMat (2, 3, CV_32F, shiftMat);
+    warpAffine(src, image, affMat, image.size());
     return transformParameters;
 
 }
@@ -392,20 +406,28 @@ void ShiftScale::setParameters(map<string, double> params)
     cout << endl << "No parameters needed for that transform" << endl;
 }
 
-vector<double> ShiftScale::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> ShiftScale::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y;
     vector<double> transformParameters;
-    for (auto& oneMatch : matches)
+    for (int i = 0; i < 3; i++)
     {
+        auto& oneMatch = matches[i];
         first_kps_filtered_x.push_back(first[oneMatch.queryIdx].pt.x);
         second_kps_filtered_x.push_back(second[oneMatch.trainIdx].pt.x);
 
         first_kps_filtered_y.push_back(first[oneMatch.queryIdx].pt.y);
         second_kps_filtered_y.push_back(second[oneMatch.trainIdx].pt.y);
     }
-
     findShiftScale(first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y, &transformParameters);
+    float shiftscaleMat[6];
+    shiftscaleMat[1] = shiftscaleMat[3] = 0;
+    shiftscaleMat[0] = transformParameters[2];
+    shiftscaleMat[4] = transformParameters[2];
+    shiftscaleMat[2] = transformParameters[0];
+    shiftscaleMat[5] = transformParameters[1];
+    Mat affMat (2, 3, CV_32F, shiftscaleMat);
+    warpAffine(src, image, affMat, image.size());
     return transformParameters;
 }
 
@@ -424,20 +446,30 @@ void ShiftRot::setParameters(map<string, double> params)
     cout << endl << "No parameters needed for that transform" << endl;
 }
 
-vector<double> ShiftRot::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> ShiftRot::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y;
     vector<double> transformParameters;
-    for (auto& oneMatch : matches)
+    for (int i = 0; i < 3; i++)
     {
+        auto& oneMatch = matches[i];
         first_kps_filtered_x.push_back(first[oneMatch.queryIdx].pt.x);
         second_kps_filtered_x.push_back(second[oneMatch.trainIdx].pt.x);
 
         first_kps_filtered_y.push_back(first[oneMatch.queryIdx].pt.y);
         second_kps_filtered_y.push_back(second[oneMatch.trainIdx].pt.y);
     }
-
     findShiftRot(first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y, &transformParameters);
+    float shiftrotMat[6];
+    float phi = transformParameters[2];
+    shiftrotMat[0] = cos(phi);
+    shiftrotMat[1] = sin(phi);
+    shiftrotMat[2] = transformParameters[0];
+    shiftrotMat[3] = -sin(phi);
+    shiftrotMat[4] = cos(phi);
+    shiftrotMat[5] = transformParameters[1];
+    Mat affMat (2, 3, CV_32F, shiftrotMat);
+    warpAffine(src, image, affMat, image.size());
     return transformParameters;
 }
 
@@ -456,7 +488,7 @@ void Poly::setParameters(map<string, double> params)
     cout << endl << "No parameters needed for that transform" << endl;
 }
 
-vector<double> Poly::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> Poly::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y;
     vector<double> transformParameters;
@@ -491,7 +523,7 @@ void Bilinear::setParameters(map<string, double> params)
     cout << endl << "No parameters needed for that transform" << endl;
 }
 
-vector<double> Bilinear::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches)
+vector<double> Bilinear::getTransform(vector<KeyPoint> first, vector<KeyPoint> second, vector<DMatch> matches, Mat src, Mat& image)
 {
     vector<double> first_kps_filtered_x, first_kps_filtered_y, second_kps_filtered_x, second_kps_filtered_y;
     vector<double> transformParameters;

@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(MatchingAPI)
 
-find_package(OpenCV 4.0 REQUIRED)
+find_package(OpenCV REQUIRED)
+message(${OpenCV_LIBS})
 find_package(fbow REQUIRED)
 find_package(Protobuf REQUIRED)
 
@@ -49,13 +50,13 @@ find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin)
 set(CMAKE_CXX_STANDARD 17)
 SET(GCC_COVERAGE_LINK_FLAG "-lprotobuf -pthread")
 
-add_executable(Client Client.cpp MatchingAPI.grpc.pb.h MatchingAPI.pb.cc MatchingAPI.pb.h MatchingAPI.grpc.pb.cc)
+add_executable(Client Client.cpp MatchingAPI.grpc.pb.h MatchingAPI.pb.cc MatchingAPI.pb.h MatchingAPI.grpc.pb.cc base64.cpp base64.h)
 
 add_executable(Server Server.cpp MatchingAPI.grpc.pb.h MatchingAPI.pb.cc MatchingAPI.pb.h MatchingAPI.grpc.pb.cc
         DetectInterface.h FeaturesInterface.h Includes.h Detect.cpp Features.cpp CheckParam.h
         argvParser.cpp argvParser.h get_functions.cpp get_functions.h fromResponseFunctions.cpp fromResponseFunctions.h
         Transformations.cpp Transformations.h additionalTransformations.cpp additionalTransformations.h
-        additionalFunctionForTransforms.cpp additionalFunctionForTransforms.h getBOW.h getBOW.cpp)
+        additionalFunctionForTransforms.cpp additionalFunctionForTransforms.h getBOW.h getBOW.cpp base64.cpp base64.h)
 
 include_directories(${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR})
 include_directories(${PYTHON_INCLUDE_PATH})

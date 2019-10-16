@@ -21,6 +21,8 @@ message keypointRequest {
 message keypointResponse {
   repeated keyPoint keypoints = 1;
   string status = 2;
+  string keypointImage = 3;
+
 }
 
 message oneDescriptor{
@@ -81,6 +83,7 @@ message matchingByImageResponse{
   string status = 2;
   repeated keyPoint keypoints_first = 3;
   repeated keyPoint keypoints_second = 4;
+  string matchImage = 5;
 }
 
 message transformRequest{
@@ -94,6 +97,8 @@ message transformRequest{
 message transformResponse{
   string status = 1;
   repeated double transform_parameters = 2;
+  string resultImage = 3;
+  string mixedImage = 4;
 }
 
 message transformByImageRequest
