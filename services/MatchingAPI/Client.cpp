@@ -281,7 +281,7 @@ int main()
         cout << "get keypoints " << reply << endl;
     }
 
-    /*//getDescByImg usage
+    //getDescByImg usage
     {
         descriptorResponse response;
         reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
@@ -309,9 +309,9 @@ int main()
         matchingResponse mresponse;
         reply = client.getMatch(responseDesc1, responseDesc2, &mresponse);
         cout << "get match using computed descriptors " << reply << endl;
-    }*/
+    }
 
-    /*//getMatchByImg usage
+    //getMatchByImg usage
     {
         matchingByImageResponse mresponse;
         reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor,
@@ -321,9 +321,9 @@ int main()
         Mat checkM = getMat(decoded_M);
         imwrite("check_m.png", checkM);
         cout << "get match by images " << reply << endl;
-    }*/
+    }
 
-    /*//getTransformParameters usage
+    //getTransformParameters usage
     {
         keypointResponse responsekp1, responsekp2;
         reply = client.getKP(image_bytes, detector, detector_params, &responsekp1);
@@ -346,10 +346,10 @@ int main()
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
-    }*/
+    }
 
     //getTransformByImage usage
-    /*{
+    {
         transformResponse responseTransform;
         reply = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params,
                                                      descriptor, desc_params,
@@ -371,10 +371,10 @@ int main()
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
-    }*/
+    }
 
     //getClosestImages usage
-    /*{
+    {
         imageRetrievalResponse retrievalResponse;
         vector<string> database;
         struct dirent *entry = nullptr;
@@ -453,7 +453,7 @@ int main()
         imwrite("check_concat.png", checkConcat);
         cout << "get closest image " << reply << endl;
         cout << endl;
-    }*/
+    }
     return 0;
 }
 
