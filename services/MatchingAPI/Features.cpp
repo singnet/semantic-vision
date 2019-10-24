@@ -14,14 +14,6 @@ int imax_value = std::numeric_limits<int>::max();
 float fmax_value = std::numeric_limits<float>::max();
 double dmax_value = std::numeric_limits<double>::max();
 
-static Mat getMat(string imageBytes)
-{
-    size_t length = imageBytes.size();
-    Mat imageMat;
-    vector<char> data((char *) imageBytes.c_str(), (char *) imageBytes.c_str() + length);
-    imageMat = imdecode(data, IMREAD_UNCHANGED);
-    return imageMat;
-}
 
 IDescribe* ChooseFeatures(const char *name)
 {

@@ -44,14 +44,6 @@ static bool matchCompare(DMatch x, DMatch y)
     return x.distance < y.distance;
 }
 
-static Mat getMat(string imageBytes)
-{
-    size_t length = imageBytes.size();
-    Mat imageMat;
-    vector<char> data((char*)imageBytes.c_str(), (char*)imageBytes.c_str() + length);
-    imageMat = imdecode(data, IMREAD_UNCHANGED);
-    return imageMat;
-}
 
 string getKeypoint(string image, string detector, string detector_parameters, vector<KeyPoint> * output)
 {

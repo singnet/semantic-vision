@@ -1,33 +1,15 @@
-#include <grpc/grpc.h>
 #include <grpc++/channel.h>
 #include <grpc++/client_context.h>
 #include <grpc++/create_channel.h>
 #include <grpc++/security/credentials.h>
-#include "MatchingAPI.grpc.pb.h"
 
-#include <dirent.h>
+
 #include "Includes.h"
-#include "base64.h"
+#include "Utilities.h"
 
 using grpc::Channel;
 using grpc::ChannelArguments;
 using grpc::ClientContext;
-using grpc::Status;
-using MatchingApi::descriptorRequest;
-using MatchingApi::descriptorResponse;
-using MatchingApi::keypointRequest;
-using MatchingApi::keypointResponse;
-using MatchingApi::descriptorByKpsRequest;
-using MatchingApi::matchingRequest;
-using MatchingApi::matchingResponse;
-using MatchingApi::matchingByImageRequest;
-using MatchingApi::matchingByImageResponse;
-using MatchingApi::transformRequest;
-using MatchingApi::transformResponse;
-using MatchingApi::transformByImageRequest;
-using MatchingApi::imageRetrievalResponse;
-using MatchingApi::imageRetrievalRequest;
-using MatchingApi::MatchApi;
 
 template <class T> static string checkStatus(Status status, T* response)
 {
@@ -35,29 +17,6 @@ template <class T> static string checkStatus(Status status, T* response)
         return (*response).status();
     else
         return status.error_message();
-}
-
-template <class T, class F> static void fillDescF(F* oneFeature, T* buf)
-{
-    for (auto& oneDesc : (*oneFeature).onedescf())
-        buf->add_onedescf(oneDesc);
-}
-
-template <class T, class F> static void fillDescU(F* oneFeature, T* buf)
-{
-    for (auto& oneDesc : (*oneFeature).onedescu())
-        buf->add_onedescu(oneDesc);
-}
-
-template <class T, class F> static void fillKeypoint(T kp, F* buf)
-{
-    buf->set_angle(kp.angle());
-    buf->set_class_id(kp.class_id());
-    buf->set_octave(kp.octave());
-    buf->set_response(kp.response());
-    buf->set_size(kp.size());
-    buf->set_x(kp.x());
-    buf->set_y(kp.y());
 }
 
 static bool checkKazeAkaze(string descriptor, string detector)
@@ -73,53 +32,6 @@ static bool checkKazeAkaze(string descriptor, string detector)
         return false;
     }
     return true;
-}
-
-template <class T> static void fillFeaturesF(const vector<vector<float>>* featuresVec, T* reply)
-{
-    for (auto& oneVec : (*featuresVec))
-    {
-        MatchingApi::oneDescriptor* buf = reply->add_features();
-        for (auto& oneValue : oneVec)
-        {
-            buf->add_onedescf(oneValue);
-        }
-    }
-}
-
-template <class T> static void fillFeaturesU(const vector<vector<int>>* featuresVec, T* reply)
-{
-    for (auto& oneVec : (*featuresVec))
-    {
-        MatchingApi::oneDescriptor* buf = reply->add_features();
-        for (auto& oneValue : oneVec)
-        {
-            buf->add_onedescu(oneValue);
-        }
-    }
-}
-
-static string getImageString(string path)
-{
-    FILE *in_file  = fopen(path.c_str(), "rb");
-
-    fseek(in_file, 0L, SEEK_END);
-    int sz = ftell(in_file);
-    rewind(in_file);
-    char imageBytes[sz];
-    fread(imageBytes, sizeof *imageBytes, sz, in_file);
-    string image_bytes(imageBytes, sz);
-    fclose(in_file);
-    return image_bytes;
-}
-
-static Mat getMat(string imageBytes)
-{
-    size_t length = imageBytes.size();
-    Mat imageMat;
-    vector<char> data((char*)imageBytes.c_str(), (char*)imageBytes.c_str() + length);
-    imageMat = imdecode(data, IMREAD_COLOR);
-    return imageMat;
 }
 
 class MatchingAPIClient{
@@ -330,8 +242,8 @@ int main()
 {
     grpc::ChannelArguments ch_args;
     ch_args.SetMaxReceiveMessageSize(-1);
-    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50055", grpc::InsecureChannelCredentials(), ch_args));
-    string image("../Woods_shiftrot_300.jpg");
+    MatchingAPIClient client(grpc::CreateCustomChannel("localhost:50051", grpc::InsecureChannelCredentials(), ch_args));
+    string image("../Woods_shiftrot_120.jpg");
     string image2("../Woods.jpg");
 
     string descriptor("AKAZE");
@@ -349,7 +261,20 @@ int main()
     {
         keypointResponse responsekp;
         reply = client.getKP(image_bytes, detector, detector_params, &responsekp);
-        string kpImage = responsekp.keypointimage();
+        vector<KeyPoint> keypointsFromMAPI;
+        for (auto& oneKP: responsekp.keypoints())
+        {
+            KeyPoint kp;
+            kp.angle=oneKP.angle();
+            kp.class_id=oneKP.class_id();
+            kp.octave=oneKP.octave();
+            kp.pt.x=oneKP.x();
+            kp.pt.y=oneKP.y();
+            kp.response=oneKP.response();
+            kp.size=oneKP.size();
+            keypointsFromMAPI.push_back(kp);
+        }
+        string kpImage = responsekp.uiimage();
         string decoded = base64_decode(kpImage);
         Mat checkKp = getMat(decoded);
         imwrite("check_kp.png", checkKp);
@@ -386,7 +311,7 @@ int main()
         cout << "get match using computed descriptors " << reply << endl;
     }*/
 
-    //getMatchByImg usage
+    /*//getMatchByImg usage
     {
         matchingByImageResponse mresponse;
         reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor,
@@ -396,7 +321,7 @@ int main()
         Mat checkM = getMat(decoded_M);
         imwrite("check_m.png", checkM);
         cout << "get match by images " << reply << endl;
-    }
+    }*/
 
     /*//getTransformParameters usage
     {
@@ -424,7 +349,7 @@ int main()
     }*/
 
     //getTransformByImage usage
-    {
+    /*{
         transformResponse responseTransform;
         reply = client.getTransformParametersByImage(image_bytes, image_bytes2, detector, detector_params,
                                                      descriptor, desc_params,
@@ -446,10 +371,10 @@ int main()
         for (auto &oneParam : responseTransform.transform_parameters())
             cout << oneParam << " ";
         cout << endl;
-    }
+    }*/
 
-    /*//getClosestImages usage
-    {
+    //getClosestImages usage
+    /*{
         imageRetrievalResponse retrievalResponse;
         vector<string> database;
         struct dirent *entry = nullptr;
@@ -522,6 +447,10 @@ int main()
             out_string = ss.str();
             imwrite("IR_result.png", concatted);
         }
+        string concatImage = retrievalResponse.uiimage();
+        string decoded_concat = base64_decode(concatImage);
+        Mat checkConcat = getMat(decoded_concat);
+        imwrite("check_concat.png", checkConcat);
         cout << "get closest image " << reply << endl;
         cout << endl;
     }*/

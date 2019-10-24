@@ -2,7 +2,7 @@
 #ifndef MATCHINGAPI_GET_FUNCTIONS_H
 #define MATCHINGAPI_GET_FUNCTIONS_H
 
-#include "Includes.h"
+#include "Utilities.h"
 
 string getKeypoint(string image, string detector, string detector_parameters, vector<KeyPoint> * output);
 

@@ -1,6 +1,7 @@
 #ifndef MATCHINGAPI_FEATURESINTERFACE_H
 #define MATCHINGAPI_FEATURESINTERFACE_H
 
+#include "Utilities.h"
 #include "CheckParam.h"
 
 class IDescribe

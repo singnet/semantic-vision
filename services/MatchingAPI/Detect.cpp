@@ -1,17 +1,9 @@
 #include "DetectInterface.h"
 #include <limits>
 
+
 #include "Python.h"
 #include "numpy/arrayobject.h"
-
-static Mat getMat(string imageBytes)
-{
-    size_t length = imageBytes.size();
-    Mat imageMat;
-    vector<char> data((char *) imageBytes.c_str(), (char *) imageBytes.c_str() + length);
-    imageMat = imdecode(data, IMREAD_UNCHANGED);
-    return imageMat;
-}
 
 
 IDetector* ChooseDetector(const char *name)

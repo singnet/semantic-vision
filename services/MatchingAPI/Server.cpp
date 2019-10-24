@@ -1,16 +1,12 @@
-#include <grpc/grpc.h>
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
 #include <grpc++/security/server_credentials.h>
-#include "MatchingAPI.grpc.pb.h"
 
 #include <Python.h>
 
-#include "Includes.h"
 #include "get_functions.h"
 #include "fromResponseFunctions.h"
-#include "base64.h"
 
 #include <csignal>
 
@@ -22,93 +18,12 @@ using grpc::ServerContext;
 using grpc::ServerReader;
 using grpc::ServerReaderWriter;
 using grpc::ServerWriter;
-using grpc::Status;
-using MatchingApi::descriptorRequest;
-using MatchingApi::descriptorResponse;
-using MatchingApi::keypointRequest;
-using MatchingApi::keypointResponse;
-using MatchingApi::descriptorByKpsRequest;
-using MatchingApi::matchingRequest;
-using MatchingApi::matchingResponse;
-using MatchingApi::matchingByImageRequest;
-using MatchingApi::matchingByImageResponse;
-using MatchingApi::transformRequest;
-using MatchingApi::transformResponse;
-using MatchingApi::transformByImageRequest;
-using MatchingApi::MatchApi;
-using MatchingApi::imageRetrievalRequest;
-using MatchingApi::imageRetrievalResponse;
-
-static Mat getMat(string imageBytes)
-{
-    size_t length = imageBytes.size();
-    Mat imageMat;
-    vector<char> data((char *) imageBytes.c_str(), (char *) imageBytes.c_str() + length);
-    imageMat = imdecode(data, IMREAD_UNCHANGED);
-    return imageMat;
-}
-
-static string convertImgToString (Mat img)
-{
-    vector<uchar> buf;
-    imencode(".jpg", img, buf );
-    auto *enc_msg = new uchar[buf.size()];
-    for(int i=0; i < buf.size(); i++) enc_msg[i] = buf[i];
-    string encoded = base64_encode(enc_msg, buf.size());
-    return encoded;
-}
-
-static void fillKeypoint(MatchingApi::keyPoint* kp, KeyPoint oneVec)
-{
-    kp->set_angle(oneVec.angle);
-    kp->set_class_id(oneVec.class_id);
-    kp->set_octave(oneVec.octave);
-    kp->set_response(oneVec.response);
-    kp->set_size(oneVec.size);
-    kp->set_x(oneVec.pt.x);
-    kp->set_y(oneVec.pt.y);
-}
-
-template <class T> static void fillFeaturesF(const vector<vector<float>>* featuresVec, T* reply)
-{
-    for (auto& oneVec : (*featuresVec))
-    {
-        MatchingApi::oneDescriptor* buf = reply->add_features();
-        for (auto& oneValue : oneVec)
-        {
-            buf->add_onedescf(oneValue);
-        }
-    }
-}
-
-template <class T> static void fillFeaturesU(const vector<vector<int>>* featuresVec, T* reply)
-{
-    for (auto& oneVec : (*featuresVec))
-    {
-        MatchingApi::oneDescriptor* buf = reply->add_features();
-        for (auto& oneValue : oneVec)
-        {
-            buf->add_onedescu(oneValue);
-        }
-    }
-}
-
-template <class T> static void fillMatches(const vector<DMatch>* matches, T* reply)
-{
-    for (auto& oneMatch : (*matches))
-    {
-        MatchingApi::matchedPoint* buf = reply->add_all_matches();
-        buf->set_distance(oneMatch.distance);
-        buf->set_imgidx(oneMatch.imgIdx);
-        buf->set_queryidx(oneMatch.queryIdx);
-        buf->set_trainidx(oneMatch.trainIdx);
-    }
-}
 
 static void signalHandler( int signum ) {
     cout << "Interrupt signal (" << signum << ") received.\n";
     exit(signum);
 }
+
 
 class MatchingApiServer final : public MatchApi::Service {
     Status getKP(ServerContext* context, const keypointRequest* request,
@@ -119,19 +34,27 @@ class MatchingApiServer final : public MatchApi::Service {
             (*reply).set_status(result);
             return Status::CANCELLED;
         }
-
-        Mat in = getMat(request->image());
-        Mat imageKP;
-        drawKeypoints(in, keypointsFromMAPI, imageKP);
-        string encoded = convertImgToString(imageKP);
-        reply->set_keypointimage(encoded);
         cout << endl;
         for (auto& oneVec : keypointsFromMAPI)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints();
-            fillKeypoint(buf, oneVec);
+            fillKeypoint(oneVec, buf);
         }
         reply->set_status(result);
+        Mat in = getMat(request->image());
+        int type = in.type();
+        Mat imageKP;
+        try
+        {
+            drawKeypoints(in, keypointsFromMAPI, imageKP);
+        }
+        catch (const std::exception &exc)
+        {
+            cout << exc.what() << endl;
+        }
+
+        string encoded = convertImgToString(imageKP);
+        reply->set_uiimage(encoded);
         return Status::OK;
 
     }
@@ -161,7 +84,7 @@ class MatchingApiServer final : public MatchApi::Service {
         for (auto& oneVec : keypointsFromMAPI)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints();
-            fillKeypoint(buf, oneVec);
+            fillKeypoint(oneVec, buf);
         }
         reply->set_status(result);
         return Status::OK;
@@ -194,7 +117,7 @@ class MatchingApiServer final : public MatchApi::Service {
         for (auto& oneVec : keypointsFromMAPI)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints();
-            fillKeypoint(buf, oneVec);
+            fillKeypoint(oneVec, buf);
         }
         reply->set_status(result);
         return Status::OK;
@@ -249,18 +172,18 @@ class MatchingApiServer final : public MatchApi::Service {
         drawMatches(firstImg, kps1, secondImg, kps2, matches, matchImage);
         fillMatches(&matches, reply);
         string encoded = convertImgToString(matchImage);
-        reply->set_matchimage(encoded);
+        reply->set_uiimage(encoded);
 
         for (auto& oneVec : kps1)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints_first();
-            fillKeypoint(buf, oneVec);
+            fillKeypoint(oneVec, buf);
         }
 
         for (auto& oneVec : kps2)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints_second();
-            fillKeypoint(buf, oneVec);
+            fillKeypoint(oneVec, buf);
         }
 
         reply->set_status(result);
@@ -318,7 +241,7 @@ class MatchingApiServer final : public MatchApi::Service {
         int rnd = rand();
         string encoded = convertImgToString(resImage);
         string encodedMixed = convertImgToString(mixedImage);
-        reply->set_mixedimage(encodedMixed);
+        reply->set_uiimage(encodedMixed);
         reply->set_resultimage(encoded);
         cout << endl;
         if (strcmp(result.c_str(), "Success") != 0) {
@@ -336,6 +259,7 @@ class MatchingApiServer final : public MatchApi::Service {
 
     Status getClosestImages(ServerContext* context, const imageRetrievalRequest* request, imageRetrievalResponse* reply) override
     {
+        cout << "entered get function" << endl;
         vector<float> distances;
         vector<string> retrievedImages;
         vector<string> dataBase;
@@ -361,13 +285,36 @@ class MatchingApiServer final : public MatchApi::Service {
         {
             reply->add_images(rImage);
         }
-
+        if (reply->distances_size() != 0)
+        {
+            Mat concatted, concattedPre;
+            Mat original = getMat(request->input_image());
+            concattedPre = original.clone();
+            int width = 640;
+            int height = 480;
+            resize(concattedPre, concatted, Size(width, height), 0, 0, INTER_CUBIC);
+            string distance = "Distance ";
+            for (auto &oneImage : retrievedImages)
+            {
+                Mat buf = getMat(oneImage);
+                Mat buf2;
+                resize(buf, buf2, Size(width, height), 0, 0, INTER_CUBIC);
+                hconcat(concatted, buf2, concatted);
+            }
+            std::string out_string;
+            std::stringstream ss;
+            out_string = ss.str();
+            imwrite("IR_result.png", concatted);
+            string encodedMixed = convertImgToString(concatted);
+            reply->set_uiimage(encodedMixed);
+            cout << endl;
+        }
         return Status::OK;
     }
 };
 
 void RunServer() {
-    std::string server_address("0.0.0.0:50055");
+    std::string server_address("0.0.0.0:50051");
     MatchingApiServer service;
 
     ServerBuilder builder;

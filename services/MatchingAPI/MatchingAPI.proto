@@ -21,7 +21,7 @@ message keypointRequest {
 message keypointResponse {
   repeated keyPoint keypoints = 1;
   string status = 2;
-  string keypointImage = 3;
+  string UIImage = 3;
 
 }
 
@@ -83,7 +83,7 @@ message matchingByImageResponse{
   string status = 2;
   repeated keyPoint keypoints_first = 3;
   repeated keyPoint keypoints_second = 4;
-  string matchImage = 5;
+  string UIImage = 5;
 }
 
 message transformRequest{
@@ -98,7 +98,7 @@ message transformResponse{
   string status = 1;
   repeated double transform_parameters = 2;
   string resultImage = 3;
-  string mixedImage = 4;
+  string UIImage = 4;
 }
 
 message transformByImageRequest
@@ -130,6 +130,7 @@ message imageRetrievalResponse
   repeated bytes images = 1;
   repeated float distances = 2;
   string status = 3;
+  string UIImage = 4;
 }
 
 service MatchApi {
