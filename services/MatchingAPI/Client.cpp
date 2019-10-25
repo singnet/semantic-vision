@@ -34,6 +34,8 @@ static bool checkKazeAkaze(string descriptor, string detector)
     return true;
 }
 
+
+
 class MatchingAPIClient{
 public:
     MatchingAPIClient(std::shared_ptr<Channel> channel)
@@ -82,14 +84,14 @@ public:
         for (auto& kp : inputKeypoints.keypoints())
         {
             MatchingApi::keyPoint* buf = request.add_keypoints();
-            fillKeypoint(kp, buf);
+            fillMsgKpsUsingMsgKps(kp, buf);
         }
         Status status = stub_->getDescByKps(&context, request, response);
         inputKeypoints.clear_keypoints();
         for (auto& kp : response->keypoints())
         {
             MatchingApi::keyPoint* buf = inputKeypoints.add_keypoints();
-            fillKeypoint(kp, buf);
+            fillMsgKpsUsingMsgKps(kp, buf);
         }
         return checkStatus(status, response);
     }
@@ -173,12 +175,12 @@ public:
         for (auto& kp : first_kps)
         {
             MatchingApi::keyPoint* buf = request.add_keypoints_first();
-            fillKeypoint(kp, buf);
+            fillMsgKpsUsingMsgKps(kp, buf);
         }
         for (auto& kp : second_kps)
         {
             MatchingApi::keyPoint* buf = request.add_keypoints_second();
-            fillKeypoint(kp, buf);
+            fillMsgKpsUsingMsgKps(kp, buf);
         }
         if (matches.size() == 0)
             return "No matches given";
@@ -316,7 +318,7 @@ int main()
         matchingByImageResponse mresponse;
         reply = client.getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor,
                                        desc_params, &mresponse);
-        string mImage = mresponse.matchimage();
+        string mImage = mresponse.uiimage();
         string decoded_M = base64_decode(mImage);
         Mat checkM = getMat(decoded_M);
         imwrite("check_m.png", checkM);
@@ -363,7 +365,7 @@ int main()
         Mat checkR = getMat(decoded_R);
         imwrite("check_r.png", checkR);
 
-        string mixedImage = responseTransform.mixedimage();
+        string mixedImage = responseTransform.uiimage();
         string decoded_mixed = base64_decode(mixedImage);
         Mat checkMixed = getMat(decoded_mixed);
         imwrite("check_mixed.png", checkMixed);

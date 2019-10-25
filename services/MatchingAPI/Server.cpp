@@ -38,7 +38,7 @@ class MatchingApiServer final : public MatchApi::Service {
         for (auto& oneVec : keypointsFromMAPI)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints();
-            fillKeypoint(oneVec, buf);
+            fillCVKeypointUsingGrpcMsg(oneVec, buf);
         }
         reply->set_status(result);
         Mat in = getMat(request->image());
@@ -84,7 +84,7 @@ class MatchingApiServer final : public MatchApi::Service {
         for (auto& oneVec : keypointsFromMAPI)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints();
-            fillKeypoint(oneVec, buf);
+            fillCVKeypointUsingGrpcMsg(oneVec, buf);
         }
         reply->set_status(result);
         return Status::OK;
@@ -117,7 +117,7 @@ class MatchingApiServer final : public MatchApi::Service {
         for (auto& oneVec : keypointsFromMAPI)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints();
-            fillKeypoint(oneVec, buf);
+            fillCVKeypointUsingGrpcMsg(oneVec, buf);
         }
         reply->set_status(result);
         return Status::OK;
@@ -177,13 +177,13 @@ class MatchingApiServer final : public MatchApi::Service {
         for (auto& oneVec : kps1)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints_first();
-            fillKeypoint(oneVec, buf);
+            fillCVKeypointUsingGrpcMsg(oneVec, buf);
         }
 
         for (auto& oneVec : kps2)
         {
             MatchingApi::keyPoint* buf = reply->add_keypoints_second();
-            fillKeypoint(oneVec, buf);
+            fillCVKeypointUsingGrpcMsg(oneVec, buf);
         }
 
         reply->set_status(result);

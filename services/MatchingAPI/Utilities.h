@@ -7,7 +7,18 @@ Mat getMat(string imageBytes);
 string convertImgToString (Mat img);
 string getImageString(string path);
 
-template <class T, class F> void fillKeypoint(T cv_kp, F* msg_kp)
+template <class T, class F> static void fillMsgKpsUsingMsgKps(T kp, F* buf)
+{
+    buf->set_angle(kp.angle());
+    buf->set_class_id(kp.class_id());
+    buf->set_octave(kp.octave());
+    buf->set_response(kp.response());
+    buf->set_size(kp.size());
+    buf->set_x(kp.x());
+    buf->set_y(kp.y());
+}
+
+template <class T, class F> void fillCVKeypointUsingGrpcMsg(T cv_kp, F* msg_kp)
 {
     msg_kp->set_angle(cv_kp.angle);
     msg_kp->set_class_id(cv_kp.class_id);
