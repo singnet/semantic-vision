@@ -44,7 +44,7 @@ taken from the cv::KeyPoint structure and used to fulfill cv::KeyPoint in furthe
     
 #### Snet usage example
 
-    snet client call snet match-service getKP '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "parameters" : "WTA_K 4"  }'
+    snet client call snet match-service default_group getKP '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "parameters" : "WTA_K 4"  }'
     
 ### getDescByImage
 As it could be seen from name, this one computes descriptor and requires image as input.
@@ -96,7 +96,7 @@ contain descriptor for keypoint.
     string reply = client.getDesc(image_bytes, descriptor, desc_params, detector, detector_params, &response);
 
 #### Snet usage example
-    snet client call snet match-service getDescByImage '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
+    snet client call snet match-service default_group getDescByImage '{ "file@image": "Woods.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
 
 ### getDescByKp
 This function computes descriptor of input keypoints.
@@ -217,7 +217,7 @@ usage, client will get these keypoints alongside with transform parameters. To s
     string status = getMatchByImage(image_bytes, image_bytes2, detector, detector_params, descriptor, desc_params, &response);
 
 #### Snet usage
-    snet client call snet match-service getMatchByImage '{ "file@image_first": "Woods.jpg", "file@image_second": "Woods2.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
+    snet client call snet match-service default_group getMatchByImage '{ "file@image_first": "Woods.jpg", "file@image_second": "Woods2.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
 
 ### getTransformParameters
 
@@ -312,7 +312,7 @@ same as for getTransformParameters
         descriptor, desc_params, transf_type, transf_params_in, &transfReply);
 
 #### Snet usage
-    snet client call snet match-service getTransformParametersByImage '{ "file@image_first": "Woods.jpg", "file@image_second": "Woods2.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
+    snet client call snet match-service default_group getTransformParametersByImage '{ "file@image_first": "Woods.jpg", "file@image_second": "Woods2.jpg", "detector_name" : "ORB", "det_parameters" : "WTA_K 4", "descriptor_name" : "ORB", "desc_parameters" : ""  }'
 
 ### getClosestImage
 
