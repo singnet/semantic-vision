@@ -206,7 +206,7 @@ string getTransformParams(string transformType, string transform_input_parameter
     cout << endl << "Setting parameters for transform:" << endl;
     ptr_transform->setParameters(transf_params);
 
-    Mat stub;
+    Mat stub = cv::Mat::zeros(100,100, 16);
     (*transform_parameters) = ptr_transform->getTransform(first_kps, second_kps, matches_in, stub, stub);
     cout << endl;
     cout << (*transform_parameters).size() << " transform parameters as output" << endl;
