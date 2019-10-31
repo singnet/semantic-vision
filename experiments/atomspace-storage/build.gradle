@@ -1,0 +1,62 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.1'
+    }
+}
+
+plugins {
+    id 'application'
+    id "org.jetbrains.kotlin.jvm" version "1.3.0"
+}
+
+apply plugin: "java"
+
+ext.kotlin_version = '1.3.50'
+mainClassName = 'atomspace.sample.AtomspaceSampleKt'
+
+repositories {
+    jcenter()
+    // for  com.sleepycat:je:7.5.11
+    maven { url 'http://download.oracle.com/maven' }
+}
+
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+shadowJar {
+    zip64 true
+    mainClassName = "atomspace.performance.tree.RandomTreeModelCreateTest"
+}
+
+dependencies {
+
+    // kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // neo4j
+    compile group: 'org.neo4j', name: 'neo4j', version: '3.5.8'
+
+    // JanusGraph
+    compile group: 'org.janusgraph', name: 'janusgraph-core', version: '0.4.0'
+    compile group: 'org.janusgraph', name: 'janusgraph-berkeleyje', version: '0.4.0'
+    compile group: 'org.janusgraph', name: 'janusgraph-lucene', version: '0.4.0'
+
+    // Gremlin
+    compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: '3.4.3'
+
+    // Derby
+    compile group: 'org.apache.derby', name: 'derbyclient', version: '10.14.2.0'
+    compile group: 'org.apache.derby', name: 'derby', version: '10.14.2.0'
+
+    // logger
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '2.0.0-alpha0'
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.0-alpha0'
+
+    // junit
+    testCompile 'junit:junit:4.12'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+}
+
