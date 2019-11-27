@@ -1,0 +1,636 @@
+[2019-11-19 12:31:23:074] [INFO] [global_python_initialize] Start
+[2019-11-19 12:31:23:074] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 12:31:23:074] [INFO] [global_python_initialize] Finish
+[2019-11-19 12:31:23:074] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:10:27:141] [INFO] [global_python_initialize] Start
+[2019-11-19 15:10:27:141] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:10:27:142] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:10:27:142] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:11:46:165] [INFO] [global_python_initialize] Start
+[2019-11-19 15:11:46:165] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:11:46:165] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:11:46:165] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:12:16:444] [INFO] [global_python_initialize] Start
+[2019-11-19 15:12:16:444] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:12:16:444] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:12:16:444] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:14:19:532] [INFO] [global_python_initialize] Start
+[2019-11-19 15:14:19:532] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:14:19:533] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:14:19:533] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:14:38:605] [INFO] [global_python_initialize] Start
+[2019-11-19 15:14:38:605] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:14:38:605] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:14:38:605] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:15:12:681] [INFO] [global_python_initialize] Start
+[2019-11-19 15:15:12:681] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:15:12:681] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:15:12:681] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:15:27:626] [INFO] [global_python_initialize] Start
+[2019-11-19 15:15:27:626] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:15:27:626] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:15:27:626] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:15:27:720] [ERROR] Node or subclass is expected as 1 outgoing link of MethodOfLink, actual parameter type is ListLink (/tmp/atomspace-master/opencog/atoms/base/Link.cc:199)
+	Stack Trace:
+	2: basic_string.h:211	??()
+	3: Logger.cc:530	  opencog::Logger::Error::operator()(char const*, ...)
+	4: exceptions.cc:55	  opencog::StandardException::parse_error_message(char const*, __va_list_tag*, bool)
+	5: exceptions.cc:82	  opencog::StandardException::parse_error_message(char const*, char const*, __va_list_tag*, bool)
+	6: exceptions.cc:164	  opencog::SyntaxException::SyntaxException(char const*, char const*, ...)
+	7: Link.cc:203	check_type()
+	8: MethodOfLink.cc:34	  opencog::MethodOfLink::MethodOfLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	9: shared_ptr_base.h:727	??()
+	10: shared_ptr_base.h:697	??()
+	11: shared_ptr_base.h:683	??()
+	12: shared_ptr_base.h:1131	??()
+	13: shared_ptr_base.h:1034	??()
+	14: methodobject.c:98	PyCFunction_Call()
+	15: type_constructors.cpp:23205	__Pyx_PyObject_Call()
+	16: type_constructors.cpp:11296	__pyx_pf_7opencog_17type_constructors_166MethodOfLink()
+	17: methodobject.c:236	_PyCFunction_FastCallDict()
+	18: ceval.c:3336	_PyEval_EvalFrameDefault()
+	19: ceval.c:754	PyEval_EvalFrameEx()
+	20: ceval.c:737	PyEval_EvalCode()
+	21: pythonrun.c:1026	run_mod()
+	22: pythonrun.c:978	PyRun_FileExFlags()
+	23: pythonrun.c:419	PyRun_SimpleFileExFlags()
+	24: main.c:340	run_file()
+	25: python.c:73	main()
+	26: libc-start.c:344	__libc_start_main()
+	27: [0x5b1d5a] ??() ??:0
+
+[2019-11-19 15:16:49:941] [INFO] [global_python_initialize] Start
+[2019-11-19 15:16:49:941] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:16:49:941] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:16:49:941] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:16:50:034] [ERROR] Node or subclass is expected as 1 outgoing link of MethodOfLink, actual parameter type is ListLink (/tmp/atomspace-master/opencog/atoms/base/Link.cc:199)
+	Stack Trace:
+	2: basic_string.h:211	??()
+	3: Logger.cc:530	  opencog::Logger::Error::operator()(char const*, ...)
+	4: exceptions.cc:55	  opencog::StandardException::parse_error_message(char const*, __va_list_tag*, bool)
+	5: exceptions.cc:82	  opencog::StandardException::parse_error_message(char const*, char const*, __va_list_tag*, bool)
+	6: exceptions.cc:164	  opencog::SyntaxException::SyntaxException(char const*, char const*, ...)
+	7: Link.cc:203	check_type()
+	8: MethodOfLink.cc:34	  opencog::MethodOfLink::MethodOfLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	9: shared_ptr_base.h:727	??()
+	10: shared_ptr_base.h:697	??()
+	11: shared_ptr_base.h:683	??()
+	12: shared_ptr_base.h:1131	??()
+	13: shared_ptr_base.h:1034	??()
+	14: methodobject.c:98	PyCFunction_Call()
+	15: type_constructors.cpp:23205	__Pyx_PyObject_Call()
+	16: type_constructors.cpp:11296	__pyx_pf_7opencog_17type_constructors_166MethodOfLink()
+	17: methodobject.c:236	_PyCFunction_FastCallDict()
+	18: ceval.c:3336	_PyEval_EvalFrameDefault()
+	19: ceval.c:754	PyEval_EvalFrameEx()
+	20: ceval.c:737	PyEval_EvalCode()
+	21: pythonrun.c:1026	run_mod()
+	22: pythonrun.c:978	PyRun_FileExFlags()
+	23: pythonrun.c:419	PyRun_SimpleFileExFlags()
+	24: main.c:340	run_file()
+	25: python.c:73	main()
+	26: libc-start.c:344	__libc_start_main()
+	27: [0x5b1d5a] ??() ??:0
+
+[2019-11-19 15:18:09:697] [INFO] [global_python_initialize] Start
+[2019-11-19 15:18:09:697] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:18:09:697] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:18:09:697] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:18:46:226] [INFO] [global_python_initialize] Start
+[2019-11-19 15:18:46:226] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:18:46:226] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:18:46:226] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:19:50:144] [INFO] [global_python_initialize] Start
+[2019-11-19 15:19:50:144] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:19:50:144] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:19:50:144] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:20:47:709] [INFO] [global_python_initialize] Start
+[2019-11-19 15:20:47:709] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:20:47:709] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:20:47:709] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:22:30:161] [INFO] [global_python_initialize] Start
+[2019-11-19 15:22:30:161] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:22:30:161] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:22:30:161] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:23:23:049] [INFO] [global_python_initialize] Start
+[2019-11-19 15:23:23:049] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:23:23:049] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:23:23:049] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:23:46:044] [INFO] [global_python_initialize] Start
+[2019-11-19 15:23:46:044] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:23:46:044] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:23:46:044] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:24:04:280] [INFO] [global_python_initialize] Start
+[2019-11-19 15:24:04:280] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:24:04:280] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:24:04:280] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:24:56:535] [INFO] [global_python_initialize] Start
+[2019-11-19 15:24:56:535] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:24:56:535] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:24:56:535] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:25:10:190] [INFO] [global_python_initialize] Start
+[2019-11-19 15:25:10:190] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:25:10:190] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:25:10:190] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:25:47:789] [INFO] [global_python_initialize] Start
+[2019-11-19 15:25:47:789] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:25:47:789] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:25:47:789] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:26:01:629] [INFO] [global_python_initialize] Start
+[2019-11-19 15:26:01:629] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:26:01:629] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:26:01:629] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:26:20:442] [INFO] [global_python_initialize] Start
+[2019-11-19 15:26:20:442] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:26:20:442] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:26:20:442] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:26:50:320] [INFO] [global_python_initialize] Start
+[2019-11-19 15:26:50:320] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:26:50:320] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:26:50:320] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:27:11:787] [INFO] [global_python_initialize] Start
+[2019-11-19 15:27:11:787] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:27:11:787] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:27:11:787] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:28:21:933] [INFO] [global_python_initialize] Start
+[2019-11-19 15:28:21:933] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:28:21:934] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:28:21:934] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:29:43:418] [INFO] [global_python_initialize] Start
+[2019-11-19 15:29:43:418] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:29:43:418] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:29:43:418] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:33:58:823] [INFO] [global_python_initialize] Start
+[2019-11-19 15:33:58:823] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:33:58:823] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:33:58:823] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:34:47:106] [INFO] [global_python_initialize] Start
+[2019-11-19 15:34:47:106] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:34:47:106] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:34:47:106] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:37:07:058] [INFO] [global_python_initialize] Start
+[2019-11-19 15:37:07:058] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:37:07:058] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:37:07:058] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:37:15:536] [INFO] [global_python_initialize] Start
+[2019-11-19 15:37:15:536] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:37:15:536] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:37:15:536] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:40:01:934] [INFO] [global_python_initialize] Start
+[2019-11-19 15:40:01:934] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:40:01:934] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:40:01:934] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:42:25:768] [INFO] [global_python_initialize] Start
+[2019-11-19 15:42:25:768] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:42:25:768] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:42:25:768] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:43:46:047] [INFO] [global_python_initialize] Start
+[2019-11-19 15:43:46:047] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:43:46:047] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:43:46:047] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:46:40:319] [INFO] [global_python_initialize] Start
+[2019-11-19 15:46:40:319] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:46:40:319] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:46:40:319] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:47:24:502] [INFO] [global_python_initialize] Start
+[2019-11-19 15:47:24:502] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:47:24:502] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:47:24:502] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:48:28:217] [INFO] [global_python_initialize] Start
+[2019-11-19 15:48:28:217] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:48:28:217] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:48:28:217] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:48:54:647] [INFO] [global_python_initialize] Start
+[2019-11-19 15:48:54:647] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:48:54:648] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:48:54:648] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:51:02:267] [INFO] [global_python_initialize] Start
+[2019-11-19 15:51:02:267] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:51:02:267] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:51:02:267] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 15:59:47:735] [INFO] [global_python_initialize] Start
+[2019-11-19 15:59:47:735] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 15:59:47:735] [INFO] [global_python_initialize] Finish
+[2019-11-19 15:59:47:735] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:00:17:273] [INFO] [global_python_initialize] Start
+[2019-11-19 16:00:17:273] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:00:17:273] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:00:17:273] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:00:31:004] [INFO] [global_python_initialize] Start
+[2019-11-19 16:00:31:004] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:00:31:005] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:00:31:005] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:02:35:650] [INFO] [global_python_initialize] Start
+[2019-11-19 16:02:35:650] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:02:35:651] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:02:35:651] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:03:54:742] [INFO] [global_python_initialize] Start
+[2019-11-19 16:03:54:742] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:03:54:742] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:03:54:742] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:04:33:239] [INFO] [global_python_initialize] Start
+[2019-11-19 16:04:33:239] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:04:33:239] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:04:33:239] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:04:52:708] [INFO] [global_python_initialize] Start
+[2019-11-19 16:04:52:708] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:04:52:708] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:04:52:708] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:05:18:702] [INFO] [global_python_initialize] Start
+[2019-11-19 16:05:18:702] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:05:18:702] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:05:18:702] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:05:35:907] [INFO] [global_python_initialize] Start
+[2019-11-19 16:05:35:907] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:05:35:907] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:05:35:907] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:06:34:890] [INFO] [global_python_initialize] Start
+[2019-11-19 16:06:34:890] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:06:34:890] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:06:34:890] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:07:54:383] [INFO] [global_python_initialize] Start
+[2019-11-19 16:07:54:383] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:07:54:383] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:07:54:383] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:07:54:383] [ERROR] ExecutionOutputLink must have schema and args! Got arity=1 (/tmp/atomspace-master/opencog/atoms/execution/ExecutionOutputLink.cc:64)
+	Stack Trace:
+	2: basic_string.h:211	??()
+	3: Logger.cc:530	  opencog::Logger::Error::operator()(char const*, ...)
+	4: exceptions.cc:55	  opencog::StandardException::parse_error_message(char const*, __va_list_tag*, bool)
+	5: exceptions.cc:82	  opencog::StandardException::parse_error_message(char const*, char const*, __va_list_tag*, bool)
+	6: exceptions.cc:164	  opencog::SyntaxException::SyntaxException(char const*, char const*, ...)
+	7: ExecutionOutputLink.cc:66	  opencog::ExecutionOutputLink::ExecutionOutputLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	8: ApplyLink.cc:31	  opencog::ApplyLink::ApplyLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	9: shared_ptr_base.h:727	??()
+	10: shared_ptr_base.h:697	??()
+	11: shared_ptr_base.h:683	??()
+	12: shared_ptr_base.h:1131	??()
+	13: shared_ptr_base.h:1034	??()
+	14: methodobject.c:98	PyCFunction_Call()
+	15: type_constructors.cpp:23205	__Pyx_PyObject_Call()
+	16: type_constructors.cpp:11070	__pyx_pf_7opencog_17type_constructors_162ApplyLink()
+	17: methodobject.c:236	_PyCFunction_FastCallDict()
+	18: ceval.c:3336	_PyEval_EvalFrameDefault()
+	19: ceval.c:754	PyEval_EvalFrameEx()
+	20: ceval.c:737	PyEval_EvalCode()
+	21: pythonrun.c:1026	run_mod()
+	22: pythonrun.c:978	PyRun_FileExFlags()
+	23: pythonrun.c:419	PyRun_SimpleFileExFlags()
+	24: main.c:340	run_file()
+	25: python.c:73	main()
+	26: libc-start.c:344	__libc_start_main()
+	27: [0x5b1d5a] ??() ??:0
+
+[2019-11-19 16:08:29:967] [INFO] [global_python_initialize] Start
+[2019-11-19 16:08:29:967] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:08:29:968] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:08:29:968] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:08:29:968] [ERROR] ExecutionOutputLink must have schema and args! Got arity=1 (/tmp/atomspace-master/opencog/atoms/execution/ExecutionOutputLink.cc:64)
+	Stack Trace:
+	2: basic_string.h:211	??()
+	3: Logger.cc:530	  opencog::Logger::Error::operator()(char const*, ...)
+	4: exceptions.cc:55	  opencog::StandardException::parse_error_message(char const*, __va_list_tag*, bool)
+	5: exceptions.cc:82	  opencog::StandardException::parse_error_message(char const*, char const*, __va_list_tag*, bool)
+	6: exceptions.cc:164	  opencog::SyntaxException::SyntaxException(char const*, char const*, ...)
+	7: ExecutionOutputLink.cc:66	  opencog::ExecutionOutputLink::ExecutionOutputLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	8: ApplyLink.cc:31	  opencog::ApplyLink::ApplyLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	9: shared_ptr_base.h:727	??()
+	10: shared_ptr_base.h:697	??()
+	11: shared_ptr_base.h:683	??()
+	12: shared_ptr_base.h:1131	??()
+	13: shared_ptr_base.h:1034	??()
+	14: methodobject.c:98	PyCFunction_Call()
+	15: type_constructors.cpp:23205	__Pyx_PyObject_Call()
+	16: type_constructors.cpp:11070	__pyx_pf_7opencog_17type_constructors_162ApplyLink()
+	17: methodobject.c:236	_PyCFunction_FastCallDict()
+	18: ceval.c:3336	_PyEval_EvalFrameDefault()
+	19: ceval.c:754	PyEval_EvalFrameEx()
+	20: ceval.c:737	PyEval_EvalCode()
+	21: pythonrun.c:1026	run_mod()
+	22: pythonrun.c:978	PyRun_FileExFlags()
+	23: pythonrun.c:419	PyRun_SimpleFileExFlags()
+	24: main.c:340	run_file()
+	25: python.c:73	main()
+	26: libc-start.c:344	__libc_start_main()
+	27: [0x5b1d5a] ??() ??:0
+
+[2019-11-19 16:09:17:698] [INFO] [global_python_initialize] Start
+[2019-11-19 16:09:17:698] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:09:17:698] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:09:17:698] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:09:17:699] [ERROR] ExecutionOutputLink must have schema and args! Got arity=1 (/tmp/atomspace-master/opencog/atoms/execution/ExecutionOutputLink.cc:64)
+	Stack Trace:
+	2: basic_string.h:211	??()
+	3: Logger.cc:530	  opencog::Logger::Error::operator()(char const*, ...)
+	4: exceptions.cc:55	  opencog::StandardException::parse_error_message(char const*, __va_list_tag*, bool)
+	5: exceptions.cc:82	  opencog::StandardException::parse_error_message(char const*, char const*, __va_list_tag*, bool)
+	6: exceptions.cc:164	  opencog::SyntaxException::SyntaxException(char const*, char const*, ...)
+	7: ExecutionOutputLink.cc:66	  opencog::ExecutionOutputLink::ExecutionOutputLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	8: ApplyLink.cc:31	  opencog::ApplyLink::ApplyLink(std::vector<opencog::Handle, std::allocator<opencog::Handle> > const&, unsigned short)
+	9: shared_ptr_base.h:727	??()
+	10: shared_ptr_base.h:697	??()
+	11: shared_ptr_base.h:683	??()
+	12: shared_ptr_base.h:1131	??()
+	13: shared_ptr_base.h:1034	??()
+	14: methodobject.c:98	PyCFunction_Call()
+	15: type_constructors.cpp:23205	__Pyx_PyObject_Call()
+	16: type_constructors.cpp:11070	__pyx_pf_7opencog_17type_constructors_162ApplyLink()
+	17: methodobject.c:236	_PyCFunction_FastCallDict()
+	18: ceval.c:3336	_PyEval_EvalFrameDefault()
+	19: ceval.c:754	PyEval_EvalFrameEx()
+	20: ceval.c:737	PyEval_EvalCode()
+	21: pythonrun.c:1026	run_mod()
+	22: pythonrun.c:978	PyRun_FileExFlags()
+	23: pythonrun.c:419	PyRun_SimpleFileExFlags()
+	24: main.c:340	run_file()
+	25: python.c:73	main()
+	26: libc-start.c:344	__libc_start_main()
+	27: [0x5b1d5a] ??() ??:0
+
+[2019-11-19 16:10:10:201] [INFO] [global_python_initialize] Start
+[2019-11-19 16:10:10:201] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:10:10:202] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:10:10:202] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:11:28:141] [INFO] [global_python_initialize] Start
+[2019-11-19 16:11:28:141] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:11:28:141] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:11:28:141] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:12:44:164] [INFO] [global_python_initialize] Start
+[2019-11-19 16:12:44:165] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:12:44:165] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:12:44:165] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:12:51:156] [INFO] [global_python_initialize] Start
+[2019-11-19 16:12:51:156] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:12:51:157] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:12:51:157] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:16:49:902] [INFO] [global_python_initialize] Start
+[2019-11-19 16:16:49:903] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:16:49:903] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:16:49:903] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-19 16:28:15:916] [INFO] [global_python_initialize] Start
+[2019-11-19 16:28:15:916] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-19 16:28:15:916] [INFO] [global_python_initialize] Finish
+[2019-11-19 16:28:15:916] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:41:27:455] [INFO] [global_python_initialize] Start
+[2019-11-20 07:41:27:456] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:41:27:456] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:41:27:456] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:41:50:997] [INFO] [global_python_initialize] Start
+[2019-11-20 07:41:50:997] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:41:50:997] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:41:50:997] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:42:07:648] [INFO] [global_python_initialize] Start
+[2019-11-20 07:42:07:648] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:42:07:648] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:42:07:648] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:42:29:438] [INFO] [global_python_initialize] Start
+[2019-11-20 07:42:29:438] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:42:29:438] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:42:29:438] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:42:37:193] [INFO] [global_python_initialize] Start
+[2019-11-20 07:42:37:193] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:42:37:193] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:42:37:193] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:42:47:653] [INFO] [global_python_initialize] Start
+[2019-11-20 07:42:47:654] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:42:47:654] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:42:47:654] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:44:03:643] [INFO] [global_python_initialize] Start
+[2019-11-20 07:44:03:643] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:44:03:643] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:44:03:643] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:47:26:495] [INFO] [global_python_initialize] Start
+[2019-11-20 07:47:26:495] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:47:26:495] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:47:26:495] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 07:47:40:498] [INFO] [global_python_initialize] Start
+[2019-11-20 07:47:40:498] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 07:47:40:498] [INFO] [global_python_initialize] Finish
+[2019-11-20 07:47:40:498] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:29:19:266] [INFO] [global_python_initialize] Start
+[2019-11-20 08:29:19:266] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:29:19:266] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:29:19:266] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:29:34:112] [INFO] [global_python_initialize] Start
+[2019-11-20 08:29:34:112] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:29:34:112] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:29:34:112] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:29:44:714] [INFO] [global_python_initialize] Start
+[2019-11-20 08:29:44:714] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:29:44:714] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:29:44:714] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:29:55:033] [INFO] [global_python_initialize] Start
+[2019-11-20 08:29:55:033] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:29:55:033] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:29:55:033] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:37:11:612] [INFO] [global_python_initialize] Start
+[2019-11-20 08:37:11:612] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:37:11:612] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:37:11:612] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:41:12:176] [INFO] [global_python_initialize] Start
+[2019-11-20 08:41:12:176] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:41:12:176] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:41:12:176] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:41:40:969] [INFO] [global_python_initialize] Start
+[2019-11-20 08:41:40:969] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:41:40:969] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:41:40:969] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 08:43:01:978] [INFO] [global_python_initialize] Start
+[2019-11-20 08:43:01:978] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 08:43:01:978] [INFO] [global_python_initialize] Finish
+[2019-11-20 08:43:01:978] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:24:50:477] [INFO] [global_python_initialize] Start
+[2019-11-20 13:24:50:477] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:24:50:477] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:24:50:477] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:25:50:961] [INFO] [global_python_initialize] Start
+[2019-11-20 13:25:50:961] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:25:50:961] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:25:50:961] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:26:26:041] [INFO] [global_python_initialize] Start
+[2019-11-20 13:26:26:041] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:26:26:041] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:26:26:041] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:26:47:962] [INFO] [global_python_initialize] Start
+[2019-11-20 13:26:47:962] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:26:47:962] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:26:47:962] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:27:04:316] [INFO] [global_python_initialize] Start
+[2019-11-20 13:27:04:316] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:27:04:316] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:27:04:316] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:27:28:048] [INFO] [global_python_initialize] Start
+[2019-11-20 13:27:28:048] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:27:28:048] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:27:28:048] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:27:50:469] [INFO] [global_python_initialize] Start
+[2019-11-20 13:27:50:469] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:27:50:470] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:27:50:470] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:27:54:570] [ERROR] Python function 'atom_to_truth_value' not found in module '__main__'! (/tmp/atomspace-master/opencog/cython/PythonEval.cc:993)
+	Stack Trace:
+	2: basic_string.h:211	??()
+	3: Logger.cc:530	  opencog::Logger::Error::operator()(char const*, ...)
+	4: exceptions.cc:55	  opencog::StandardException::parse_error_message(char const*, __va_list_tag*, bool)
+	5: exceptions.cc:82	  opencog::StandardException::parse_error_message(char const*, char const*, __va_list_tag*, bool)
+	6: exceptions.cc:142	  opencog::RuntimeException::RuntimeException(char const*, char const*, ...)
+	7: PythonEval.cc:995	  opencog::PythonEval::call_user_function(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, opencog::Handle)
+	8: shared_ptr_base.h:683	??()
+	9: basic_string.h:211	??()
+	10: EvaluationLink.cc:855	  opencog::EvaluationLink::do_eval_scratch(opencog::AtomSpace*, opencog::Handle const&, opencog::AtomSpace*, bool)
+	11: shared_ptr_base.h:712	??()
+	12: DefaultPatternMatchCB.cc:846	  opencog::DefaultPatternMatchCB::eval_sentence(opencog::Handle const&, std::map<opencog::Handle, opencog::Handle, std::less<opencog::Handle>, std::allocator<std::pair<opencog::Handle const, opencog::Handle> > > const&)
+	13: stl_tree.h:949	??()
+	14: InitiateSearchCB.cc:494	  opencog::InitiateSearchCB::initiate_search(opencog::PatternMatchEngine*)
+	15: PatternLinkRuntime.cc:108	??()
+	16: PatternLinkRuntime.cc:394	  opencog::PatternLink::satisfy(opencog::PatternMatchCallback&) const
+	17: QueryLink.cc:160	  opencog::QueryLink::do_execute(opencog::AtomSpace*, bool)
+	18: stl_set.h:335	??()
+	19: Instantiator.cc:598	  opencog::Instantiator::instantiate(opencog::Handle const&, std::map<opencog::Handle, opencog::Handle, std::less<opencog::Handle>, std::allocator<std::pair<opencog::Handle const, opencog::Handle> > > const&, bool)
+	20: stl_tree.h:949	??()
+	21: BindlinkStub.cc:15	  opencog::do_execute(opencog::AtomSpace*, opencog::Handle)
+	22: shared_ptr_base.h:683	??()
+	23: methodobject.c:236	_PyCFunction_FastCallDict()
+	24: ceval.c:3336	_PyEval_EvalFrameDefault()
+	25: ceval.c:754	PyEval_EvalFrameEx()
+	26: ceval.c:737	PyEval_EvalCode()
+	27: pythonrun.c:1026	run_mod()
+	28: pythonrun.c:978	PyRun_FileExFlags()
+	29: pythonrun.c:419	PyRun_SimpleFileExFlags()
+	30: main.c:340	run_file()
+	31: python.c:73	main()
+	32: libc-start.c:344	__libc_start_main()
+	33: [0x5b1d5a] ??() ??:0
+
+[2019-11-20 13:28:16:108] [INFO] [global_python_initialize] Start
+[2019-11-20 13:28:16:108] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:28:16:108] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:28:16:108] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:28:59:778] [INFO] [global_python_initialize] Start
+[2019-11-20 13:28:59:778] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:28:59:778] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:28:59:778] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:29:40:775] [INFO] [global_python_initialize] Start
+[2019-11-20 13:29:40:775] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:29:40:775] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:29:40:775] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:30:21:210] [INFO] [global_python_initialize] Start
+[2019-11-20 13:30:21:210] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:30:21:210] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:30:21:210] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:30:31:550] [INFO] [global_python_initialize] Start
+[2019-11-20 13:30:31:550] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:30:31:550] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:30:31:550] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:30:56:748] [INFO] [global_python_initialize] Start
+[2019-11-20 13:30:56:748] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:30:56:748] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:30:56:748] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:31:22:127] [INFO] [global_python_initialize] Start
+[2019-11-20 13:31:22:127] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:31:22:127] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:31:22:127] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:31:40:515] [INFO] [global_python_initialize] Start
+[2019-11-20 13:31:40:515] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:31:40:515] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:31:40:515] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:32:07:851] [INFO] [global_python_initialize] Start
+[2019-11-20 13:32:07:851] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:32:07:852] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:32:07:852] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:32:43:508] [INFO] [global_python_initialize] Start
+[2019-11-20 13:32:43:508] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:32:43:508] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:32:43:508] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:33:25:139] [INFO] [global_python_initialize] Start
+[2019-11-20 13:33:25:139] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:33:25:140] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:33:25:140] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:34:29:680] [INFO] [global_python_initialize] Start
+[2019-11-20 13:34:29:680] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:34:29:681] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:34:29:681] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:35:25:086] [INFO] [global_python_initialize] Start
+[2019-11-20 13:35:25:086] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:35:25:086] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:35:25:086] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:35:40:035] [INFO] [global_python_initialize] Start
+[2019-11-20 13:35:40:035] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:35:40:036] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:35:40:036] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:38:05:562] [INFO] [global_python_initialize] Start
+[2019-11-20 13:38:05:562] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:38:05:563] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:38:05:563] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:38:26:321] [INFO] [global_python_initialize] Start
+[2019-11-20 13:38:26:321] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:38:26:321] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:38:26:321] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:39:19:515] [INFO] [global_python_initialize] Start
+[2019-11-20 13:39:19:515] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:39:19:515] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:39:19:515] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:40:15:521] [INFO] [global_python_initialize] Start
+[2019-11-20 13:40:15:521] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:40:15:521] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:40:15:521] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 13:41:11:117] [INFO] [global_python_initialize] Start
+[2019-11-20 13:41:11:117] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 13:41:11:118] [INFO] [global_python_initialize] Finish
+[2019-11-20 13:41:11:118] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 14:00:16:731] [INFO] [global_python_initialize] Start
+[2019-11-20 14:00:16:731] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 14:00:16:731] [INFO] [global_python_initialize] Finish
+[2019-11-20 14:00:16:731] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-20 14:12:28:593] [INFO] [global_python_initialize] Start
+[2019-11-20 14:12:28:593] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-20 14:12:28:593] [INFO] [global_python_initialize] Finish
+[2019-11-20 14:12:28:593] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-21 08:57:57:699] [INFO] [global_python_initialize] Start
+[2019-11-21 08:57:57:699] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-21 08:57:57:699] [INFO] [global_python_initialize] Finish
+[2019-11-21 08:57:57:699] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-21 08:58:19:667] [INFO] [global_python_initialize] Start
+[2019-11-21 08:58:19:667] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-21 08:58:19:667] [INFO] [global_python_initialize] Finish
+[2019-11-21 08:58:19:668] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-21 08:58:39:532] [INFO] [global_python_initialize] Start
+[2019-11-21 08:58:39:532] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-21 08:58:39:533] [INFO] [global_python_initialize] Finish
+[2019-11-21 08:58:39:533] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-21 10:11:45:431] [INFO] [global_python_initialize] Start
+[2019-11-21 10:11:45:431] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-21 10:11:45:431] [INFO] [global_python_initialize] Finish
+[2019-11-21 10:11:45:431] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-21 10:19:20:092] [INFO] [global_python_initialize] Start
+[2019-11-21 10:19:20:092] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-21 10:19:20:092] [INFO] [global_python_initialize] Finish
+[2019-11-21 10:19:20:092] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-25 10:51:47:288] [INFO] [global_python_initialize] Start
+[2019-11-25 10:51:47:289] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-25 10:51:47:289] [INFO] [global_python_initialize] Finish
+[2019-11-25 10:51:47:289] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-27 08:25:12:865] [INFO] [global_python_initialize] Start
+[2019-11-27 08:25:12:865] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-27 08:25:12:865] [INFO] [global_python_initialize] Finish
+[2019-11-27 08:25:12:865] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-27 08:25:36:655] [INFO] [global_python_initialize] Start
+[2019-11-27 08:25:36:655] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-27 08:25:36:655] [INFO] [global_python_initialize] Finish
+[2019-11-27 08:25:36:655] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-27 08:26:15:574] [INFO] [global_python_initialize] Start
+[2019-11-27 08:26:15:574] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-27 08:26:15:574] [INFO] [global_python_initialize] Finish
+[2019-11-27 08:26:15:574] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-27 08:27:00:773] [INFO] [global_python_initialize] Start
+[2019-11-27 08:27:00:773] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-27 08:27:00:774] [INFO] [global_python_initialize] Finish
+[2019-11-27 08:27:00:774] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-27 08:27:20:309] [INFO] [global_python_initialize] Start
+[2019-11-27 08:27:20:309] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-27 08:27:20:309] [INFO] [global_python_initialize] Finish
+[2019-11-27 08:27:20:309] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
+[2019-11-27 08:41:05:026] [INFO] [global_python_initialize] Start
+[2019-11-27 08:41:05:026] [INFO] [global_python_initialize] Adding OpenCog sys.path directories
+[2019-11-27 08:41:05:026] [INFO] [global_python_initialize] Finish
+[2019-11-27 08:41:05:026] [INFO] PythonEval::initialize_python_objects_and_imports Finished initialising python evaluator.
