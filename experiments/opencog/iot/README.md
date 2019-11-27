@@ -39,7 +39,7 @@ knowledge base.
 #### Description of modules
  
 In ```hass_communicator.py``` we implement ```HassCommunicator``` class for communication with Home
-Assistant server. It exchange information from the rest of the code
+Assistant server. It exchange information with the rest of the code
 via ```quest_send``` and ```queue_recv``` (because we run it in separate thread).  When it received a message from the
 Home assistant it put it in ```queue_recv``` (and in the main loop in
 main.py we wait for this massage). Simillary when someone need to send
