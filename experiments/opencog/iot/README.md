@@ -63,8 +63,8 @@ of Enities.
 In event.py we implement Event class which represent an event in
 opencog (via GroundedObjectNode).
 
-In opencog_reactive_automation_bindlinks.py in
-opencog_reactive_automation_bindlinks function we define bindlinks
+```In opencog_reactive_automation_bindlinks.py``` in
+```opencog_reactive_automation_bindlinks``` function we define bindlinks
 which actually define the reactive behavior of opencog on events
 (this file is different for ```proto5_entities``` and ```proto6_KB```). 
 
