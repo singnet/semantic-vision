@@ -6,9 +6,12 @@ import abc
 
 import jpype
 import numpy as np
+
+#ignore useless warnings
+import warnings
+warnings.filterwarnings('ignore')
 import opencog.logger
 import network_runner
-
 from opencog.atomspace import TruthValue
 from opencog.type_constructors import *
 from opencog.scheme_wrapper import *
@@ -341,9 +344,22 @@ class PatternMatcherVqaPipeline:
             otherwise unified rule engine will be used
         :return: QueryProcessingData
         """
+        features, boxes = self.featureExtractor.getFeaturesByImage(image)
+        return self.answerQuestionByFeatures(features, boxes, question, use_pm)
+
+    def answerQuestionByFeatures(self, features, boxes, question, use_pm=True):
+        """
+        Get answer from image features, bounding boxes and text
+        :param features: List[List[float]]
+        :param boxes: List[List[int]]
+        :param question: str
+        :param use_pm: bool
+            if use_pm == True, pattern matcher will be used to compute the answer
+            otherwise unified rule engine will be used
+        :return: QueryProcessingData
+        """
         self.atomspace = pushAtomspace(self.atomspace)
         try:
-            features, boxes = self.featureExtractor.getFeaturesByImage(image)
             self.addBoundingBoxesIntoAtomspace(features)
             parsedQuestion = self.questionConverter.parseQuestionAndType(question)
             relexFormula = parsedQuestion.relexFormula
@@ -391,7 +407,7 @@ class PatternMatcherVqaPipeline:
             self.answerHandler.onAnswer(record, answer)
 
             print('{}::{}::{}::{}::{}'.format(record.questionId, record.question,
-                answer, record.answer, record.imageId))
+                                              answer, record.answer, record.imageId))
 
         finally:
             self.atomspace = popAtomspace(self.atomspace)

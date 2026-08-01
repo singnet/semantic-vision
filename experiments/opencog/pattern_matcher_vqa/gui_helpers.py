@@ -3,6 +3,8 @@ The module contains classes and functions
 for working with VQA pipeline from jupyter notebook
 """
 
+import os
+import pickle
 from io import BytesIO
 import jpype
 from feature.image import ImageFeatureExtractor
@@ -104,12 +106,17 @@ class MainWindow():
         if self.camera:
             self.current_image = numpy.asarray(Image.open(BytesIO(self.image_recorder.image.value)))[:,:,:3]
 
+    def _call_vqa(self):
+        new_answer = self.vqa.answerQuestionByImage(self.current_image, self.text.value,
+                                                    use_pm=self.use_pattern_matcher)
+
+        return new_answer
+
     def _handle_submit(self, sender):
         self.label_question.value = self.text.value
         self._clear_widgets()
         self._handle_camera()
-        new_answer = self.vqa.answerQuestionByImage(self.current_image, self.text.value,
-                                                    use_pm=self.use_pattern_matcher)
+        new_answer = self._call_vqa()
         if not (new_answer and new_answer.answer):
             self.label_answer.value = "I don't know."
             return
@@ -147,4 +154,49 @@ class MainWindow():
         else:
             vbox_images = VBox(children=[interact])
         display.display(HBox(children=[vbox_images, vbox], layout=hlayout))
+
+
+class PrecomputedMainWindow(MainWindow):
+    def __init__(self, image_container, vqa):
+        super().__init__(image_container, vqa)
+        self.image_container = image_container
+        self.current_idx = -1
+
+    def _call_vqa(self):
+        features, boxes = self.image_container.get_features_boxes(self.current_idx)
+        new_answer = self.vqa.answerQuestionByFeatures(features,
+                                                       boxes, self.text.value,
+                                                    use_pm=self.use_pattern_matcher)
+
+        return new_answer
+
+    def _next_image(self, idx):
+        self.current_idx = idx
+        self.current_image = self.image_container.get_image(idx)
+        self._draw_image()
+
+
+class PrecomputedImages:
+    def __init__(self, image_dir,
+                 image_re, feature_dir,
+                 feature_tmpl):
+        self.images = sorted(os.listdir(image_dir))
+        self.images_dir = image_dir
+        self.feature_dir = feature_dir
+        self.feature_tmpl = feature_tmpl
+        self.image_re = image_re
+
+    def __len__(self):
+        return len(self.images)
+
+    def get_image(self, index):
+        image =  misc.imread(os.path.join(self.images_dir, self.images[index]))
+        return image
+
+    def get_features_boxes(self, index):
+        img_id = self.image_re.match(self.images[index]).group(1)
+        with open(os.path.join(self.feature_dir,
+                               self.feature_tmpl.format(img_id)), 'rb') as f:
+            return pickle.load(f)
+
 
